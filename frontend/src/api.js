@@ -1,5 +1,6 @@
-const API_URL = import.meta.env.VITE_API_URL || "http://localhost:8000";
-
+const API_URL =
+  import.meta.env.VITE_API_URL || "https://foodwaste-platform.onrender.com";
+  
 function authHeaders() {
   const token = localStorage.getItem("token");
   return token ? { Authorization: `Bearer ${token}` } : {};
