@@ -201,7 +201,7 @@ export default function Layout({ children }) {
       {/* ------------------------------------------------------------- */}
       {/* DESKTOP PERMANENT SIDEBAR (>= 1024px)                         */}
       {/* ------------------------------------------------------------- */}
-      <aside className="hidden lg:flex w-64 shrink-0 bg-forest-800 text-wheat-100 flex-col h-screen sticky top-0 z-20 border-r border-forest-700/50 shadow-lg">
+      <aside className="hidden lg:flex w-64 shrink-0 bg-forest-800 text-wheat-100 flex-col self-stretch border-r border-forest-700/50 shadow-lg">
         {/* Brand */}
         <div className="px-6 py-7 border-b border-forest-600/60">
           <p className="font-display italic text-2xl leading-tight font-semibold">
@@ -230,7 +230,7 @@ export default function Layout({ children }) {
         </div>
 
         {/* Navigation Links */}
-        <nav className="flex-1 px-3 py-6 space-y-1.5 overflow-y-auto">
+        <nav className="px-3 py-6 space-y-1.5">
           {links.map((l) => {
             const Icon = l.icon;
             return (
@@ -254,7 +254,7 @@ export default function Layout({ children }) {
         </nav>
 
         {/* Desktop Footer */}
-        <div className="px-6 py-5 border-t border-forest-600/60 bg-forest-900/30">
+        <div className="mt-auto px-6 py-5 border-t border-forest-600/60 bg-forest-900/30">
           <button
             onClick={handleSignOut}
             className="w-full flex items-center justify-center gap-2 px-3 py-2 rounded-md text-xs uppercase tracking-wider font-semibold text-tomato-400 hover:text-tomato-300 hover:bg-forest-700/50 transition-colors"
@@ -268,7 +268,7 @@ export default function Layout({ children }) {
       {/* ------------------------------------------------------------- */}
       {/* MAIN CONTENT AREA                                             */}
       {/* ------------------------------------------------------------- */}
-      <main className="flex-1 min-w-0 overflow-y-auto min-h-[calc(100vh-60px)] lg:min-h-screen">
+      <main className="flex-1 min-w-0">
         <div className="max-w-6xl mx-auto px-4 sm:px-6 lg:px-8 py-6 sm:py-8 lg:py-10">
           {children}
         </div>
