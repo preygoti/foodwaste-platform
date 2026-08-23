@@ -29,6 +29,7 @@ export default function BrowseListingsPage() {
   const [scheduledTime, setScheduledTime] = useState("");
   const [claiming, setClaiming] = useState(false);
   const [claimSuccess, setClaimSuccess] = useState(false);
+  const [claimError, setClaimError] = useState("");
 
   const load = () => {
     if (user?.role !== "ngo") return;
@@ -83,12 +84,14 @@ export default function BrowseListingsPage() {
     tomorrow.setHours(10, 0, 0, 0);
     setScheduledTime(tomorrow.toISOString().slice(0, 16));
     setClaimSuccess(false);
+    setClaimError("");
   };
 
   const handleClaimSubmit = async (e) => {
     e.preventDefault();
     if (!selectedListing) return;
     setClaiming(true);
+    setClaimError("");
     try {
       await api.requestPickup({
         listing_id: selectedListing.id,
@@ -102,7 +105,7 @@ export default function BrowseListingsPage() {
         load();
       }, 1200);
     } catch (err) {
-      alert(`Failed to claim surplus: ${err.message}`);
+      setClaimError(err.message || "Failed to claim surplus.");
     } finally {
       setClaiming(false);
     }
@@ -275,6 +278,13 @@ export default function BrowseListingsPage() {
                   className="w-full border border-wheat-200 rounded-lg px-3 py-2 text-sm font-mono focus:outline-none focus:ring-2 focus:ring-forest-400"
                 />
               </div>
+
+              {claimError && (
+                <div className="flex items-center gap-2 p-3 rounded-lg bg-tomato-500/10 border border-tomato-500/30 text-tomato-600 text-xs font-medium">
+                  <AlertCircle className="w-4 h-4 shrink-0" />
+                  <span>{claimError}</span>
+                </div>
+              )}
 
               {claimSuccess && (
                 <div className="flex items-center gap-2 p-3 rounded-lg bg-emerald-50 border border-emerald-200 text-emerald-800 text-xs font-medium">

@@ -62,7 +62,8 @@ def get_current_user(token: str = Depends(oauth2_scheme), db: Session = Depends(
 
 def require_role(role: str):
     def _checker(user: models.User = Depends(get_current_user)) -> models.User:
-        if user.role.value != role:
+        user_role = (user.role.value if hasattr(user.role, "value") else str(user.role)).lower().strip()
+        if user_role != role.lower().strip():
             raise HTTPException(status_code=403, detail=f"This action requires a {role} account")
         return user
     return _checker

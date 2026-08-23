@@ -57,7 +57,8 @@ def register(payload: schemas.UserCreate, db: Session = Depends(get_db)):
     db.commit()
     db.refresh(user)
 
-    token = create_access_token({"sub": str(user.id), "email": user.email, "role": user.role.value})
+    role_val = user.role.value if hasattr(user.role, "value") else str(user.role)
+    token = create_access_token({"sub": str(user.id), "email": user.email, "role": role_val})
     return schemas.Token(access_token=token, user=schemas.UserOut.model_validate(_user_out(user)))
 
 
@@ -66,7 +67,8 @@ def login(form_data: OAuth2PasswordRequestForm = Depends(), db: Session = Depend
     user = db.query(models.User).filter(models.User.email == form_data.username).first()
     if not user or not verify_password(form_data.password, user.hashed_password):
         raise HTTPException(401, "Incorrect email or password")
-    token = create_access_token({"sub": str(user.id), "email": user.email, "role": user.role.value})
+    role_val = user.role.value if hasattr(user.role, "value") else str(user.role)
+    token = create_access_token({"sub": str(user.id), "email": user.email, "role": role_val})
     return schemas.Token(access_token=token, user=schemas.UserOut.model_validate(_user_out(user)))
 
 
@@ -76,9 +78,10 @@ def me(current_user: models.User = Depends(get_current_user)):
 
 
 def _user_out(user: models.User):
+    role_val = user.role.value if hasattr(user.role, "value") else str(user.role)
     return {
         "id": user.id, "email": user.email, "org_name": user.org_name,
-        "role": user.role.value, "address": user.address,
+        "role": role_val, "address": user.address,
     }
 
 
