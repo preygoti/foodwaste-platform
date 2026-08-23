@@ -29,17 +29,22 @@ async function handle(res) {
 
 export const api = {
   async register(data) {
+    const payload = {
+      ...data,
+      email: (data.email || "").trim().toLowerCase(),
+      org_name: (data.org_name || "").trim(),
+    };
     const res = await fetch(`${API_URL}/auth/register`, {
       method: "POST",
       headers: { "Content-Type": "application/json" },
-      body: JSON.stringify(data),
+      body: JSON.stringify(payload),
     });
     return handle(res);
   },
 
   async login(email, password) {
     const form = new URLSearchParams();
-    form.set("username", email);
+    form.set("username", (email || "").trim().toLowerCase());
     form.set("password", password);
     const res = await fetch(`${API_URL}/auth/login`, {
       method: "POST",

@@ -1,3 +1,9 @@
+databases:
+  - name: foodwaste-db
+    plan: free
+    databaseName: foodwaste
+    user: foodwaste_user
+
 services:
   - type: web
     name: foodwaste-backend
@@ -9,4 +15,6 @@ services:
       - key: JWT_SECRET
         generateValue: true
       - key: DATABASE_URL
-        value: sqlite:///./foodwaste.db
+        fromDatabase:
+          name: foodwaste-db
+          property: connectionString

@@ -231,5 +231,36 @@ class TestFoodWastePlatform(unittest.TestCase):
         # Should reject because email does not match user id 1 in db
         self.assertEqual(res_inv.status_code, 401)
 
+    def test_08_database_configuration_and_url_normalization(self):
+        from database import get_database_url, create_db_engine
+        import os
+
+        # 1. Test fallback when DATABASE_URL is unset
+        old_env = os.environ.get("DATABASE_URL")
+        try:
+            if "DATABASE_URL" in os.environ:
+                del os.environ["DATABASE_URL"]
+            self.assertEqual(get_database_url(), "sqlite:///./foodwaste.db")
+            
+            # Test engine creation for SQLite
+            sqlite_engine = create_db_engine("sqlite:///./foodwaste.db")
+            self.assertEqual(sqlite_engine.dialect.name, "sqlite")
+
+            # 2. Test legacy postgres:// normalization
+            os.environ["DATABASE_URL"] = "postgres://sample_user:sample_pass@sample_host.render.com:5432/sample_db"
+            normalized = get_database_url()
+            self.assertTrue(normalized.startswith("postgresql://"))
+            self.assertIn("sample_user:sample_pass@sample_host.render.com:5432/sample_db", normalized)
+
+            # 3. Test modern postgresql:// retention
+            os.environ["DATABASE_URL"] = "postgresql://user:pass@host:5432/db"
+            self.assertEqual(get_database_url(), "postgresql://user:pass@host:5432/db")
+
+        finally:
+            if old_env is not None:
+                os.environ["DATABASE_URL"] = old_env
+            elif "DATABASE_URL" in os.environ:
+                del os.environ["DATABASE_URL"]
+
 if __name__ == "__main__":
     unittest.main()

@@ -1,9 +1,11 @@
+import os
 from datetime import date, datetime, timedelta
 from typing import List, Optional
 
 from fastapi import FastAPI, Depends, HTTPException, status
 from fastapi.middleware.cors import CORSMiddleware
 from fastapi.security import OAuth2PasswordRequestForm
+from sqlalchemy import func
 from sqlalchemy.orm import Session
 
 import models
@@ -21,9 +23,22 @@ Base.metadata.create_all(bind=engine)
 
 app = FastAPI(title="AI-Powered Food Waste Management Platform API")
 
+FRONTEND_URL = os.environ.get("FRONTEND_URL", "https://foodwaste-platform.vercel.app")
+ALLOWED_ORIGINS = [
+    "https://foodwaste-platform.vercel.app",
+    "http://localhost:5173",
+    "http://localhost:3000",
+    "http://127.0.0.1:5173",
+    "http://localhost:8000",
+    "http://127.0.0.1:8000",
+]
+if FRONTEND_URL and FRONTEND_URL not in ALLOWED_ORIGINS:
+    ALLOWED_ORIGINS.append(FRONTEND_URL)
+
 app.add_middleware(
     CORSMiddleware,
-    allow_origins=["*"],  # tighten to your frontend domain in production
+    allow_origins=ALLOWED_ORIGINS,
+    allow_origin_regex=r"https://.*\.vercel\.app",
     allow_credentials=True,
     allow_methods=["*"],
     allow_headers=["*"],
@@ -42,14 +57,16 @@ def root():
 def register(payload: schemas.UserCreate, db: Session = Depends(get_db)):
     if payload.role not in ("business", "ngo"):
         raise HTTPException(400, "role must be 'business' or 'ngo'")
-    existing = db.query(models.User).filter(models.User.email == payload.email).first()
+    
+    norm_email = str(payload.email).strip().lower()
+    existing = db.query(models.User).filter(func.lower(models.User.email) == norm_email).first()
     if existing:
         raise HTTPException(400, "Email already registered")
 
     user = models.User(
-        email=payload.email,
+        email=norm_email,
         hashed_password=get_password_hash(payload.password),
-        org_name=payload.org_name,
+        org_name=payload.org_name.strip(),
         role=payload.role,
         address=payload.address or "",
     )
@@ -64,7 +81,8 @@ def register(payload: schemas.UserCreate, db: Session = Depends(get_db)):
 
 @app.post("/auth/login", response_model=schemas.Token)
 def login(form_data: OAuth2PasswordRequestForm = Depends(), db: Session = Depends(get_db)):
-    user = db.query(models.User).filter(models.User.email == form_data.username).first()
+    norm_username = (form_data.username or "").strip().lower()
+    user = db.query(models.User).filter(func.lower(models.User.email) == norm_username).first()
     if not user or not verify_password(form_data.password, user.hashed_password):
         raise HTTPException(401, "Incorrect email or password")
     role_val = user.role.value if hasattr(user.role, "value") else str(user.role)
