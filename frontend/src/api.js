@@ -1,6 +1,6 @@
 const API_URL =
   import.meta.env.VITE_API_URL || "https://foodwaste-platform.onrender.com";
-  
+
 function authHeaders() {
   const token = localStorage.getItem("token");
   return token ? { Authorization: `Bearer ${token}` } : {};
@@ -8,6 +8,13 @@ function authHeaders() {
 
 async function handle(res) {
   if (!res.ok) {
+    if (res.status === 401) {
+      // Invalidate stale token and notify AuthContext
+      localStorage.removeItem("token");
+      if (typeof window !== "undefined") {
+        window.dispatchEvent(new CustomEvent("auth:unauthorized"));
+      }
+    }
     let detail = "Request failed";
     try {
       const body = await res.json();
@@ -47,7 +54,7 @@ export const api = {
     return handle(res);
   },
 
-  // Inventory
+  // Inventory (Business Only)
   async listInventory() {
     const res = await fetch(`${API_URL}/inventory`, { headers: authHeaders() });
     return handle(res);

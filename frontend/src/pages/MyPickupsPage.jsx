@@ -11,6 +11,7 @@ import {
   Compass,
 } from "lucide-react";
 import Layout from "../components/Layout";
+import { useAuth } from "../AuthContext";
 import { api } from "../api";
 
 const STATUS_CONFIG = {
@@ -41,11 +42,13 @@ const STATUS_CONFIG = {
 };
 
 export default function MyPickupsPage() {
+  const { user } = useAuth();
   const [pickups, setPickups] = useState([]);
   const [loading, setLoading] = useState(true);
   const [processingId, setProcessingId] = useState(null);
 
   const load = () => {
+    if (user?.role !== "ngo") return;
     setLoading(true);
     api
       .myPickups()
@@ -53,7 +56,35 @@ export default function MyPickupsPage() {
       .finally(() => setLoading(false));
   };
 
-  useEffect(load, []);
+  useEffect(() => {
+    setPickups([]);
+    if (user?.role === "ngo") {
+      load();
+    } else {
+      setLoading(false);
+    }
+  }, [user?.id, user?.role]);
+
+  if (user?.role && user.role !== "ngo") {
+    return (
+      <Layout>
+        <div className="bg-white border border-wheat-200 rounded-xl p-8 sm:p-12 text-center shadow-2xs">
+          <h2 className="font-display text-xl text-forest-800 font-semibold mb-2">
+            NGO / Food Bank Account Required
+          </h2>
+          <p className="text-xs sm:text-sm text-forest-800/60 max-w-md mx-auto mb-6">
+            Pickup tracking is only available to registered NGO accounts.
+          </p>
+          <Link
+            to="/dashboard/inventory"
+            className="inline-flex items-center gap-2 px-5 py-2.5 bg-forest-800 text-wheat-50 rounded-lg text-xs sm:text-sm font-medium hover:bg-forest-700"
+          >
+            Go to Business Inventory
+          </Link>
+        </div>
+      </Layout>
+    );
+  }
 
   const markPickedUp = async (id) => {
     setProcessingId(id);

@@ -51,6 +51,12 @@ def get_current_user(token: str = Depends(oauth2_scheme), db: Session = Depends(
     user = db.query(models.User).filter(models.User.id == int(user_id)).first()
     if user is None:
         raise credentials_exception
+
+    # Defense-in-depth: if email was encoded in the token payload, verify it matches the user record
+    token_email = payload.get("email")
+    if token_email and user.email != token_email:
+        raise credentials_exception
+
     return user
 
 

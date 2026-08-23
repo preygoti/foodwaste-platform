@@ -12,6 +12,7 @@ import {
   Package,
 } from "lucide-react";
 import Layout from "../components/Layout";
+import { useAuth } from "../AuthContext";
 import { api } from "../api";
 
 const STATUS_CONFIG = {
@@ -42,12 +43,14 @@ const STATUS_CONFIG = {
 };
 
 export default function BusinessListingsPage() {
+  const { user } = useAuth();
   const [listings, setListings] = useState([]);
   const [pickupsByListing, setPickupsByListing] = useState({});
   const [loading, setLoading] = useState(true);
   const [confirmingId, setConfirmingId] = useState(null);
 
   const load = () => {
+    if (user?.role !== "business") return;
     setLoading(true);
     api
       .myListings()
@@ -63,7 +66,36 @@ export default function BusinessListingsPage() {
       .finally(() => setLoading(false));
   };
 
-  useEffect(load, []);
+  useEffect(() => {
+    setListings([]);
+    setPickupsByListing({});
+    if (user?.role === "business") {
+      load();
+    } else {
+      setLoading(false);
+    }
+  }, [user?.id, user?.role]);
+
+  if (user?.role && user.role !== "business") {
+    return (
+      <Layout>
+        <div className="bg-white border border-wheat-200 rounded-xl p-8 sm:p-12 text-center shadow-2xs">
+          <h2 className="font-display text-xl text-forest-800 font-semibold mb-2">
+            Business Account Required
+          </h2>
+          <p className="text-xs sm:text-sm text-forest-800/60 max-w-md mx-auto mb-6">
+            Surplus inventory listings are managed by Food Business accounts.
+          </p>
+          <Link
+            to="/dashboard/browse"
+            className="inline-flex items-center gap-2 px-5 py-2.5 bg-forest-800 text-wheat-50 rounded-lg text-xs sm:text-sm font-medium hover:bg-forest-700"
+          >
+            Go to Available Surplus
+          </Link>
+        </div>
+      </Layout>
+    );
+  }
 
   const confirmPickup = async (pickupId) => {
     setConfirmingId(pickupId);

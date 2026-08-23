@@ -50,12 +50,15 @@ export default function AnalyticsPage() {
   const [loading, setLoading] = useState(true);
 
   useEffect(() => {
+    if (!user) return;
     setLoading(true);
+    setData(null);
     const call = user.role === "business" ? api.businessAnalytics : api.ngoAnalytics;
     call()
       .then(setData)
+      .catch((err) => console.warn("Analytics fetch error:", err))
       .finally(() => setLoading(false));
-  }, [user.role]);
+  }, [user?.id, user?.role]);
 
   if (loading || !data) {
     return (

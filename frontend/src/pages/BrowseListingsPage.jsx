@@ -1,4 +1,5 @@
 import { useEffect, useState } from "react";
+import { Link } from "react-router-dom";
 import {
   Compass,
   Calendar,
@@ -10,11 +11,14 @@ import {
   AlertCircle,
   RefreshCw,
   Clock,
+  ShieldAlert,
 } from "lucide-react";
 import Layout from "../components/Layout";
+import { useAuth } from "../AuthContext";
 import { api } from "../api";
 
 export default function BrowseListingsPage() {
+  const { user } = useAuth();
   const [listings, setListings] = useState([]);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState("");
@@ -27,6 +31,7 @@ export default function BrowseListingsPage() {
   const [claimSuccess, setClaimSuccess] = useState(false);
 
   const load = () => {
+    if (user?.role !== "ngo") return;
     setLoading(true);
     setError("");
     api
@@ -36,7 +41,38 @@ export default function BrowseListingsPage() {
       .finally(() => setLoading(false));
   };
 
-  useEffect(load, []);
+  useEffect(() => {
+    setListings([]);
+    if (user?.role === "ngo") {
+      load();
+    } else {
+      setLoading(false);
+    }
+  }, [user?.id, user?.role]);
+
+  if (user?.role && user.role !== "ngo") {
+    return (
+      <Layout>
+        <div className="bg-white border border-wheat-200 rounded-xl p-8 sm:p-12 text-center shadow-2xs">
+          <div className="w-12 h-12 rounded-full bg-tomato-500/10 text-tomato-600 flex items-center justify-center mx-auto mb-4 border border-tomato-500/20">
+            <ShieldAlert className="w-6 h-6 text-tomato-500" />
+          </div>
+          <h2 className="font-display text-xl text-forest-800 font-semibold mb-2">
+            NGO / Food Bank Account Required
+          </h2>
+          <p className="text-xs sm:text-sm text-forest-800/60 max-w-md mx-auto mb-6">
+            Browsing and claiming surplus donations is reserved for verified NGO and food bank partners.
+          </p>
+          <Link
+            to="/dashboard/inventory"
+            className="inline-flex items-center gap-2 px-5 py-2.5 bg-forest-800 text-wheat-50 rounded-lg text-xs sm:text-sm font-medium hover:bg-forest-700"
+          >
+            Go to Business Inventory
+          </Link>
+        </div>
+      </Layout>
+    );
+  }
 
   const openClaimModal = (listing) => {
     setSelectedListing(listing);

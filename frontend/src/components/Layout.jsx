@@ -60,7 +60,7 @@ export default function Layout({ children }) {
     { to: "/dashboard/analytics", label: "Impact & Analytics", eyebrow: "03", icon: TrendingUp },
   ];
 
-  const links = user?.role === "business" ? businessLinks : ngoLinks;
+  const links = user?.role === "business" ? businessLinks : user?.role === "ngo" ? ngoLinks : [];
 
   const handleSignOut = () => {
     logout();

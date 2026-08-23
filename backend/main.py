@@ -57,7 +57,7 @@ def register(payload: schemas.UserCreate, db: Session = Depends(get_db)):
     db.commit()
     db.refresh(user)
 
-    token = create_access_token({"sub": str(user.id)})
+    token = create_access_token({"sub": str(user.id), "email": user.email, "role": user.role.value})
     return schemas.Token(access_token=token, user=schemas.UserOut.model_validate(_user_out(user)))
 
 
@@ -66,7 +66,7 @@ def login(form_data: OAuth2PasswordRequestForm = Depends(), db: Session = Depend
     user = db.query(models.User).filter(models.User.email == form_data.username).first()
     if not user or not verify_password(form_data.password, user.hashed_password):
         raise HTTPException(401, "Incorrect email or password")
-    token = create_access_token({"sub": str(user.id)})
+    token = create_access_token({"sub": str(user.id), "email": user.email, "role": user.role.value})
     return schemas.Token(access_token=token, user=schemas.UserOut.model_validate(_user_out(user)))
 
 

@@ -1,4 +1,5 @@
 import { useEffect, useState } from "react";
+import { Link } from "react-router-dom";
 import {
   Plus,
   Upload,
@@ -15,11 +16,13 @@ import {
   X,
   CheckCircle2,
   Sparkles,
+  ShieldAlert,
 } from "lucide-react";
 import Layout from "../components/Layout";
 import RiskStamp from "../components/RiskStamp";
 import CsvUploadModal from "../components/CsvUploadModal";
 import BarcodeScannerModal from "../components/BarcodeScannerModal";
+import { useAuth } from "../AuthContext";
 import { api } from "../api";
 
 const CATEGORIES = ["produce", "dairy", "bakery", "prepared", "canned", "frozen", "general"];
@@ -35,6 +38,7 @@ const emptyForm = {
 };
 
 export default function InventoryPage() {
+  const { user } = useAuth();
   const [items, setItems] = useState([]);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState("");
@@ -57,6 +61,7 @@ export default function InventoryPage() {
   const [addError, setAddError] = useState("");
 
   const load = () => {
+    if (user?.role !== "business") return;
     setLoading(true);
     setError("");
     api
@@ -66,7 +71,39 @@ export default function InventoryPage() {
       .finally(() => setLoading(false));
   };
 
-  useEffect(load, []);
+  useEffect(() => {
+    setItems([]); // Clear previous user's inventory immediately when user changes
+    if (user?.role === "business") {
+      load();
+    } else {
+      setLoading(false);
+    }
+  }, [user?.id, user?.role]);
+
+  // If authenticated as NGO, display clear role restriction rather than rendering business controls
+  if (user?.role && user.role !== "business") {
+    return (
+      <Layout>
+        <div className="bg-white border border-wheat-200 rounded-xl p-8 sm:p-12 text-center shadow-2xs">
+          <div className="w-12 h-12 rounded-full bg-tomato-500/10 text-tomato-600 flex items-center justify-center mx-auto mb-4 border border-tomato-500/20">
+            <ShieldAlert className="w-6 h-6 text-tomato-500" />
+          </div>
+          <h2 className="font-display text-xl text-forest-800 font-semibold mb-2">
+            Business Account Required
+          </h2>
+          <p className="text-xs sm:text-sm text-forest-800/60 max-w-md mx-auto mb-6">
+            The Inventory Ledger is restricted to Food Business accounts. Your account ({user.org_name}) is registered as an NGO / Food Bank.
+          </p>
+          <Link
+            to="/dashboard/browse"
+            className="inline-flex items-center gap-2 px-5 py-2.5 bg-forest-800 text-wheat-50 rounded-lg text-xs sm:text-sm font-medium hover:bg-forest-700 transition-all shadow-sm"
+          >
+            Go to Available Surplus
+          </Link>
+        </div>
+      </Layout>
+    );
+  }
 
   const updateForm = (k) => (e) => setForm({ ...form, [k]: e.target.value });
 
