@@ -5,6 +5,7 @@
 [![Live Backend](https://img.shields.io/badge/Backend-Render-46E3B7?style=flat-square&logo=render)](https://foodwaste-platform.onrender.com/)
 [![FastAPI](https://img.shields.io/badge/Backend-FastAPI-009688?style=flat-square&logo=fastapi)](https://fastapi.tiangolo.com/)
 [![Python](https://img.shields.io/badge/Language-Python%203.13-3776AB?style=flat-square&logo=python)](https://python.org/)
+[![PostgreSQL](https://img.shields.io/badge/Database-PostgreSQL%20%2F%20SQLite-4169E1?style=flat-square&logo=postgresql)](https://www.postgresql.org/)
 [![React](https://img.shields.io/badge/Frontend-React%2019-61DAFB?style=flat-square&logo=react)](https://react.dev/)
 [![Vite](https://img.shields.io/badge/Build-Vite-646CFF?style=flat-square&logo=vite)](https://vitejs.dev/)
 [![Tailwind CSS](https://img.shields.io/badge/Styling-Tailwind%20CSS-06B6D4?style=flat-square&logo=tailwindcss)](https://tailwindcss.com/)
@@ -14,13 +15,15 @@
 
 ---
 
-## 🌐 Live Demo
+## 🌐 Live Application & API Links
 
-| Component | URL | Hosting Platform |
-|---|---|---|
-| **Live Application (Frontend)** | [foodwaste-platform.vercel.app](https://foodwaste-platform.vercel.app/) | **Vercel** |
-| **Backend API (REST Service)** | [foodwaste-platform.onrender.com](https://foodwaste-platform.onrender.com/) | **Render** |
-| **Interactive API Documentation** | [foodwaste-platform.onrender.com/docs](https://foodwaste-platform.onrender.com/docs) | **Swagger UI / OpenAPI** |
+| Service | URL | Hosting Platform | Purpose |
+|---|---|---|---|
+| **Live Web App (Frontend)** | [foodwaste-platform.vercel.app](https://foodwaste-platform.vercel.app/) | **Vercel** | Interactive Single Page Application for Businesses & NGOs |
+| **Live API Backend** | [foodwaste-platform.onrender.com](https://foodwaste-platform.onrender.com/) | **Render** | Production FastAPI REST Web Service |
+| **Interactive API Documentation** | [foodwaste-platform.onrender.com/docs](https://foodwaste-platform.onrender.com/docs) | **Swagger UI / OpenAPI** | Live interactive API testbed & endpoint specs |
+| **API Alternative Docs** | [foodwaste-platform.onrender.com/redoc](https://foodwaste-platform.onrender.com/redoc) | **ReDoc** | Comprehensive API reference documentation |
+| **GitHub Source Code** | [github.com/preygoti/foodwaste-platform](https://github.com/preygoti/foodwaste-platform) | **GitHub** | Version-controlled repository |
 
 ---
 
@@ -50,7 +53,7 @@ Food waste is one of the world's most pressing ecological and logistical challen
 
 ---
 
-## 🏗️ How the Platform Works
+## 🏗️ System Architecture & Workflow
 
 ```mermaid
 flowchart TD
@@ -84,8 +87,8 @@ flowchart TD
         API --> ANALYTICS
     end
 
-    subgraph Storage ["Database Layer"]
-        DB[("💾 Relational Database<br/>SQLite / PostgreSQL via SQLAlchemy")]
+    subgraph Storage ["Database Layer (SQLAlchemy 2.0 ORM)"]
+        DB[("💾 Relational Database<br/>PostgreSQL (Production) / SQLite (Local)")]
     end
 
     B -->|Logs stock / scans items / lists surplus| F
@@ -110,14 +113,219 @@ flowchart TD
 
 ---
 
+## 🗄️ Relational Database & SQL Schema
+
+Harvest Ledger uses a normalized **Relational SQL Database** mapped via **SQLAlchemy 2.0 ORM**.
+
+- **Production (Render)**: Managed **PostgreSQL** cloud database connected via `psycopg2-binary`.
+- **Local Development**: **SQLite** (`sqlite:///./foodwaste.db`) with zero-configuration fallback.
+
+### Entity-Relationship (ER) Diagram
+
+```mermaid
+erDiagram
+    USERS ||--o{ INVENTORY_ITEMS : "manages (business)"
+    USERS ||--o{ LISTINGS : "creates surplus (business)"
+    USERS ||--o{ PICKUPS : "claims & coordinates (ngo)"
+    INVENTORY_ITEMS ||--o| LISTINGS : "converted to"
+    LISTINGS ||--o{ PICKUPS : "matched with"
+
+    USERS {
+        int id PK
+        varchar email UK
+        varchar hashed_password
+        varchar org_name
+        enum role "business | ngo"
+        varchar address
+        datetime created_at
+    }
+
+    INVENTORY_ITEMS {
+        int id PK
+        int business_id FK
+        varchar name
+        varchar category
+        float quantity
+        varchar unit
+        date purchase_date
+        date expiry_date
+        varchar storage_location
+        float avg_daily_usage
+        datetime created_at
+    }
+
+    LISTINGS {
+        int id PK
+        int business_id FK
+        int inventory_item_id FK
+        varchar title
+        varchar category
+        float quantity
+        varchar unit
+        date expiry_date
+        varchar pickup_location
+        datetime pickup_window_start
+        datetime pickup_window_end
+        enum status "available | matched | completed | expired"
+        text notes
+        datetime created_at
+    }
+
+    PICKUPS {
+        int id PK
+        int listing_id FK
+        int ngo_id FK
+        enum status "pending | confirmed | picked_up | cancelled"
+        datetime scheduled_time
+        float meals_estimate
+        datetime created_at
+    }
+```
+
+---
+
+### Detailed Table Specifications
+
+#### 1. `users` Table
+*Stores authenticated organization accounts for Food Businesses and NGOs.*
+
+| Column Name | SQL Type | Constraints | Description |
+|---|---|---|---|
+| **`id`** | `INTEGER` | **PRIMARY KEY** (Auto-increment) | Unique user / organization ID |
+| **`email`** | `VARCHAR` | `UNIQUE`, `NOT NULL`, `INDEX` | Account email address (case-insensitive login) |
+| **`hashed_password`** | `VARCHAR` | `NOT NULL` | One-way salted Bcrypt cryptographic password hash |
+| **`org_name`** | `VARCHAR` | `NOT NULL` | Registered store or NGO organization name |
+| **`role`** | `VARCHAR / ENUM` | `NOT NULL` | Account authorization type: `'business'` or `'ngo'` |
+| **`address`** | `VARCHAR` | `DEFAULT ""` | Physical location / pickup facility address |
+| **`created_at`** | `TIMESTAMP` | `DEFAULT CURRENT_TIMESTAMP` | Account registration timestamp |
+
+---
+
+#### 2. `inventory_items` Table
+*Stores food inventory tracked by Food Businesses.*
+
+| Column Name | SQL Type | Constraints | Description |
+|---|---|---|---|
+| **`id`** | `INTEGER` | **PRIMARY KEY** (Auto-increment) | Unique inventory item ID |
+| **`business_id`** | `INTEGER` | **FOREIGN KEY** $\rightarrow$ `users(id)` | Owner business user ID (`ON DELETE CASCADE`) |
+| **`name`** | `VARCHAR` | `NOT NULL` | Food product name (e.g. *"Organic Whole Milk"*) |
+| **`category`** | `VARCHAR` | `DEFAULT "general"` | Category (`produce`, `dairy`, `bakery`, `prepared`, etc.) |
+| **`quantity`** | `FLOAT` | `NOT NULL` | In-stock quantity |
+| **`unit`** | `VARCHAR` | `DEFAULT "kg"` | Measurement unit (`kg`, `liter`, `boxes`, `items`) |
+| **`purchase_date`** | `DATE` | `DEFAULT CURRENT_DATE` | Date inventory was acquired |
+| **`expiry_date`** | `DATE` | `NOT NULL` | Expiration / Best-before date |
+| **`storage_location`** | `VARCHAR` | `DEFAULT ""` | Storage facility zone (e.g. *"Cold Storage A"*) |
+| **`avg_daily_usage`** | `FLOAT` | `DEFAULT 1.0` | Daily consumption velocity (demand proxy) |
+| **`created_at`** | `TIMESTAMP` | `DEFAULT CURRENT_TIMESTAMP` | Record creation timestamp |
+
+---
+
+#### 3. `listings` Table
+*Stores surplus food published to the public marketplace for NGO donation.*
+
+| Column Name | SQL Type | Constraints | Description |
+|---|---|---|---|
+| **`id`** | `INTEGER` | **PRIMARY KEY** (Auto-increment) | Unique marketplace listing ID |
+| **`business_id`** | `INTEGER` | **FOREIGN KEY** $\rightarrow$ `users(id)` | Publishing business user ID (`ON DELETE CASCADE`) |
+| **`inventory_item_id`**| `INTEGER` | **FOREIGN KEY** $\rightarrow$ `inventory_items(id)` | Associated inventory record (optional, `ON DELETE SET NULL`) |
+| **`title`** | `VARCHAR` | `NOT NULL` | Donation headline / description |
+| **`category`** | `VARCHAR` | `DEFAULT "general"` | Food category |
+| **`quantity`** | `FLOAT` | `NOT NULL` | Quantity available for donation |
+| **`unit`** | `VARCHAR` | `DEFAULT "kg"` | Measurement unit |
+| **`expiry_date`** | `DATE` | `NOT NULL` | Expiration date of surplus |
+| **`pickup_location`** | `VARCHAR` | `NOT NULL` | Collection address |
+| **`pickup_window_start`**| `TIMESTAMP` | `NULLABLE` | Earliest pickup time |
+| **`pickup_window_end`** | `TIMESTAMP` | `NULLABLE` | Latest pickup time |
+| **`status`** | `VARCHAR / ENUM` | `DEFAULT "available"` | Status: `'available'`, `'matched'`, `'completed'`, `'expired'` |
+| **`notes`** | `TEXT` | `DEFAULT ""` | Special handling or dietary guidelines |
+| **`created_at`** | `TIMESTAMP` | `DEFAULT CURRENT_TIMESTAMP` | Publishing timestamp |
+
+---
+
+#### 4. `pickups` Table
+*Coordinates claim requests, scheduling, and fulfillment between NGOs and donor businesses.*
+
+| Column Name | SQL Type | Constraints | Description |
+|---|---|---|---|
+| **`id`** | `INTEGER` | **PRIMARY KEY** (Auto-increment) | Unique pickup transaction ID |
+| **`listing_id`** | `INTEGER` | **FOREIGN KEY** $\rightarrow$ `listings(id)` | Claimed surplus listing (`ON DELETE CASCADE`) |
+| **`ngo_id`** | `INTEGER` | **FOREIGN KEY** $\rightarrow$ `users(id)` | Requesting NGO user ID (`ON DELETE CASCADE`) |
+| **`status`** | `VARCHAR / ENUM` | `DEFAULT "pending"` | Status: `'pending'`, `'confirmed'`, `'picked_up'`, `'cancelled'` |
+| **`scheduled_time`** | `TIMESTAMP` | `NULLABLE` | Target collection date and time |
+| **`meals_estimate`** | `FLOAT` | `DEFAULT 0.0` | Projected meal portions served to the community |
+| **`created_at`** | `TIMESTAMP` | `DEFAULT CURRENT_TIMESTAMP` | Claim request timestamp |
+
+---
+
+### Standard SQL DDL (Table Creation Code)
+
+```sql
+-- 1. Users Table
+CREATE TABLE users (
+    id SERIAL PRIMARY KEY,
+    email VARCHAR(255) UNIQUE NOT NULL,
+    hashed_password VARCHAR(255) NOT NULL,
+    org_name VARCHAR(255) NOT NULL,
+    role VARCHAR(50) NOT NULL CHECK (role IN ('business', 'ngo')),
+    address VARCHAR(255) DEFAULT '',
+    created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP
+);
+
+-- 2. Inventory Items Table
+CREATE TABLE inventory_items (
+    id SERIAL PRIMARY KEY,
+    business_id INTEGER NOT NULL REFERENCES users(id) ON DELETE CASCADE,
+    name VARCHAR(255) NOT NULL,
+    category VARCHAR(100) DEFAULT 'general',
+    quantity FLOAT NOT NULL,
+    unit VARCHAR(50) DEFAULT 'kg',
+    purchase_date DATE DEFAULT CURRENT_DATE,
+    expiry_date DATE NOT NULL,
+    storage_location VARCHAR(255) DEFAULT '',
+    avg_daily_usage FLOAT DEFAULT 1.0,
+    created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP
+);
+
+-- 3. Marketplace Listings Table
+CREATE TABLE listings (
+    id SERIAL PRIMARY KEY,
+    business_id INTEGER NOT NULL REFERENCES users(id) ON DELETE CASCADE,
+    inventory_item_id INTEGER REFERENCES inventory_items(id) ON DELETE SET NULL,
+    title VARCHAR(255) NOT NULL,
+    category VARCHAR(100) DEFAULT 'general',
+    quantity FLOAT NOT NULL,
+    unit VARCHAR(50) DEFAULT 'kg',
+    expiry_date DATE NOT NULL,
+    pickup_location VARCHAR(255) NOT NULL,
+    pickup_window_start TIMESTAMP,
+    pickup_window_end TIMESTAMP,
+    status VARCHAR(50) DEFAULT 'available' CHECK (status IN ('available', 'matched', 'completed', 'expired')),
+    notes TEXT DEFAULT '',
+    created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP
+);
+
+-- 4. Pickups Table
+CREATE TABLE pickups (
+    id SERIAL PRIMARY KEY,
+    listing_id INTEGER NOT NULL REFERENCES listings(id) ON DELETE CASCADE,
+    ngo_id INTEGER NOT NULL REFERENCES users(id) ON DELETE CASCADE,
+    status VARCHAR(50) DEFAULT 'pending' CHECK (status IN ('pending', 'confirmed', 'picked_up', 'cancelled')),
+    scheduled_time TIMESTAMP,
+    meals_estimate FLOAT DEFAULT 0.0,
+    created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP
+);
+```
+
+---
+
 ## ⚡ Core Features & Capabilities
 
-### 1. 📦 Inventory Management & Multi-Modal Entry
-- **Manual Logging**: Fast entry form capturing name, category (`produce`, `dairy`, `bakery`, `prepared`, `canned`, `frozen`, `general`), quantity, unit, expiry date, average daily usage, and storage location.
+### 1. 📦 Multi-Modal Inventory Ingestion
+- **Manual Logging**: Comprehensive entry form capturing item name, category (`produce`, `dairy`, `bakery`, `prepared`, `canned`, `frozen`, `general`), quantity, unit, expiry date, average daily usage, and storage location.
 - **Bulk CSV Upload**:
   - Downloadable sample CSV template (`item_name,category,quantity,unit,expiry_date,avg_daily_usage,storage_location`).
   - Pre-flight client-side validation with row-by-row error reporting (catches negative quantities, malformed dates, missing headers).
-  - High-performance bulk ingestion via `POST /inventory/bulk-csv`.
+  - High-performance bulk ingestion endpoint via `POST /inventory/bulk-csv`.
 - **Camera Barcode & QR Scanner**:
   - Mobile & desktop HTML5 camera stream with environment-facing lens support.
   - Live scanning of 1D barcodes (UPC-A, EAN-13, Code 128) and 2D QR codes.
@@ -125,7 +333,7 @@ flowchart TD
   - Camera-denied manual barcode entry fallback.
 
 ### 2. 🧠 AI-Based Waste Risk Engine
-Each inventory item is scored by a heuristic risk algorithm combining **shelf-life urgency** and **stock-to-demand ratio**:
+Each inventory item is dynamically scored by a heuristic risk algorithm combining **shelf-life urgency** and **stock-to-demand ratio**:
 
 $$
 \text{Days to Expiry (DTE)} = \text{expiry date} - \text{today}
@@ -153,7 +361,7 @@ $$
   - 🔴 **HIGH RISK** ($\ge 70$): Immediate waste danger — recommended for marketplace listing.
   - 🟡 **WATCH** ($40 - 69$): Approaching critical threshold.
   - 🟢 **FRESH** ($< 40$): Healthy turnover rate.
-- **Smart Reorder Recommendation**: Recommends optimal purchase quantity to cover a 7-day safety buffer without adding to spoilage risk.
+- **Smart Reorder Recommendation**: Recommends optimal purchase quantity to maintain a 7-day safety buffer without causing spoilage.
 
 ### 3. 🏪 Redistribution Marketplace
 - **One-Click Surplus Listing**: Food businesses convert at-risk inventory into public donations with custom quantities and pickup locations.
@@ -192,19 +400,20 @@ $$
 
 | Layer | Technology | Purpose |
 |---|---|---|
-| **Frontend Framework** | **React 19** | Modern component-driven UI architecture |
-| **Build Tool** | **Vite 8** | Ultra-fast HMR and optimized production bundling |
+| **Frontend Framework** | **React 19** | Component-driven Single Page Application UI |
+| **Build Tool** | **Vite 8** | High-speed build tool and hot-module replacement |
 | **Styling & Design** | **Tailwind CSS 3.4** | Utility-first responsive design system |
-| **Routing** | **React Router v7** | Client-side routing with role-protected guards |
+| **Routing** | **React Router v7** | Role-protected client-side routing |
 | **Data Visualization** | **Recharts 3** | Responsive ecological & operational impact charts |
 | **Camera & Barcode** | **html5-qrcode** | HTML5 cross-platform barcode and QR code scanner |
 | **CSV Parsing** | **PapaParse** | High-performance client-side CSV validation |
 | **Icons** | **Lucide React** | Modern, lightweight SVG iconography |
-| **Backend Framework** | **FastAPI 0.115** | High-performance asynchronous Python REST API |
+| **Backend Framework** | **FastAPI 0.115** | Asynchronous Python REST API framework |
 | **Application Server** | **Uvicorn** | ASGI web server implementation |
-| **ORM & Database** | **SQLAlchemy 2.0** + **SQLite / PostgreSQL** | Database modeling, sessions, and migrations |
+| **Database & ORM** | **PostgreSQL** + **SQLAlchemy 2.0** | Production relational SQL database and ORM |
+| **Local Database** | **SQLite** | Zero-configuration offline local database |
 | **Data Validation** | **Pydantic v2** | Strict request schema validation and serialization |
-| **Security & Auth** | **Python-JOSE** + **Passlib (Bcrypt)** | JWT token authorization and password hashing |
+| **Security & Auth** | **Python-JOSE** + **Passlib (Bcrypt)** | JWT token authorization and salted password hashing |
 | **Deployment** | **Vercel** + **Render** | Cloud hosting for frontend and backend web services |
 
 ---
@@ -215,14 +424,15 @@ $$
 foodwaste-platform/
 ├── backend/
 │   ├── auth.py                  # JWT creation, bcrypt hashing, role dependencies
-│   ├── database.py              # SQLAlchemy engine & session factory
-│   ├── main.py                  # FastAPI application & REST endpoint routers
+│   ├── database.py              # SQLAlchemy engine, PostgreSQL/SQLite URL normalization
+│   ├── main.py                  # FastAPI application, CORS configuration & REST routers
 │   ├── models.py                # Database models (User, InventoryItem, Listing, Pickup)
-│   ├── render.yaml              # Render cloud deployment specification
-│   ├── requirements.txt         # Python backend dependencies
+│   ├── render.yaml              # Render cloud deployment blueprint with PostgreSQL
+│   ├── requirements.txt         # Python backend dependencies (FastAPI, SQLAlchemy, psycopg2)
 │   ├── risk_engine.py           # AI risk scoring & reorder recommendation logic
 │   ├── schemas.py               # Pydantic request/response schemas
-│   └── test_platform_full.py    # Automated end-to-end test suite
+│   ├── test_platform_full.py    # Automated end-to-end test suite (8 tests)
+│   └── .env.example             # Backend environment template (DATABASE_URL, JWT_SECRET)
 │
 ├── frontend/
 │   ├── public/                  # Static assets & SVG icons
@@ -244,13 +454,14 @@ foodwaste-platform/
 │   │   │   └── Register.jsx            # Dual-role organization onboarding
 │   │   ├── api.js               # Centralized fetch client for backend API
 │   │   ├── App.jsx              # Application router & protected routes
-│   │   ├── AuthContext.jsx      # User session state & token management
+│   │   ├── AuthContext.jsx      # Multi-tab synchronized auth & token state
 │   │   ├── index.css            # Global CSS, scrollbars & font imports
 │   │   └── main.jsx             # React entry point
 │   ├── package.json             # Frontend dependencies & npm scripts
 │   ├── tailwind.config.js       # Custom palette (forest, wheat, tomato, gold)
 │   ├── vercel.json              # Vercel SPA routing rewrite rules
-│   └── vite.config.js           # Vite build configuration
+│   ├── vite.config.js           # Vite build configuration
+│   └── .env.example             # Frontend environment template (VITE_API_URL)
 │
 └── README.md                    # Project documentation
 ```
@@ -307,7 +518,7 @@ npm install
 npm run dev
 ```
 - **Web App**: `http://localhost:5173`
-- The frontend connects to `http://localhost:8000` by default. To point to a live backend, create a `frontend/.env` file:
+- The frontend connects to `http://localhost:8000` locally. To point to the live cloud backend, create `frontend/.env`:
   ```env
   VITE_API_URL=https://foodwaste-platform.onrender.com
   ```
@@ -316,7 +527,7 @@ npm run dev
 
 ## 🧪 Testing the Full Workflow
 
-1. Open `http://localhost:5173` and register two accounts in two separate browser windows (or incognito):
+1. Open `http://localhost:5173` (or the live URL) and register two accounts:
    - **Account 1**: Register as **Food Business** (e.g. `Fresh Market`).
    - **Account 2**: Register as **NGO / Food Bank** (e.g. `City Food Rescue`).
 2. **As Food Business**:
