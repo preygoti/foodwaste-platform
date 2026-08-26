@@ -410,10 +410,14 @@ def browse_listings(
     db: Session = Depends(get_db),
     user: models.User = Depends(get_current_user),
 ):
-    """NGOs browse available listings (AI-matching: sorted by soonest expiry = highest urgency)."""
+    """NGOs browse available listings (AI-matching: sorted by soonest expiry = highest urgency). Expired items are strictly excluded."""
     q = db.query(models.Listing)
     if status_filter:
         q = q.filter(models.Listing.status == status_filter)
+    
+    # Food safety: Never show expired food listings to NGOs
+    q = q.filter(models.Listing.expiry_date >= date.today())
+
     listings = q.order_by(models.Listing.expiry_date.asc()).all()
     return [_listing_out(l, db) for l in listings]
 
@@ -449,6 +453,8 @@ def request_pickup(
         raise HTTPException(404, "Listing not found")
     if listing.status != models.ListingStatus.available:
         raise HTTPException(400, "Listing is no longer available")
+    if listing.expiry_date < date.today():
+        raise HTTPException(400, "Cannot claim an expired listing. This food donation has expired.")
 
     pickup = models.Pickup(
         listing_id=payload.listing_id, ngo_id=user.id,
