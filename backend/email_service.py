@@ -1,9 +1,7 @@
 import os
-import json
-import urllib.request
-import urllib.error
 import logging
 from typing import Tuple, Optional
+import requests
 
 logger = logging.getLogger("uvicorn")
 
@@ -12,8 +10,9 @@ def send_otp_email(to_email: str, otp_code: str) -> Tuple[bool, Optional[str]]:
     """
     Dispatches a secure 6-digit OTP email for password reset via the Resend HTTP API.
     - Uses RESEND_API_KEY and EMAILS_FROM environment variables.
+    - Sends POST to https://api.resend.com/emails.
     - Returns (True, None) on success.
-    - Returns (False, error_message) on delivery failure.
+    - Returns (False, error_message) on failure.
     """
     resend_api_key = os.environ.get("RESEND_API_KEY", "").strip()
     from_email = os.environ.get("EMAILS_FROM", "Harvest Ledger <onboarding@resend.dev>").strip()
@@ -58,13 +57,14 @@ def send_otp_email(to_email: str, otp_code: str) -> Tuple[bool, Optional[str]]:
         is_production = database_url.startswith("postgres") or os.environ.get("RENDER")
 
         if is_production:
-            logger.error("RESEND_API_KEY is not configured in production environment.")
+            logger.error("[Resend] Cannot dispatch email: RESEND_API_KEY is missing from Render environment variables.")
             return False, "Email service not configured (missing RESEND_API_KEY in Render environment)"
 
-        logger.info(f"Local dev mode: OTP verification code for {to_email} generated: {otp_code}")
+        logger.info(f"[Resend-Dev] Local mode: verification code generated successfully for recipient.")
         return True, None
 
-    # Call Resend HTTPS REST API
+    logger.info(f"[Resend] Dispatching email to {to_email} with sender '{from_email}'...")
+
     url = "https://api.resend.com/emails"
     headers = {
         "Authorization": f"Bearer {resend_api_key}",
@@ -79,30 +79,27 @@ def send_otp_email(to_email: str, otp_code: str) -> Tuple[bool, Optional[str]]:
     }
 
     try:
-        req = urllib.request.Request(
-            url,
-            data=json.dumps(payload).encode("utf-8"),
-            headers=headers,
-            method="POST",
-        )
-        with urllib.request.urlopen(req, timeout=15) as resp:
-            status_code = resp.getcode()
-            resp_body = resp.read().decode("utf-8")
-            if status_code in (200, 201):
-                logger.info(f"Password reset OTP successfully sent to {to_email} via Resend API: {resp_body}")
-                return True, None
-            else:
-                logger.error(f"Resend API returned non-200 status {status_code}: {resp_body}")
-                return False, f"Resend API error (status {status_code})"
-    except urllib.error.HTTPError as e:
-        err_body = e.read().decode("utf-8")
-        logger.error(f"Resend HTTPError {e.code}: {err_body}")
-        try:
-            err_json = json.loads(err_body)
-            err_detail = err_json.get("message") or err_json.get("error") or err_body
-        except Exception:
-            err_detail = err_body
-        return False, f"Email delivery failed: {err_detail}"
+        response = requests.post(url, json=payload, headers=headers, timeout=15)
+        logger.info(f"[Resend] API response status code: {response.status_code}")
+
+        if response.status_code in (200, 201):
+            res_data = response.json()
+            email_id = res_data.get("id", "unknown")
+            logger.info(f"[Resend] Email successfully sent with ID '{email_id}' to {to_email}")
+            return True, None
+        else:
+            err_text = response.text
+            logger.error(f"[Resend] API failed with status {response.status_code}: {err_text}")
+            try:
+                err_data = response.json()
+                err_msg = err_data.get("message") or err_data.get("error") or err_text
+            except Exception:
+                err_msg = err_text
+            return False, f"Resend API error ({response.status_code}): {err_msg}"
+
+    except requests.exceptions.RequestException as e:
+        logger.error(f"[Resend] Request exception contacting api.resend.com: {e}")
+        return False, f"Email service request failed: {str(e)}"
     except Exception as e:
-        logger.error(f"Failed to call Resend API: {e}")
-        return False, f"Email service unreachable: {str(e)}"
+        logger.error(f"[Resend] Unexpected error: {e}")
+        return False, f"Unexpected email error: {str(e)}"
