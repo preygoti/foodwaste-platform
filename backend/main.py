@@ -373,6 +373,24 @@ def create_listing(
     db: Session = Depends(get_db),
     user: models.User = Depends(require_role("business")),
 ):
+    # Food safety check: Expired items cannot be donated
+    if payload.expiry_date < date.today():
+        raise HTTPException(
+            status_code=400,
+            detail="Cannot list expired food items as surplus donation for NGOs. Expired goods must be logged for safe disposal.",
+        )
+
+    if payload.inventory_item_id:
+        inv_item = db.query(models.InventoryItem).filter(
+            models.InventoryItem.id == payload.inventory_item_id,
+            models.InventoryItem.business_id == user.id,
+        ).first()
+        if inv_item and inv_item.expiry_date < date.today():
+            raise HTTPException(
+                status_code=400,
+                detail="Cannot list an expired inventory item into the surplus marketplace.",
+            )
+
     listing = models.Listing(
         business_id=user.id, inventory_item_id=payload.inventory_item_id,
         title=payload.title, category=payload.category, quantity=payload.quantity,

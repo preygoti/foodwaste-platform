@@ -152,7 +152,18 @@ class TestFoodWastePlatform(unittest.TestCase):
         biz_headers = {"Authorization": f"Bearer {self.biz_token}"}
         ngo_headers = {"Authorization": f"Bearer {self.ngo_token}"}
 
-        # 1. Business lists surplus item
+        # 1. Business attempts to list an expired item -> MUST return 400 Bad Request
+        res_expired_listing = client.post("/listings", headers=biz_headers, json={
+            "title": "Expired Yoghurt",
+            "category": "dairy",
+            "quantity": 10.0,
+            "unit": "kg",
+            "expiry_date": (date.today() - timedelta(days=2)).isoformat(),
+            "pickup_location": "Storefront"
+        })
+        self.assertEqual(res_expired_listing.status_code, 400)
+
+        # 2. Business lists valid surplus item
         res_listing = client.post("/listings", headers=biz_headers, json={
             "inventory_item_id": self.sample_item_id,
             "title": "Fresh Organic Milk Surplus",
