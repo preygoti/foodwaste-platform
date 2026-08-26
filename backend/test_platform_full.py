@@ -262,5 +262,66 @@ class TestFoodWastePlatform(unittest.TestCase):
             elif "DATABASE_URL" in os.environ:
                 del os.environ["DATABASE_URL"]
 
+    def test_09_forgot_password_otp_and_reset_flow(self):
+        # 1. Request OTP for the registered business email
+        res_forgot = client.post("/auth/forgot-password", json={"email": self.biz_email})
+        self.assertEqual(res_forgot.status_code, 200)
+        forgot_data = res_forgot.json()
+        self.assertIn("message", forgot_data)
+        self.assertEqual(forgot_data["email"], self.biz_email)
+        otp_code = forgot_data.get("debug_otp")
+        self.assertIsNotNone(otp_code)
+        self.assertEqual(len(otp_code), 6)
+
+        # 2. Test invalid OTP rejection
+        res_invalid_otp = client.post("/auth/verify-otp", json={"email": self.biz_email, "otp": "000000"})
+        self.assertEqual(res_invalid_otp.status_code, 400)
+
+        # 3. Test valid OTP verification
+        res_valid_otp = client.post("/auth/verify-otp", json={"email": self.biz_email, "otp": otp_code})
+        self.assertEqual(res_valid_otp.status_code, 200)
+        self.assertEqual(res_valid_otp.json()["status"], "ok")
+
+        # 4. Reset password
+        new_pass = "brandNewPassword456"
+        res_reset = client.post("/auth/reset-password", json={
+            "email": self.biz_email,
+            "otp": otp_code,
+            "new_password": new_pass
+        })
+        self.assertEqual(res_reset.status_code, 200)
+        self.assertEqual(res_reset.json()["status"], "ok")
+
+        # 5. Verify old password no longer works
+        res_old_login = client.post("/auth/login", data={"username": self.biz_email, "password": "password123"})
+        self.assertEqual(res_old_login.status_code, 401)
+
+        # 6. Verify new password works
+        res_new_login = client.post("/auth/login", data={"username": self.biz_email, "password": new_pass})
+        self.assertEqual(res_new_login.status_code, 200)
+        self.assertIn("access_token", res_new_login.json())
+
+        # 7. Verify OTP cannot be reused
+        res_reuse = client.post("/auth/reset-password", json={
+            "email": self.biz_email,
+            "otp": otp_code,
+            "new_password": "anotherPassword"
+        })
+        self.assertEqual(res_reuse.status_code, 400)
+
+    def test_10_food_rescue_dashboard_metrics(self):
+        biz_headers = {"Authorization": f"Bearer {self.biz_token}"}
+        res = client.get("/analytics/dashboard", headers=biz_headers)
+        self.assertEqual(res.status_code, 200)
+        data = res.json()
+        self.assertIn("listings_active", data)
+        self.assertIn("food_rescued_kg", data)
+        self.assertIn("co2_prevented_kg", data)
+        self.assertIn("ngos_active", data)
+        self.assertIn("category_breakdown", data)
+        self.assertIn("top_donors", data)
+        self.assertIn("recent_rescue_operations", data)
+        self.assertIsInstance(data["category_breakdown"], list)
+
 if __name__ == "__main__":
     unittest.main()

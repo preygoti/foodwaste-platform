@@ -1,4 +1,6 @@
 import os
+import secrets
+import hashlib
 from datetime import date, datetime, timedelta
 from typing import List, Optional
 
@@ -13,11 +15,12 @@ import schemas
 from database import engine, get_db, Base
 from auth import (
     get_password_hash, verify_password, create_access_token,
-    get_current_user, require_role,
+    get_current_user, require_role, SECRET_KEY,
 )
 from risk_engine import (
     days_to_expiry, compute_risk_score, risk_level, reorder_recommendation,
 )
+from email_service import send_otp_email
 
 Base.metadata.create_all(bind=engine)
 
@@ -93,6 +96,113 @@ def login(form_data: OAuth2PasswordRequestForm = Depends(), db: Session = Depend
 @app.get("/auth/me", response_model=schemas.UserOut)
 def me(current_user: models.User = Depends(get_current_user)):
     return schemas.UserOut.model_validate(_user_out(current_user))
+
+
+@app.post("/auth/forgot-password", response_model=schemas.ForgotPasswordResponse)
+def forgot_password(payload: schemas.ForgotPasswordRequest, db: Session = Depends(get_db)):
+    norm_email = str(payload.email).strip().lower()
+    user = db.query(models.User).filter(func.lower(models.User.email) == norm_email).first()
+    if not user:
+        raise HTTPException(404, "No registered account found with this email address")
+
+    # Invalidate previous unused OTPs
+    db.query(models.PasswordResetOTP).filter(
+        func.lower(models.PasswordResetOTP.email) == norm_email,
+        models.PasswordResetOTP.is_used == False
+    ).update({"is_used": True})
+
+    # Generate secure 6-digit numeric OTP
+    otp_code = f"{secrets.randbelow(900000) + 100000}"
+    hashed = hashlib.sha256((norm_email + otp_code + SECRET_KEY).encode()).hexdigest()
+    expires_at = datetime.utcnow() + timedelta(minutes=10)
+
+    record = models.PasswordResetOTP(
+        email=norm_email,
+        hashed_otp=hashed,
+        expires_at=expires_at,
+        is_used=False,
+        attempts=0,
+    )
+    db.add(record)
+    db.commit()
+
+    # Send email via SMTP (or logged)
+    send_otp_email(norm_email, otp_code)
+
+    # In dev/testing when SMTP is not configured, provide debug_otp
+    smtp_host = os.environ.get("SMTP_HOST", "").strip()
+    debug_otp = otp_code if not smtp_host else None
+
+    return schemas.ForgotPasswordResponse(
+        message="Verification code sent to your email address (Valid for 10 minutes)",
+        email=norm_email,
+        debug_otp=debug_otp,
+    )
+
+
+@app.post("/auth/verify-otp", response_model=schemas.GenericResponse)
+def verify_otp(payload: schemas.VerifyOtpRequest, db: Session = Depends(get_db)):
+    norm_email = str(payload.email).strip().lower()
+    otp_code = payload.otp.strip()
+
+    record = db.query(models.PasswordResetOTP).filter(
+        func.lower(models.PasswordResetOTP.email) == norm_email,
+        models.PasswordResetOTP.is_used == False
+    ).order_by(models.PasswordResetOTP.created_at.desc()).first()
+
+    if not record:
+        raise HTTPException(400, "No active verification code found. Please request a new code.")
+
+    if record.attempts >= 5:
+        record.is_used = True
+        db.commit()
+        raise HTTPException(400, "Too many incorrect attempts. Please request a new code.")
+
+    if datetime.utcnow() > record.expires_at:
+        record.is_used = True
+        db.commit()
+        raise HTTPException(400, "Verification code has expired. Please request a new code.")
+
+    expected_hash = hashlib.sha256((norm_email + otp_code + SECRET_KEY).encode()).hexdigest()
+    if record.hashed_otp != expected_hash:
+        record.attempts += 1
+        db.commit()
+        raise HTTPException(400, "Invalid verification code. Please check and try again.")
+
+    return schemas.GenericResponse(status="ok", message="Verification code confirmed.")
+
+
+@app.post("/auth/reset-password", response_model=schemas.GenericResponse)
+def reset_password(payload: schemas.ResetPasswordRequest, db: Session = Depends(get_db)):
+    norm_email = str(payload.email).strip().lower()
+    otp_code = payload.otp.strip()
+
+    if len(payload.new_password) < 6:
+        raise HTTPException(400, "Password must be at least 6 characters long")
+
+    record = db.query(models.PasswordResetOTP).filter(
+        func.lower(models.PasswordResetOTP.email) == norm_email,
+        models.PasswordResetOTP.is_used == False
+    ).order_by(models.PasswordResetOTP.created_at.desc()).first()
+
+    if not record or datetime.utcnow() > record.expires_at:
+        raise HTTPException(400, "Invalid or expired verification code.")
+
+    expected_hash = hashlib.sha256((norm_email + otp_code + SECRET_KEY).encode()).hexdigest()
+    if record.hashed_otp != expected_hash:
+        record.attempts += 1
+        db.commit()
+        raise HTTPException(400, "Invalid verification code.")
+
+    user = db.query(models.User).filter(func.lower(models.User.email) == norm_email).first()
+    if not user:
+        raise HTTPException(404, "User account not found.")
+
+    user.hashed_password = get_password_hash(payload.new_password)
+    record.is_used = True
+    db.commit()
+
+    return schemas.GenericResponse(status="ok", message="Password reset successfully. You can now sign in.")
 
 
 def _user_out(user: models.User):
@@ -430,4 +540,109 @@ def ngo_analytics(
         completed_pickups=len(completed),
         meals_received=round(meals, 1),
         active_listings_nearby=active_nearby,
+    )
+
+
+@app.get("/analytics/dashboard", response_model=schemas.FoodRescueDashboardOut)
+def food_rescue_dashboard(
+    db: Session = Depends(get_db),
+    current_user: models.User = Depends(get_current_user),
+):
+    # 1. Active Listings
+    listings_active = db.query(models.Listing).filter(models.Listing.status == models.ListingStatus.available).count()
+
+    # 2. Pickups & Food Rescued
+    all_pickups = db.query(models.Pickup).all()
+    completed_pickups = [p for p in all_pickups if p.status == models.PickupStatus.picked_up]
+
+    total_rescued_kg = sum(
+        (p.listing.quantity if p.listing and p.listing.quantity else (p.meals_estimate / MEALS_PER_KG if p.meals_estimate else 0.0))
+        for p in completed_pickups
+    )
+    if total_rescued_kg == 0.0:
+        completed_listings = db.query(models.Listing).filter(models.Listing.status == models.ListingStatus.completed).all()
+        total_rescued_kg = sum(l.quantity for l in completed_listings)
+
+    co2_prevented_kg = round(total_rescued_kg * CO2E_PER_KG_FOOD_WASTE, 1)
+
+    # 3. Active NGOs
+    active_ngos_count = len(set(p.ngo_id for p in all_pickups))
+    if active_ngos_count == 0:
+        active_ngos_count = db.query(models.User).filter(models.User.role == models.UserRole.ngo).count()
+
+    # 4. Category Breakdown (Last 30 Days / All Time)
+    categories = ["Cooked Meals", "Bread & Bakery", "Fruits & Veg", "Dairy", "Grains", "Packaged"]
+    cat_map = {c: 0.0 for c in categories}
+
+    for l in db.query(models.Listing).all():
+        cat_lower = (l.category or "general").lower()
+        if "bakery" in cat_lower or "bread" in cat_lower:
+            cat_map["Bread & Bakery"] += l.quantity
+        elif "produce" in cat_lower or "fruit" in cat_lower or "veg" in cat_lower:
+            cat_map["Fruits & Veg"] += l.quantity
+        elif "dairy" in cat_lower or "milk" in cat_lower or "cheese" in cat_lower:
+            cat_map["Dairy"] += l.quantity
+        elif "grain" in cat_lower or "cereal" in cat_lower or "rice" in cat_lower:
+            cat_map["Grains"] += l.quantity
+        elif "cooked" in cat_lower or "prepared" in cat_lower:
+            cat_map["Cooked Meals"] += l.quantity
+        else:
+            cat_map["Packaged"] += l.quantity
+
+    category_breakdown = [
+        schemas.CategoryRescueStat(category=c, quantity_kg=round(cat_map[c], 1))
+        for c in categories
+    ]
+
+    # 5. Top Donor Partners
+    donor_map = {}
+    for l in db.query(models.Listing).all():
+        b_name = l.business.org_name if l.business else "Food Donor"
+        donor_map[b_name] = donor_map.get(b_name, 0.0) + (l.quantity or 0.0)
+
+    top_donors = [
+        schemas.TopDonorStat(donor_name=name, quantity_kg=round(qty, 1))
+        for name, qty in sorted(donor_map.items(), key=lambda x: x[1], reverse=True)[:5]
+    ]
+
+    # 6. Recent Rescue Operations
+    recent_ops = []
+    recent_pickups = db.query(models.Pickup).order_by(models.Pickup.created_at.desc()).limit(10).all()
+    for p in recent_pickups:
+        listing = p.listing
+        donor_name = listing.business.org_name if listing and listing.business else "Food Business Partner"
+        food_title = listing.title if listing else "Surplus Food"
+        qty = listing.quantity if listing else 0.0
+        unit = listing.unit if listing else "kg"
+        ngo_name = p.ngo.org_name if p.ngo else "Community Relief"
+        listing_code = f"LST-{4800 + (p.listing_id or 1)}"
+
+        status_display = "Pending"
+        if p.status == models.PickupStatus.picked_up:
+            status_display = "Picked Up"
+        elif p.status == models.PickupStatus.confirmed:
+            status_display = "Confirmed"
+        elif p.status == models.PickupStatus.cancelled:
+            status_display = "Cancelled"
+
+        recent_ops.append(schemas.RescueOperationItem(
+            id=p.id,
+            listing_code=listing_code,
+            donor=donor_name,
+            food_type=food_title,
+            quantity=qty,
+            unit=unit,
+            ngo_assigned=ngo_name,
+            status=status_display,
+            scheduled_time=p.scheduled_time,
+        ))
+
+    return schemas.FoodRescueDashboardOut(
+        listings_active=listings_active,
+        food_rescued_kg=round(total_rescued_kg, 1),
+        co2_prevented_kg=co2_prevented_kg,
+        ngos_active=active_ngos_count,
+        category_breakdown=category_breakdown,
+        top_donors=top_donors,
+        recent_rescue_operations=recent_ops,
     )

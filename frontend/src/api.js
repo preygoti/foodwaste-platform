@@ -54,6 +54,40 @@ export const api = {
     return handle(res);
   },
 
+  async forgotPassword(email) {
+    const res = await fetch(`${API_URL}/auth/forgot-password`, {
+      method: "POST",
+      headers: { "Content-Type": "application/json" },
+      body: JSON.stringify({ email: (email || "").trim().toLowerCase() }),
+    });
+    return handle(res);
+  },
+
+  async verifyOtp(email, otp) {
+    const res = await fetch(`${API_URL}/auth/verify-otp`, {
+      method: "POST",
+      headers: { "Content-Type": "application/json" },
+      body: JSON.stringify({
+        email: (email || "").trim().toLowerCase(),
+        otp: (otp || "").trim(),
+      }),
+    });
+    return handle(res);
+  },
+
+  async resetPassword(email, otp, newPassword) {
+    const res = await fetch(`${API_URL}/auth/reset-password`, {
+      method: "POST",
+      headers: { "Content-Type": "application/json" },
+      body: JSON.stringify({
+        email: (email || "").trim().toLowerCase(),
+        otp: (otp || "").trim(),
+        new_password: newPassword,
+      }),
+    });
+    return handle(res);
+  },
+
   async me() {
     const res = await fetch(`${API_URL}/auth/me`, { headers: authHeaders() });
     return handle(res);
@@ -140,13 +174,17 @@ export const api = {
     return handle(res);
   },
 
-  // Analytics
+  // Analytics & Food Rescue Dashboard
   async businessAnalytics() {
     const res = await fetch(`${API_URL}/analytics/business`, { headers: authHeaders() });
     return handle(res);
   },
   async ngoAnalytics() {
     const res = await fetch(`${API_URL}/analytics/ngo`, { headers: authHeaders() });
+    return handle(res);
+  },
+  async getDashboardMetrics() {
+    const res = await fetch(`${API_URL}/analytics/dashboard`, { headers: authHeaders() });
     return handle(res);
   },
 };

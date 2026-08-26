@@ -48,7 +48,7 @@ class InventoryItem(Base):
     id = Column(Integer, primary_key=True, index=True)
     business_id = Column(Integer, ForeignKey("users.id"), nullable=False)
     name = Column(String, nullable=False)
-    category = Column(String, default="general")  # produce, dairy, bakery, prepared, canned, frozen
+    category = Column(String, default="general")  # produce, dairy, bakery, prepared, canned, frozen, grains, packaged
     quantity = Column(Float, nullable=False)
     unit = Column(String, default="kg")
     purchase_date = Column(Date, default=date.today)
@@ -95,3 +95,15 @@ class Pickup(Base):
 
     listing = relationship("Listing", back_populates="pickups")
     ngo = relationship("User", back_populates="pickups")
+
+
+class PasswordResetOTP(Base):
+    __tablename__ = "password_reset_otps"
+
+    id = Column(Integer, primary_key=True, index=True)
+    email = Column(String, index=True, nullable=False)
+    hashed_otp = Column(String, nullable=False)
+    expires_at = Column(DateTime, nullable=False)
+    is_used = Column(Boolean, default=False, nullable=False)
+    attempts = Column(Integer, default=0, nullable=False)
+    created_at = Column(DateTime, default=datetime.utcnow, nullable=False)

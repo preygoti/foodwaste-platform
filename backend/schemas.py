@@ -34,6 +34,33 @@ class Token(BaseModel):
     user: UserOut
 
 
+# ---------- Password Reset & OTP ----------
+class ForgotPasswordRequest(BaseModel):
+    email: EmailStr
+
+
+class VerifyOtpRequest(BaseModel):
+    email: EmailStr
+    otp: str
+
+
+class ResetPasswordRequest(BaseModel):
+    email: EmailStr
+    otp: str
+    new_password: str
+
+
+class ForgotPasswordResponse(BaseModel):
+    message: str
+    email: EmailStr
+    debug_otp: Optional[str] = None
+
+
+class GenericResponse(BaseModel):
+    status: str
+    message: str
+
+
 # ---------- Inventory ----------
 class InventoryCreate(BaseModel):
     name: str
@@ -136,7 +163,7 @@ class PickupOut(BaseModel):
         from_attributes = True
 
 
-# ---------- Analytics ----------
+# ---------- Analytics & Food Rescue Dashboard ----------
 class BusinessAnalytics(BaseModel):
     total_inventory_items: int
     high_risk_items: int
@@ -152,3 +179,35 @@ class NgoAnalytics(BaseModel):
     completed_pickups: int
     meals_received: float
     active_listings_nearby: int
+
+
+class CategoryRescueStat(BaseModel):
+    category: str
+    quantity_kg: float
+
+
+class TopDonorStat(BaseModel):
+    donor_name: str
+    quantity_kg: float
+
+
+class RescueOperationItem(BaseModel):
+    id: int
+    listing_code: str
+    donor: str
+    food_type: str
+    quantity: float
+    unit: str
+    ngo_assigned: str
+    status: str
+    scheduled_time: Optional[datetime] = None
+
+
+class FoodRescueDashboardOut(BaseModel):
+    listings_active: int
+    food_rescued_kg: float
+    co2_prevented_kg: float
+    ngos_active: int
+    category_breakdown: List[CategoryRescueStat]
+    top_donors: List[TopDonorStat]
+    recent_rescue_operations: List[RescueOperationItem]

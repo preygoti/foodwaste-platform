@@ -3,6 +3,7 @@ import { AuthProvider, useAuth } from "./AuthContext";
 import Landing from "./pages/Landing";
 import Login from "./pages/Login";
 import Register from "./pages/Register";
+import ForgotPassword from "./pages/ForgotPassword";
 import InventoryPage from "./pages/InventoryPage";
 import BusinessListingsPage from "./pages/BusinessListingsPage";
 import BrowseListingsPage from "./pages/BrowseListingsPage";
@@ -25,6 +26,7 @@ function AppRoutes() {
       <Route path="/" element={<Landing />} />
       <Route path="/login" element={<Login />} />
       <Route path="/register" element={<Register />} />
+      <Route path="/forgot-password" element={<ForgotPassword />} />
 
       <Route path="/dashboard/inventory" element={<Protected role="business"><InventoryPage /></Protected>} />
       <Route path="/dashboard/listings" element={<Protected role="business"><BusinessListingsPage /></Protected>} />
