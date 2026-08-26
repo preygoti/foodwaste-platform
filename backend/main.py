@@ -126,12 +126,19 @@ def forgot_password(payload: schemas.ForgotPasswordRequest, db: Session = Depend
     db.add(record)
     db.commit()
 
-    # Send email via SMTP (or logged)
-    send_otp_email(norm_email, otp_code)
+    # Send email via Resend HTTP API
+    success, err_msg = send_otp_email(norm_email, otp_code)
+    if not success:
+        record.is_used = True
+        db.commit()
+        raise HTTPException(
+            status_code=status.HTTP_503_SERVICE_UNAVAILABLE,
+            detail=f"Failed to dispatch verification email: {err_msg}. Please check your email configuration.",
+        )
 
-    # In dev/testing when SMTP is not configured, provide debug_otp
-    smtp_host = os.environ.get("SMTP_HOST", "").strip()
-    debug_otp = otp_code if not smtp_host else None
+    # In local testing when RESEND_API_KEY is not set, provide debug_otp
+    resend_api_key = os.environ.get("RESEND_API_KEY", "").strip()
+    debug_otp = otp_code if not resend_api_key else None
 
     return schemas.ForgotPasswordResponse(
         message="Verification code sent to your email address (Valid for 10 minutes)",
