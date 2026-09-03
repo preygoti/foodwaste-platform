@@ -1,8 +1,6 @@
 # Harvest Ledger — AI-Powered Food Waste Management Platform
 
 [![GitHub Repo](https://img.shields.io/badge/GitHub-preygoti%2Ffoodwaste--platform-181717?style=flat-square&logo=github)](https://github.com/preygoti/foodwaste-platform)
-[![Live Frontend](https://img.shields.io/badge/Frontend-Vercel-000000?style=flat-square&logo=vercel)](https://foodwaste-platform.vercel.app/)
-[![Live Backend](https://img.shields.io/badge/Backend-Render-46E3B7?style=flat-square&logo=render)](https://foodwaste-platform.onrender.com/)
 [![FastAPI](https://img.shields.io/badge/Backend-FastAPI-009688?style=flat-square&logo=fastapi)](https://fastapi.tiangolo.com/)
 [![Python](https://img.shields.io/badge/Language-Python%203.13-3776AB?style=flat-square&logo=python)](https://python.org/)
 [![PostgreSQL](https://img.shields.io/badge/Database-PostgreSQL%20%2F%20SQLite-4169E1?style=flat-square&logo=postgresql)](https://www.postgresql.org/)
@@ -12,17 +10,6 @@
 [![Milestone 1 Status](https://img.shields.io/badge/Milestone%201-Completed%20%E2%9C%85-success?style=flat-square)](https://github.com/preygoti/foodwaste-platform)
 
 > **Harvest Ledger** is an intelligent web platform connecting food businesses (supermarkets, restaurants, bakeries, distributors) with recipient non-profits (NGOs, food banks, community kitchens) to eliminate food waste, track batch-level shelf-life, and streamline surplus redistribution.
-
----
-
-## 🌐 Live Application & Links
-
-| Service | Link | Hosting Platform | Purpose |
-|---|---|---|---|
-| **Live Web App (Frontend)** | [foodwaste-platform.vercel.app](https://foodwaste-platform.vercel.app/) | **Vercel** | Interactive Single Page Application for Businesses & NGOs |
-| **Live API Backend** | [foodwaste-platform.onrender.com](https://foodwaste-platform.onrender.com/) | **Render** | Production FastAPI REST Web Service |
-| **Interactive API Documentation** | [foodwaste-platform.onrender.com/docs](https://foodwaste-platform.onrender.com/docs) | **Swagger UI / OpenAPI** | Live interactive API testbed & endpoint specs |
-| **GitHub Source Code** | [github.com/preygoti/foodwaste-platform](https://github.com/preygoti/foodwaste-platform) | **GitHub** | Version-controlled repository |
 
 ---
 
@@ -52,7 +39,7 @@ Food businesses face critical operational bottlenecks managing perishable stock:
 
 ### 1. 🗄️ Relational Database Architecture (PostgreSQL & SQLite)
 - Designed with **SQLAlchemy 2.0 ORM** and Pydantic v2 data validation schemas.
-- **Production**: Managed **PostgreSQL** cloud database hosted on Render with SSL connection pooling and auto-reconnect (`pool_pre_ping=True`).
+- **Production**: Configured for **PostgreSQL** database connection with SSL connection pooling and auto-reconnect (`pool_pre_ping=True`).
 - **Development**: Dynamic fallback to zero-configuration **SQLite** (`sqlite:///./foodwaste.db`) for offline local testing.
 
 ### 2. 🔐 Dual-Role Authentication & Security (RBAC)
@@ -155,10 +142,9 @@ erDiagram
 | **Icons** | **Lucide React** | Clean, lightweight SVG iconography |
 | **Backend Framework** | **FastAPI 0.115** | High-performance Python async REST API |
 | **Application Server** | **Uvicorn** | Production ASGI server |
-| **Database & ORM** | **PostgreSQL** + **SQLAlchemy 2.0** | Production relational database & ORM |
+| **Database & ORM** | **PostgreSQL** + **SQLAlchemy 2.0** | Relational database & ORM |
 | **Data Validation** | **Pydantic v2** | Request schema validation & serialization |
 | **Security & Auth** | **Python-JOSE** + **Passlib (Bcrypt)** | JWT bearer tokens & password hashing |
-| **Deployment** | **Vercel** + **Render** | Production cloud hosting |
 
 ---
 
