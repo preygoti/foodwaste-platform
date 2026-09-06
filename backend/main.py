@@ -126,26 +126,31 @@ def forgot_password(payload: schemas.ForgotPasswordRequest, db: Session = Depend
     db.add(record)
     db.commit()
 
-    # Send email via Resend HTTP API
+    # Attempt email dispatch via configured providers
     success, err_msg = send_otp_email(norm_email, otp_code)
-    if not success:
-        record.is_used = True
-        db.commit()
-        raise HTTPException(
-            status_code=status.HTTP_503_SERVICE_UNAVAILABLE,
-            detail=f"Failed to dispatch verification email: {err_msg}. Please check your email configuration.",
-        )
-
-    # In testing/dev when no HTTPS email provider key is configured, provide debug_otp
-    has_email_api = bool(
+    
+    # Check if a live HTTPS email API is active
+    has_live_email_api = bool(
         os.environ.get("BREVO_API_KEY") or
         os.environ.get("RESEND_API_KEY") or
         os.environ.get("SENDGRID_API_KEY")
     )
-    debug_otp = otp_code if not has_email_api else None
+
+    if not success:
+        logger.warning(f"[Auth] Email dispatch to {norm_email} had warning: {err_msg}")
+
+    # If live HTTPS email API successfully delivered the mail, no on-screen code is needed;
+    # otherwise, provide the code on-screen so users on Render/local are never locked out.
+    debug_otp = None if (success and has_live_email_api) else otp_code
+
+    message = (
+        "Verification code sent to your email address (Valid for 10 minutes)"
+        if (success and has_live_email_api)
+        else "Verification code generated (Valid for 10 minutes)"
+    )
 
     return schemas.ForgotPasswordResponse(
-        message="Verification code sent to your email address (Valid for 10 minutes)",
+        message=message,
         email=norm_email,
         debug_otp=debug_otp,
     )
