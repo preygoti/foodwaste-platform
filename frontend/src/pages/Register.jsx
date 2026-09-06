@@ -150,19 +150,19 @@ export default function Register() {
               {busy ? (
                 <>
                   <Loader2 className="w-4 h-4 animate-spin" />
-                  <span>Registering...</span>
+                  <span>Signing Up...</span>
                 </>
               ) : (
                 <>
                   <UserPlus className="w-4 h-4" />
-                  <span>Create Account</span>
+                  <span>Sign Up</span>
                 </>
               )}
             </button>
           </form>
 
           <p className="text-xs sm:text-sm text-forest-800/60 text-center pt-2 border-t border-wheat-100">
-            Already registered?{" "}
+            Already have an account?{" "}
             <Link to="/login" className="text-tomato-500 font-semibold hover:text-tomato-600">
               Sign In
             </Link>

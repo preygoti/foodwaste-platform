@@ -30,15 +30,15 @@ export default function Landing() {
         <div className="flex items-center gap-2 sm:gap-3">
           <Link
             to="/login"
-            className="px-3 sm:px-4 py-2 text-xs sm:text-sm font-medium text-forest-800 hover:text-forest-600 rounded-lg hover:bg-wheat-100 transition-colors"
+            className="px-4 py-2 text-xs sm:text-sm font-semibold text-forest-800 bg-white border border-wheat-300 rounded-xl hover:bg-wheat-100 transition-all shadow-2xs active:scale-[0.98]"
           >
-            Sign in
+            Sign In
           </Link>
           <Link
             to="/register"
-            className="px-3.5 sm:px-5 py-2 text-xs sm:text-sm font-medium bg-forest-800 text-wheat-50 rounded-lg hover:bg-forest-700 shadow-sm transition-all active:scale-[0.98]"
+            className="px-4 py-2 text-xs sm:text-sm font-semibold bg-forest-800 text-wheat-50 border border-forest-800 rounded-xl hover:bg-forest-700 shadow-sm transition-all active:scale-[0.98]"
           >
-            Get Started
+            Sign Up
           </Link>
         </div>
       </header>
@@ -64,16 +64,16 @@ export default function Landing() {
           <div className="flex flex-col sm:flex-row items-stretch sm:items-center gap-3 pt-2">
             <Link
               to="/register"
-              className="inline-flex items-center justify-center gap-2 px-6 py-3.5 bg-tomato-500 text-white rounded-xl font-medium text-sm sm:text-base hover:bg-tomato-600 shadow-sm transition-all active:scale-[0.99]"
+              className="inline-flex items-center justify-center gap-2 px-6 py-3.5 bg-forest-800 text-wheat-50 border border-forest-800 rounded-xl font-semibold text-sm sm:text-base hover:bg-forest-700 shadow-sm transition-all active:scale-[0.99]"
             >
-              <span>Register Your Organization</span>
+              <span>Sign Up / Register</span>
               <ArrowRight className="w-4 h-4" />
             </Link>
             <Link
               to="/login"
-              className="inline-flex items-center justify-center px-6 py-3.5 bg-white text-forest-800 border border-wheat-200 rounded-xl font-medium text-sm sm:text-base hover:bg-wheat-100 transition-all shadow-2xs"
+              className="inline-flex items-center justify-center gap-2 px-6 py-3.5 bg-white text-forest-800 border border-wheat-300 rounded-xl font-semibold text-sm sm:text-base hover:bg-wheat-100 transition-all shadow-2xs active:scale-[0.99]"
             >
-              Sign In to Dashboard
+              <span>Sign In to Dashboard</span>
             </Link>
           </div>
 

@@ -108,7 +108,7 @@ export default function Login() {
           <p className="text-xs sm:text-sm text-forest-800/60 text-center pt-2 border-t border-wheat-100">
             Don't have an account?{" "}
             <Link to="/register" className="text-tomato-500 font-semibold hover:text-tomato-600">
-              Register Organization
+              Sign Up
             </Link>
           </p>
         </div>
