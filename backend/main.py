@@ -56,6 +56,95 @@ def root():
 # ============================================================
 # AUTH
 # ============================================================
+@app.post("/auth/send-registration-otp", response_model=schemas.SendRegistrationOtpResponse)
+def send_registration_otp(payload: schemas.SendRegistrationOtpRequest, db: Session = Depends(get_db)):
+    norm_email = str(payload.email).strip().lower()
+    
+    # Check if email is already registered
+    existing = db.query(models.User).filter(func.lower(models.User.email) == norm_email).first()
+    if existing:
+        raise HTTPException(400, "An account with this email address already exists. Please sign in.")
+
+    # Invalidate previous unused registration OTPs for this email
+    db.query(models.RegistrationOTP).filter(
+        func.lower(models.RegistrationOTP.email) == norm_email,
+        models.RegistrationOTP.is_used == False
+    ).update({"is_used": True})
+
+    # Generate secure 6-digit numeric OTP
+    otp_code = f"{secrets.randbelow(900000) + 100000}"
+    hashed = hashlib.sha256((norm_email + otp_code + SECRET_KEY).encode()).hexdigest()
+    expires_at = datetime.utcnow() + timedelta(minutes=10)
+
+    record = models.RegistrationOTP(
+        email=norm_email,
+        hashed_otp=hashed,
+        expires_at=expires_at,
+        is_used=False,
+        attempts=0,
+    )
+    db.add(record)
+    db.commit()
+
+    # Dispatch email
+    success, err_msg = send_otp_email(norm_email, otp_code, purpose="registration")
+    
+    has_live_email_api = bool(
+        os.environ.get("BREVO_API_KEY") or
+        os.environ.get("RESEND_API_KEY") or
+        os.environ.get("SENDGRID_API_KEY")
+    )
+
+    if not success:
+        logger.warning(f"[Registration-Auth] Email dispatch to {norm_email} had warning: {err_msg}")
+
+    debug_otp = None if (success and has_live_email_api) else otp_code
+
+    message = (
+        "Verification code sent to your email address (Valid for 10 minutes)"
+        if (success and has_live_email_api)
+        else "Verification code generated (Valid for 10 minutes)"
+    )
+
+    return schemas.SendRegistrationOtpResponse(
+        message=message,
+        email=norm_email,
+        debug_otp=debug_otp,
+    )
+
+
+@app.post("/auth/verify-registration-otp", response_model=schemas.GenericResponse)
+def verify_registration_otp(payload: schemas.VerifyRegistrationOtpRequest, db: Session = Depends(get_db)):
+    norm_email = str(payload.email).strip().lower()
+    otp_code = payload.otp.strip()
+
+    record = db.query(models.RegistrationOTP).filter(
+        func.lower(models.RegistrationOTP.email) == norm_email,
+        models.RegistrationOTP.is_used == False
+    ).order_by(models.RegistrationOTP.created_at.desc()).first()
+
+    if not record:
+        raise HTTPException(400, "No active verification code found for this email. Please request a verification code.")
+
+    if record.attempts >= 5:
+        record.is_used = True
+        db.commit()
+        raise HTTPException(400, "Too many incorrect attempts. Please request a new verification code.")
+
+    if datetime.utcnow() > record.expires_at:
+        record.is_used = True
+        db.commit()
+        raise HTTPException(400, "Verification code has expired. Please request a new code.")
+
+    expected_hash = hashlib.sha256((norm_email + otp_code + SECRET_KEY).encode()).hexdigest()
+    if record.hashed_otp != expected_hash:
+        record.attempts += 1
+        db.commit()
+        raise HTTPException(400, "Invalid 6-digit verification code. Please check and try again.")
+
+    return schemas.GenericResponse(status="ok", message="Email verified successfully! You can now complete registration.")
+
+
 @app.post("/auth/register", response_model=schemas.Token)
 def register(payload: schemas.UserCreate, db: Session = Depends(get_db)):
     if payload.role not in ("business", "ngo"):
@@ -65,6 +154,25 @@ def register(payload: schemas.UserCreate, db: Session = Depends(get_db)):
     existing = db.query(models.User).filter(func.lower(models.User.email) == norm_email).first()
     if existing:
         raise HTTPException(400, "Email already registered")
+
+    # If OTP is provided, verify it
+    if payload.otp:
+        otp_code = payload.otp.strip()
+        record = db.query(models.RegistrationOTP).filter(
+            func.lower(models.RegistrationOTP.email) == norm_email,
+            models.RegistrationOTP.is_used == False
+        ).order_by(models.RegistrationOTP.created_at.desc()).first()
+
+        if not record or datetime.utcnow() > record.expires_at:
+            raise HTTPException(400, "Invalid or expired email verification code. Please verify your email.")
+
+        expected_hash = hashlib.sha256((norm_email + otp_code + SECRET_KEY).encode()).hexdigest()
+        if record.hashed_otp != expected_hash:
+            record.attempts += 1
+            db.commit()
+            raise HTTPException(400, "Invalid verification code.")
+        
+        record.is_used = True
 
     user = models.User(
         email=norm_email,

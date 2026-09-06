@@ -408,6 +408,47 @@ class TestFoodWastePlatform(unittest.TestCase):
         p2_record = next(p for p in res_ngo2_pickups.json() if p["id"] == p2_id)
         self.assertEqual(p2_record["status"], "confirmed")
 
+    def test_12_registration_email_otp_flow(self):
+        new_email = f"verified_{uuid.uuid4().hex[:8]}@test.org"
+
+        # 1. Request registration OTP for new email
+        res_send = client.post("/auth/send-registration-otp", json={"email": new_email})
+        self.assertEqual(res_send.status_code, 200)
+        send_data = res_send.json()
+        self.assertIn("message", send_data)
+        self.assertEqual(send_data["email"], new_email)
+        otp_code = send_data.get("debug_otp")
+        self.assertIsNotNone(otp_code)
+        self.assertEqual(len(otp_code), 6)
+
+        # 2. Test invalid OTP verification rejection
+        res_bad_otp = client.post("/auth/verify-registration-otp", json={"email": new_email, "otp": "999999"})
+        self.assertEqual(res_bad_otp.status_code, 400)
+
+        # 3. Test valid OTP verification
+        res_good_otp = client.post("/auth/verify-registration-otp", json={"email": new_email, "otp": otp_code})
+        self.assertEqual(res_good_otp.status_code, 200)
+        self.assertEqual(res_good_otp.json()["status"], "ok")
+
+        # 4. Register account with verified OTP
+        res_reg = client.post("/auth/register", json={
+            "email": new_email,
+            "password": "strongPassword123",
+            "org_name": "Verified Food Rescue",
+            "role": "ngo",
+            "address": "777 Rescue Lane",
+            "otp": otp_code
+        })
+        self.assertEqual(res_reg.status_code, 200)
+        token_data = res_reg.json()
+        self.assertIn("access_token", token_data)
+        self.assertEqual(token_data["user"]["email"], new_email)
+
+        # 5. Verify cannot send registration OTP for already registered email
+        res_duplicate = client.post("/auth/send-registration-otp", json={"email": new_email})
+        self.assertEqual(res_duplicate.status_code, 400)
+        self.assertIn("already exists", res_duplicate.json()["detail"])
+
 if __name__ == "__main__":
     unittest.main()
 

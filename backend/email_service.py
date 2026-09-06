@@ -9,14 +9,28 @@ import requests
 logger = logging.getLogger("uvicorn")
 
 
-def _get_email_html(otp_code: str) -> str:
+def _get_email_html(otp_code: str, purpose: str = "password_reset") -> str:
     """Returns a modern, responsive HTML email template for OTP verification."""
+    is_reg = (purpose == "registration")
+    title = "Verify Your Email Address" if is_reg else "Your Password Reset Code"
+    subtitle = "Welcome &bull; Organization Registration Verification" if is_reg else "Security &bull; Password Reset Verification"
+    body_text = (
+        "Welcome to Harvest Ledger! Please use the 6-digit verification code below to verify your organization's email address and activate your account:"
+        if is_reg
+        else "We received a request to reset the password for your Harvest Ledger account. Please use the 6-digit verification code below to authorize this change:"
+    )
+    disclaimer = (
+        "If you did not attempt to register an account on Harvest Ledger, you can safely ignore this email."
+        if is_reg
+        else "If you did not initiate this request, you can safely ignore this email. Your password will remain unchanged."
+    )
+
     return f"""<!DOCTYPE html>
 <html lang="en">
 <head>
   <meta charset="utf-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
-  <title>Your Password Reset Code</title>
+  <title>{title}</title>
   <style>
     body {{
       font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, Helvetica, Arial, sans-serif;
@@ -102,13 +116,13 @@ def _get_email_html(otp_code: str) -> str:
 <body>
   <div class="container">
     <div class="brand">Harvest Ledger</div>
-    <div class="subtitle">Security &bull; Password Reset Verification</div>
+    <div class="subtitle">{subtitle}</div>
     
     <p>Hello,</p>
-    <p>We received a request to reset the password for your Harvest Ledger account. Please use the 6-digit verification code below to authorize this change:</p>
+    <p>{body_text}</p>
     
     <div class="otp-card">
-      <div class="otp-label">Your Verification Code</div>
+      <div class="otp-label">Your 6-Digit Verification Code</div>
       <div class="otp-code">{otp_code}</div>
     </div>
     
@@ -116,7 +130,7 @@ def _get_email_html(otp_code: str) -> str:
       ⏱ <strong>Valid for 10 minutes.</strong> Never share this code with anyone.
     </div>
     
-    <p>If you did not initiate this request, you can safely ignore this email. Your password will remain unchanged.</p>
+    <p>{disclaimer}</p>
     
     <div class="footer">
       &copy; Harvest Ledger &bull; AI-Powered Food Waste Management &amp; Redistribution Platform<br>
@@ -127,12 +141,13 @@ def _get_email_html(otp_code: str) -> str:
 </html>"""
 
 
-def _send_via_resend(to_email: str, otp_code: str, resend_api_key: str) -> Tuple[bool, Optional[str]]:
+def _send_via_resend(to_email: str, otp_code: str, resend_api_key: str, purpose: str = "password_reset") -> Tuple[bool, Optional[str]]:
     """Sends OTP email via the Resend HTTP API (Port 443 HTTPS - Works on Render/Cloud)."""
     from_email = os.environ.get("EMAILS_FROM", "Harvest Ledger <onboarding@resend.dev>").strip()
     if not from_email:
         from_email = "Harvest Ledger <onboarding@resend.dev>"
 
+    subject = f"Harvest Ledger: {otp_code} is your registration verification code" if purpose == "registration" else f"Harvest Ledger: {otp_code} is your password reset code"
     url = "https://api.resend.com/emails"
     headers = {
         "Authorization": f"Bearer {resend_api_key}",
@@ -142,8 +157,8 @@ def _send_via_resend(to_email: str, otp_code: str, resend_api_key: str) -> Tuple
     payload = {
         "from": from_email,
         "to": [to_email],
-        "subject": f"Harvest Ledger: {otp_code} is your password reset code",
-        "html": _get_email_html(otp_code),
+        "subject": subject,
+        "html": _get_email_html(otp_code, purpose),
     }
 
     try:
@@ -168,7 +183,7 @@ def _send_via_resend(to_email: str, otp_code: str, resend_api_key: str) -> Tuple
         return False, f"Email service error: {str(e)}"
 
 
-def _send_via_brevo(to_email: str, otp_code: str, brevo_api_key: str) -> Tuple[bool, Optional[str]]:
+def _send_via_brevo(to_email: str, otp_code: str, brevo_api_key: str, purpose: str = "password_reset") -> Tuple[bool, Optional[str]]:
     """
     Sends OTP email via Brevo (Sendinblue) HTTP API (Port 443 HTTPS - Works on Render/Cloud).
     Free tier allows 300 emails/day to ANY recipient without domain verification!
@@ -179,6 +194,7 @@ def _send_via_brevo(to_email: str, otp_code: str, brevo_api_key: str) -> Tuple[b
         sender_name = sender_email.split("<")[0].strip() or "Harvest Ledger"
         sender_email = sender_email.split("<")[1].replace(">", "").strip()
 
+    subject = f"Harvest Ledger: {otp_code} is your registration verification code" if purpose == "registration" else f"Harvest Ledger: {otp_code} is your password reset code"
     url = "https://api.brevo.com/v3/smtp/email"
     headers = {
         "api-key": brevo_api_key,
@@ -188,9 +204,9 @@ def _send_via_brevo(to_email: str, otp_code: str, brevo_api_key: str) -> Tuple[b
     payload = {
         "sender": {"name": sender_name, "email": sender_email},
         "to": [{"email": to_email}],
-        "subject": f"Harvest Ledger: {otp_code} is your password reset code",
-        "htmlContent": _get_email_html(otp_code),
-        "textContent": f"Hello,\n\nYour Harvest Ledger password reset code is: {otp_code}\n\nThis code expires in 10 minutes.",
+        "subject": subject,
+        "htmlContent": _get_email_html(otp_code, purpose),
+        "textContent": f"Hello,\n\nYour Harvest Ledger verification code is: {otp_code}\n\nThis code expires in 10 minutes.",
     }
 
     try:
@@ -215,7 +231,7 @@ def _send_via_brevo(to_email: str, otp_code: str, brevo_api_key: str) -> Tuple[b
         return False, f"Brevo service error: {str(e)}"
 
 
-def _send_via_sendgrid(to_email: str, otp_code: str, sendgrid_api_key: str) -> Tuple[bool, Optional[str]]:
+def _send_via_sendgrid(to_email: str, otp_code: str, sendgrid_api_key: str, purpose: str = "password_reset") -> Tuple[bool, Optional[str]]:
     """Sends OTP email via SendGrid HTTP API (Port 443 HTTPS)."""
     from_email = os.environ.get("SENDGRID_FROM_EMAIL") or os.environ.get("EMAILS_FROM") or "noreply@harvestledger.org"
     from_name = "Harvest Ledger"
@@ -223,6 +239,7 @@ def _send_via_sendgrid(to_email: str, otp_code: str, sendgrid_api_key: str) -> T
         from_name = from_email.split("<")[0].strip() or "Harvest Ledger"
         from_email = from_email.split("<")[1].replace(">", "").strip()
 
+    subject = f"Harvest Ledger: {otp_code} is your registration verification code" if purpose == "registration" else f"Harvest Ledger: {otp_code} is your password reset code"
     url = "https://api.sendgrid.com/v3/mail/send"
     headers = {
         "Authorization": f"Bearer {sendgrid_api_key}",
@@ -231,9 +248,9 @@ def _send_via_sendgrid(to_email: str, otp_code: str, sendgrid_api_key: str) -> T
     payload = {
         "personalizations": [{"to": [{"email": to_email}]}],
         "from": {"email": from_email, "name": from_name},
-        "subject": f"Harvest Ledger: {otp_code} is your password reset code",
+        "subject": subject,
         "content": [
-            {"type": "text/html", "value": _get_email_html(otp_code)},
+            {"type": "text/html", "value": _get_email_html(otp_code, purpose)},
         ],
     }
 
@@ -252,7 +269,7 @@ def _send_via_sendgrid(to_email: str, otp_code: str, sendgrid_api_key: str) -> T
         return False, f"SendGrid service error: {str(e)}"
 
 
-def _send_via_smtp(to_email: str, otp_code: str) -> Tuple[bool, Optional[str]]:
+def _send_via_smtp(to_email: str, otp_code: str, purpose: str = "password_reset") -> Tuple[bool, Optional[str]]:
     """
     Sends OTP email using standard SMTP (port 587/465).
     Note: Cloud hosts like Render.com block raw outbound SMTP ports.
@@ -271,13 +288,14 @@ def _send_via_smtp(to_email: str, otp_code: str) -> Tuple[bool, Optional[str]]:
     except ValueError:
         port = 587
 
+    subject = f"Harvest Ledger: {otp_code} is your registration verification code" if purpose == "registration" else f"Harvest Ledger: {otp_code} is your password reset code"
     msg = MIMEMultipart("alternative")
-    msg["Subject"] = f"Harvest Ledger: {otp_code} is your password reset code"
+    msg["Subject"] = subject
     msg["From"] = from_email
     msg["To"] = to_email
 
-    plain_text = f"Hello,\n\nYour Harvest Ledger password reset code is: {otp_code}\n\nThis code expires in 10 minutes.\nIf you did not request this, please ignore this email."
-    html_text = _get_email_html(otp_code)
+    plain_text = f"Hello,\n\nYour Harvest Ledger verification code is: {otp_code}\n\nThis code expires in 10 minutes."
+    html_text = _get_email_html(otp_code, purpose)
 
     msg.attach(MIMEText(plain_text, "plain"))
     msg.attach(MIMEText(html_text, "html"))
@@ -298,7 +316,6 @@ def _send_via_smtp(to_email: str, otp_code: str) -> Tuple[bool, Optional[str]]:
         logger.info(f"[SMTP] Verification OTP successfully sent to {to_email}")
         return True, None
     except OSError as e:
-        # e.g. [Errno 101] Network is unreachable (Render/Cloud firewall blocking raw SMTP ports)
         logger.error(f"[SMTP] Network socket error (likely blocked by cloud hosting firewall): {e}")
         return False, (
             "Cloud host (Render) blocked raw outbound SMTP (Errno 101). "
@@ -309,9 +326,9 @@ def _send_via_smtp(to_email: str, otp_code: str) -> Tuple[bool, Optional[str]]:
         return False, f"SMTP Error: {str(e)}"
 
 
-def send_otp_email(to_email: str, otp_code: str) -> Tuple[bool, Optional[str]]:
+def send_otp_email(to_email: str, otp_code: str, purpose: str = "password_reset") -> Tuple[bool, Optional[str]]:
     """
-    Dispatches a secure 6-digit OTP email for password reset.
+    Dispatches a secure 6-digit OTP email for registration verification or password reset.
     Supported backends in priority order:
       1. Brevo HTTP API (BREVO_API_KEY - HTTPS port 443, sends to any recipient)
       2. Resend HTTP API (RESEND_API_KEY - HTTPS port 443)
@@ -322,23 +339,23 @@ def send_otp_email(to_email: str, otp_code: str) -> Tuple[bool, Optional[str]]:
     # 1. Brevo HTTP API (Port 443 HTTPS)
     brevo_api_key = os.environ.get("BREVO_API_KEY") or os.environ.get("SENDINBLUE_API_KEY", "").strip()
     if brevo_api_key:
-        return _send_via_brevo(to_email, otp_code, brevo_api_key)
+        return _send_via_brevo(to_email, otp_code, brevo_api_key, purpose)
 
     # 2. Resend HTTP API (Port 443 HTTPS)
     resend_api_key = os.environ.get("RESEND_API_KEY", "").strip()
     if resend_api_key:
-        return _send_via_resend(to_email, otp_code, resend_api_key)
+        return _send_via_resend(to_email, otp_code, resend_api_key, purpose)
 
     # 3. SendGrid HTTP API (Port 443 HTTPS)
     sendgrid_api_key = os.environ.get("SENDGRID_API_KEY", "").strip()
     if sendgrid_api_key:
-        return _send_via_sendgrid(to_email, otp_code, sendgrid_api_key)
+        return _send_via_sendgrid(to_email, otp_code, sendgrid_api_key, purpose)
 
     # 4. Standard SMTP (Port 587/465)
     smtp_user = os.environ.get("SMTP_USER") or os.environ.get("EMAIL_HOST_USER") or os.environ.get("SMTP_EMAIL", "").strip()
     smtp_pass = os.environ.get("SMTP_PASSWORD") or os.environ.get("EMAIL_HOST_PASSWORD") or os.environ.get("SMTP_PASS", "").strip()
     if smtp_user and smtp_pass:
-        return _send_via_smtp(to_email, otp_code)
+        return _send_via_smtp(to_email, otp_code, purpose)
 
     # 5. Local Dev & Testing Fallback
     database_url = os.environ.get("DATABASE_URL", "")
@@ -351,8 +368,8 @@ def send_otp_email(to_email: str, otp_code: str) -> Tuple[bool, Optional[str]]:
 
     # Local development fallback
     print(f"\n=======================================================")
-    print(f">> [LOCAL DEV OTP DISPATCH] To: {to_email}")
+    print(f">> [LOCAL DEV OTP DISPATCH] To: {to_email} ({purpose.upper()})")
     print(f">> VERIFICATION CODE: {otp_code}")
     print(f"=======================================================\n")
-    logger.info(f"[EmailService-Dev] Local mode: Verification OTP {otp_code} generated for {to_email}")
+    logger.info(f"[EmailService-Dev] Local mode: Verification OTP {otp_code} generated for {to_email} ({purpose})")
     return True, None

@@ -10,6 +10,22 @@ class UserCreate(BaseModel):
     org_name: str
     role: str  # "business" | "ngo"
     address: Optional[str] = ""
+    otp: Optional[str] = None
+
+
+class SendRegistrationOtpRequest(BaseModel):
+    email: EmailStr
+
+
+class SendRegistrationOtpResponse(BaseModel):
+    message: str
+    email: EmailStr
+    debug_otp: Optional[str] = None
+
+
+class VerifyRegistrationOtpRequest(BaseModel):
+    email: EmailStr
+    otp: str
 
 
 class UserLogin(BaseModel):

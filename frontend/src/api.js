@@ -90,6 +90,27 @@ async function fetchCached(url, cacheKey) {
 export const api = {
   getCached,
 
+  async sendRegistrationOtp(email) {
+    const res = await fetch(`${API_URL}/auth/send-registration-otp`, {
+      method: "POST",
+      headers: { "Content-Type": "application/json" },
+      body: JSON.stringify({ email: (email || "").trim().toLowerCase() }),
+    });
+    return handle(res);
+  },
+
+  async verifyRegistrationOtp(email, otp) {
+    const res = await fetch(`${API_URL}/auth/verify-registration-otp`, {
+      method: "POST",
+      headers: { "Content-Type": "application/json" },
+      body: JSON.stringify({
+        email: (email || "").trim().toLowerCase(),
+        otp: (otp || "").trim(),
+      }),
+    });
+    return handle(res);
+  },
+
   async register(data) {
     const payload = {
       ...data,
