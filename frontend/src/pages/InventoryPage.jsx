@@ -666,7 +666,7 @@ export default function InventoryPage() {
                   <th className="py-3 px-2.5 font-semibold text-left whitespace-nowrap">Quantity</th>
                   <th className="py-3 px-3 font-semibold text-left whitespace-nowrap">Live Expiry Countdown</th>
                   <th className="py-3 px-2 font-semibold text-center whitespace-nowrap">Status &amp; Risk</th>
-                  <th className="py-3 px-3 font-semibold text-right whitespace-nowrap">Actions</th>
+                  <th className="py-3 px-3 font-semibold text-center whitespace-nowrap">Actions</th>
                 </tr>
               </thead>
               <tbody className="divide-y divide-wheat-200/80">
@@ -740,9 +740,9 @@ export default function InventoryPage() {
                         </div>
                       </td>
 
-                      {/* Action buttons */}
-                      <td className="py-3 px-3 align-middle text-right whitespace-nowrap">
-                        <div className="flex items-center justify-end gap-1">
+                      {/* Action buttons - Centered */}
+                      <td className="py-3 px-3 align-middle text-center whitespace-nowrap">
+                        <div className="flex items-center justify-center gap-1.5">
                           {isItemExpired ? (
                             <button
                               onClick={() => remove(item.id, item.name)}
