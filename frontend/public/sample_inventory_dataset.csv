@@ -1,0 +1,31 @@
+item_name,category,quantity,unit,purchase_date,expiry_date,avg_daily_usage,storage_location
+Whole Organic Milk,dairy,25.0,liter,2026-09-01,2026-09-08,4.5,Walk-in Refrigerator A
+Sourdough Artisan Loaf,bakery,18.0,loaves,2026-09-04,2026-09-09,3.0,Bakery Display Shelf 1
+Fresh Baby Spinach,produce,12.5,kg,2026-09-02,2026-09-07,2.0,Cold Storage Bin 4
+Greek Plain Yogurt (500g),dairy,15.0,tubs,2026-08-30,2026-09-10,2.5,Dairy Chiller 2
+Prepared Rice & Curry Meals,prepared,35.0,portions,2026-09-05,2026-09-07,10.0,Hot Holding Cabinet 1
+Sliced Whole Wheat Bread,bakery,20.0,loaves,2026-09-03,2026-09-08,4.0,Bakery Rack 3
+Ripe Yellow Bananas,produce,30.0,kg,2026-09-02,2026-09-08,5.0,Produce Aisle Display
+Cheddar Cheese Block,dairy,8.0,kg,2026-08-25,2026-09-25,0.8,Cheese Refrigerator
+Canned Chickpeas (400g),canned,60.0,cans,2026-08-01,2027-02-15,1.5,Dry Pantry Rack B
+Frozen Mixed Vegetables,frozen,22.0,kg,2026-08-15,2026-12-30,1.0,Deep Freezer 1
+Fresh Strawberries,produce,9.0,boxes,2026-09-04,2026-09-07,2.5,Produce Cold Shelf
+Croissants & Pastries,bakery,14.0,units,2026-09-05,2026-09-08,3.5,Bakery Counter
+Cooked Chicken Pasta,prepared,28.0,portions,2026-09-05,2026-09-07,8.0,Prepared Food Chiller
+Basmati Rice (5kg bags),grains,16.0,bags,2026-08-10,2027-05-20,0.5,Dry Storage Bay 2
+Almond Milk (Unsweetened),dairy,18.0,liter,2026-09-01,2026-09-14,2.0,Beverage Refrigerator
+Fresh Vine Tomatoes,produce,20.0,kg,2026-09-02,2026-09-09,3.0,Produce Bin 2
+Canned Black Beans,canned,45.0,cans,2026-08-05,2027-04-10,1.0,Pantry Storage A
+Frozen Salmon Fillets,frozen,10.0,kg,2026-08-20,2026-11-15,0.8,Seafood Freezer 2
+Vegetable Biryani,prepared,24.0,portions,2026-09-05,2026-09-07,6.0,Buffet Holding Station
+Organic Rolled Oats,grains,15.0,kg,2026-08-12,2027-03-01,0.6,Grain Storage Bin 1
+Bagels (Assorted 6-pack),bakery,12.0,bags,2026-09-03,2026-09-08,2.5,Bakery Display Shelf 2
+Fresh Broccoli Florets,produce,14.0,kg,2026-09-03,2026-09-09,2.2,Cold Room Vegetable Rack
+Egg Carton (12 eggs),packaged,30.0,boxes,2026-08-28,2026-09-18,3.0,Egg Chiller Bay
+Spaghetti Pasta (500g),packaged,50.0,packets,2026-08-01,2027-08-01,1.2,Dry Goods Shelf 4
+Fresh Red Apples,produce,28.0,kg,2026-08-30,2026-09-15,2.5,Fruit Display Bin 1
+Creamy Tomato Soup (500ml),prepared,16.0,portions,2026-09-04,2026-09-08,3.0,Soup Kettle Station
+Tofu Extra Firm,packaged,18.0,packs,2026-08-26,2026-09-12,1.5,Vegan Chiller Rack
+Frozen Beef Patties,frozen,15.0,kg,2026-08-18,2026-12-01,1.2,Meat Walk-in Freezer
+Canned Crushed Tomatoes,canned,40.0,cans,2026-08-01,2027-06-30,1.0,Dry Pantry Shelf C
+French Baguettes,bakery,15.0,loaves,2026-09-05,2026-09-08,4.0,Bakery Fresh Basket
