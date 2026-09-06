@@ -7,20 +7,21 @@
 [![React](https://img.shields.io/badge/Frontend-React%2019-61DAFB?style=flat-square&logo=react)](https://react.dev/)
 [![Leaflet](https://img.shields.io/badge/Map-Leaflet%20%2F%20OpenStreetMap-199900?style=flat-square&logo=leaflet)](https://leafletjs.com/)
 [![Tailwind CSS](https://img.shields.io/badge/Styling-Tailwind%20CSS-06B6D4?style=flat-square&logo=tailwindcss)](https://tailwindcss.com/)
-[![Platform Status](https://img.shields.io/badge/Platform%20Status-Production%20Ready%20%E2%9C%85-success?style=flat-square)](https://github.com/preygoti/foodwaste-platform)
+[![Milestone 1 Status](https://img.shields.io/badge/Milestone%201-Completed%20%E2%9C%85-success?style=flat-square)](https://github.com/preygoti/foodwaste-platform)
+[![Milestone 2 Status](https://img.shields.io/badge/Milestone%202-In%20Progress%20(Active%20Work%20Done)%20%F0%9F%94%84-yellow?style=flat-square)](https://github.com/preygoti/foodwaste-platform)
 
 > **Harvest Ledger** is an intelligent full-stack ecosystem connecting food businesses (supermarkets, restaurants, bakeries, food distributors) with non-profits (NGOs, food banks, community kitchens) to eliminate edible food waste, track batch-level shelf life with predictive AI, and execute verifiable digital QR handshakes for food redistribution.
 
 ---
 
-## 📊 Comprehensive Milestone Roadmap & Status
+## 📊 Project Roadmap & Milestone Status
 
-| Phase | Milestone | Focus Area | Status | Key Deliverables |
+| Phase | Milestone | Focus Area | Status | Deliverables & Progress |
 |---|---|---|---|---|
-| **Phase 1** | **Milestone 1** | **System Architecture, Database & Ingestion** | **`COMPLETED` ✅** | • Relational Neon PostgreSQL & SQLite database<br/>• Dual-role JWT authentication (Business & NGO)<br/>• 6-digit Email OTP registration verification<br/>• Multi-modal inventory logging (Form + Barcode Camera + CSV) |
-| **Phase 2** | **Milestone 2** | **AI Waste Prediction Engine & Shelf Life** | **`COMPLETED` ✅** | • 0–100 heuristic waste risk scoring algorithm<br/>• Predictive stock reorder recommendations (`Reorder +X`)<br/>• AI Computer Vision Freshness & Spoilage Scanner<br/>• Real-time reactive expiry countdown tickers |
-| **Phase 3** | **Milestone 3** | **Redistribution Marketplace & Live Radar** | **`COMPLETED` ✅** | • Real-time NGO redistribution marketplace<br/>• Live Radar Map with GPS auto-locate & OpenStreetMap<br/>• Smart address geocoding (100+ cities + Nominatim API)<br/>• Multi-stop turn-by-turn route planner & Google Maps link |
-| **Phase 4** | **Milestone 4** | **Digital QR Handshake & ESG Telemetry** | **`COMPLETED` ✅** | • Competitive multi-NGO request & donor acceptance flow<br/>• Secure QR Driver Rescue Pass & camera handshake scanner<br/>• Official ESG Tax Statement & audit generator<br/>• Real-time cross-device auto-polling synchronization |
+| **Phase 1** | **Milestone 1 (Weeks 1–2)** | **System Architecture, Database & Inventory Ingestion** | **`COMPLETED` ✅** | • Relational Neon PostgreSQL & SQLite database<br/>• Dual-role JWT authentication (Business & NGO)<br/>• 6-digit Email OTP registration & password reset<br/>• Multi-modal inventory logging (Form + Barcode Camera + CSV) |
+| **Phase 2** | **Milestone 2 (Weeks 3–4)** | **AI Waste Prediction Engine & Shelf Life Telemetry** | **`IN PROGRESS` 🔄 (Work Done)** | • **Done**: 0–100 heuristic waste risk scoring algorithm<br/>• **Done**: Smart reorder buffer calculations (`Reorder +X`)<br/>• **Done**: AI Computer Vision Freshness & Spoilage Scanner<br/>• **Done**: Live reactive expiry countdown tickers<br/>• **In Progress**: Time-series historical demand model integration |
+| **Phase 3** | **Milestone 3 (Weeks 5–6)** | **Surplus Marketplace & Live Radar Map** | **`UPCOMING` 📅** | • Real-time redistribution marketplace for NGOs<br/>• Live Radar Map with GPS auto-locate & OpenStreetMap<br/>• Smart address geocoding (100+ cities + Nominatim API)<br/>• Multi-stop turn-by-turn route planner & Google Maps link |
+| **Phase 4** | **Milestone 4 (Weeks 7–8)** | **Digital QR Handshake & ESG Telemetry** | **`UPCOMING` 📅** | • Competitive multi-NGO request & donor acceptance flow<br/>• Secure QR Driver Rescue Pass & camera handshake scanner<br/>• Official ESG Tax Statement & audit generator<br/>• Real-time cross-device auto-polling synchronization |
 
 ---
 
