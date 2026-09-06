@@ -122,8 +122,8 @@ export default function AiVisionScannerModal({ isOpen, onClose, onAutofill }) {
   };
 
   return (
-    <div className="fixed inset-0 z-50 flex items-center justify-center p-4 bg-forest-900/60 backdrop-blur-xs">
-      <div className="bg-white border border-wheat-200 rounded-2xl w-full max-w-lg shadow-xl overflow-hidden animate-in fade-in zoom-in-95 duration-200 flex flex-col max-h-[90vh]">
+    <div className="fixed inset-0 z-50 flex items-center justify-center p-4 bg-black/60 backdrop-blur-md overflow-y-auto animate-in fade-in duration-200">
+      <div className="bg-white border border-wheat-200 rounded-2xl w-full max-w-lg shadow-xl overflow-hidden animate-in fade-in zoom-in-95 duration-200 flex flex-col max-h-[90vh] my-8">
         {/* Header */}
         <div className="p-4 sm:p-5 border-b border-wheat-100 flex items-center justify-between bg-wheat-50/50">
           <div className="flex items-center gap-2.5">
