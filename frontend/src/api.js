@@ -269,4 +269,29 @@ export const api = {
   async getDashboardMetrics() {
     return fetchCached(`${API_URL}/analytics/dashboard`, "dashboard_metrics");
   },
+
+  // AI Vision Food Freshness Inspector
+  async inspectFreshness(imageBase64, itemHint = "") {
+    const res = await fetch(`${API_URL}/ai/inspect-freshness`, {
+      method: "POST",
+      headers: { "Content-Type": "application/json", ...authHeaders() },
+      body: JSON.stringify({ image_base64: imageBase64, item_hint: itemHint }),
+    });
+    return handle(res);
+  },
+
+  // QR Code Proof of Rescue Handshake Verification
+  async verifyPickupHandshake(pickupId, handshakeToken = "") {
+    const res = await fetch(`${API_URL}/pickups/${pickupId}/verify-handshake`, {
+      method: "POST",
+      headers: { "Content-Type": "application/json", ...authHeaders() },
+      body: JSON.stringify({ pickup_id: Number(pickupId), handshake_token: handshakeToken }),
+    });
+    clearApiCache("my_listings");
+    clearApiCache("pickups");
+    clearApiCache("browse_listings");
+    clearApiCache("analytics_business");
+    clearApiCache("dashboard");
+    return handle(res);
+  },
 };

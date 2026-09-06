@@ -10,8 +10,10 @@ import {
   Truck,
   RefreshCw,
   Package,
+  Scan,
 } from "lucide-react";
 import Layout from "../components/Layout";
+import VerifyQrModal from "../components/VerifyQrModal";
 import { useAuth } from "../AuthContext";
 import { api } from "../api";
 
@@ -51,6 +53,7 @@ export default function BusinessListingsPage() {
   const [pickupsByListing, setPickupsByListing] = useState({});
   const [loading, setLoading] = useState(() => !api.getCached("my_listings"));
   const [confirmingId, setConfirmingId] = useState(null);
+  const [showVerifyQrModal, setShowVerifyQrModal] = useState(false);
 
   const load = () => {
     if (user?.role !== "business") return;
@@ -116,16 +119,26 @@ export default function BusinessListingsPage() {
 
   return (
     <Layout>
-      <div className="mb-8">
-        <span className="font-mono text-xs uppercase tracking-widest text-tomato-500 font-semibold block mb-1">
-          Module 03 · Redistribution Marketplace
-        </span>
-        <h1 className="font-display text-2xl sm:text-3xl text-forest-800 font-semibold">
-          Your Surplus Listings
-        </h1>
-        <p className="text-xs sm:text-sm text-forest-800/60 mt-1">
-          Manage food surplus items made available to verified NGOs and food banks.
-        </p>
+      <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-4 mb-8">
+        <div>
+          <span className="font-mono text-xs uppercase tracking-widest text-tomato-500 font-semibold block mb-1">
+            Module 03 · Redistribution Marketplace
+          </span>
+          <h1 className="font-display text-2xl sm:text-3xl text-forest-800 font-semibold">
+            Your Surplus Listings
+          </h1>
+          <p className="text-xs sm:text-sm text-forest-800/60 mt-1">
+            Manage food surplus items made available to verified NGOs and food banks.
+          </p>
+        </div>
+
+        <button
+          onClick={() => setShowVerifyQrModal(true)}
+          className="inline-flex items-center gap-2 px-4 py-2.5 bg-emerald-600 hover:bg-emerald-700 text-white rounded-xl text-xs sm:text-sm font-semibold shadow-xs transition-all shrink-0 cursor-pointer"
+        >
+          <Scan className="w-4 h-4 text-emerald-100" />
+          <span>Verify Handshake QR</span>
+        </button>
       </div>
 
       {loading ? (
@@ -246,6 +259,15 @@ export default function BusinessListingsPage() {
           })}
         </div>
       )}
+
+      {/* Handshake QR Scanner Modal for Donor Businesses */}
+      <VerifyQrModal
+        isOpen={showVerifyQrModal}
+        onClose={() => setShowVerifyQrModal(false)}
+        onVerified={() => {
+          load();
+        }}
+      />
     </Layout>
   );
 }

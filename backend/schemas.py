@@ -172,6 +172,10 @@ class BusinessAnalytics(BaseModel):
     quantity_donated: float
     co2e_saved_kg: float
     meals_redistributed: float
+    estimated_food_value: float = 0.0
+    tax_deduction_benefit: float = 0.0
+    landfill_fees_saved: float = 0.0
+    total_financial_impact: float = 0.0
 
 
 class NgoAnalytics(BaseModel):
@@ -211,3 +215,43 @@ class FoodRescueDashboardOut(BaseModel):
     category_breakdown: List[CategoryRescueStat]
     top_donors: List[TopDonorStat]
     recent_rescue_operations: List[RescueOperationItem]
+
+
+# ---------- AI Freshness Quality Inspector ----------
+class FreshnessInspectionRequest(BaseModel):
+    image_base64: Optional[str] = None
+    item_hint: Optional[str] = None
+
+
+class FreshnessInspectionResponse(BaseModel):
+    detected_name: str
+    detected_category: str
+    freshness_score: float
+    freshness_grade: str
+    estimated_days_to_expiry: int
+    estimated_expiry_date: str
+    suggested_storage: str
+    estimated_quantity: float
+    unit: str
+    confidence: float
+    quality_notes: str
+
+
+# ---------- QR Code Handshake Verification ----------
+class QrHandshakeRequest(BaseModel):
+    pickup_id: int
+    handshake_token: Optional[str] = None
+
+
+class QrHandshakeResponse(BaseModel):
+    status: str
+    message: str
+    pickup_id: int
+    listing_title: str
+    ngo_name: str
+    quantity: float
+    unit: str
+    verified_at: str
+    co2_saved_kg: float
+    meals_provided: float
+

@@ -15,8 +15,12 @@ import {
   Flame,
   Search,
   Filter,
+  Map as MapIcon,
+  LayoutGrid,
+  Route,
 } from "lucide-react";
 import Layout from "../components/Layout";
+import RescueMap from "../components/RescueMap";
 import { useAuth } from "../AuthContext";
 import { api } from "../api";
 
@@ -132,6 +136,8 @@ export default function BrowseListingsPage() {
   const [error, setError] = useState("");
   const [categoryFilter, setCategoryFilter] = useState("all");
   const [searchQuery, setSearchQuery] = useState("");
+  const [viewMode, setViewMode] = useState("grid"); // "grid" | "map"
+  const [selectedRadius, setSelectedRadius] = useState(25); // km
 
   // Claim Dialog state
   const [selectedListing, setSelectedListing] = useState(null);
@@ -255,20 +261,48 @@ export default function BrowseListingsPage() {
 
   return (
     <Layout>
-      <div className="mb-6">
-        <span className="font-mono text-xs uppercase tracking-widest text-tomato-500 font-semibold block mb-1">
-          Module 03 &bull; Redistribution Marketplace
-        </span>
-        <h1 className="font-display text-2xl sm:text-3xl text-forest-800 font-semibold">
-          Available Surplus Food
-        </h1>
-        <p className="text-xs sm:text-sm text-forest-800/60 mt-1">
-          Real-time edible surplus ranked by urgency (soonest expiry first). All items are active and safe for distribution.
-        </p>
+      <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-4 mb-6">
+        <div>
+          <span className="font-mono text-xs uppercase tracking-widest text-tomato-500 font-semibold block mb-1">
+            Module 03 &bull; Redistribution Marketplace
+          </span>
+          <h1 className="font-display text-2xl sm:text-3xl text-forest-800 font-semibold">
+            Available Surplus Food
+          </h1>
+          <p className="text-xs sm:text-sm text-forest-800/60 mt-1">
+            Real-time edible surplus ranked by urgency (soonest expiry first). All items are active and safe for distribution.
+          </p>
+        </div>
+
+        {/* View Mode Toggle Button Group */}
+        <div className="flex items-center gap-1.5 p-1 bg-white border border-wheat-200 rounded-xl shadow-2xs shrink-0 font-mono text-xs">
+          <button
+            onClick={() => setViewMode("grid")}
+            className={`inline-flex items-center gap-1.5 px-3 py-1.5 rounded-lg font-semibold transition-all ${
+              viewMode === "grid"
+                ? "bg-forest-800 text-wheat-50 shadow-2xs"
+                : "text-forest-800/70 hover:text-forest-800 hover:bg-wheat-50"
+            }`}
+          >
+            <LayoutGrid className="w-3.5 h-3.5" />
+            <span>Grid View</span>
+          </button>
+          <button
+            onClick={() => setViewMode("map")}
+            className={`inline-flex items-center gap-1.5 px-3 py-1.5 rounded-lg font-semibold transition-all ${
+              viewMode === "map"
+                ? "bg-forest-800 text-wheat-50 shadow-2xs"
+                : "text-forest-800/70 hover:text-forest-800 hover:bg-wheat-50"
+            }`}
+          >
+            <MapIcon className="w-3.5 h-3.5 text-gold-400" />
+            <span>Live Radar Map</span>
+          </button>
+        </div>
       </div>
 
       {/* Search & Category Filter Bar */}
-      <div className="bg-white border border-wheat-200 rounded-xl p-3 sm:p-4 mb-6 shadow-2xs">
+      <div className="bg-white border border-wheat-200 rounded-xl p-3 sm:p-4 mb-6 shadow-2xs space-y-3">
         <div className="flex flex-col sm:flex-row gap-3 items-stretch sm:items-center justify-between">
           <div className="relative flex-1">
             <Search className="w-4 h-4 text-forest-800/40 absolute left-3 top-1/2 -translate-y-1/2" />
@@ -305,6 +339,28 @@ export default function BrowseListingsPage() {
             </select>
           </div>
         </div>
+
+        {/* Distance Radius Filter (Active in Map Mode) */}
+        {viewMode === "map" && (
+          <div className="flex flex-wrap items-center gap-2 pt-2 border-t border-wheat-100 text-xs font-mono">
+            <span className="text-forest-800/60 uppercase tracking-wider text-[11px] mr-1">
+              Radar Search Radius:
+            </span>
+            {[5, 10, 25, 50].map((r) => (
+              <button
+                key={r}
+                onClick={() => setSelectedRadius(r)}
+                className={`px-3 py-1 rounded-full text-xs font-semibold transition-all border ${
+                  selectedRadius === r
+                    ? "bg-forest-800 text-wheat-50 border-forest-800 shadow-2xs"
+                    : "bg-white text-forest-800/70 border-wheat-200 hover:border-forest-600/50"
+                }`}
+              >
+                {r >= 50 ? "All Metro (>50 km)" : `Within ${r} km`}
+              </button>
+            ))}
+          </div>
+        )}
       </div>
 
       {error && (
@@ -343,7 +399,15 @@ export default function BrowseListingsPage() {
             Refresh Listings
           </button>
         </div>
+      ) : viewMode === "map" ? (
+        /* LIVE RADAR MAP VIEW */
+        <RescueMap
+          listings={activeUnexpiredListings}
+          onClaimListing={openClaimModal}
+          selectedRadius={selectedRadius}
+        />
       ) : (
+        /* CARD GRID VIEW */
         <div className="grid grid-cols-1 md:grid-cols-2 gap-4 sm:gap-5">
           {activeUnexpiredListings.map((l) => (
             <div

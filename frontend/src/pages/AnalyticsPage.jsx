@@ -16,11 +16,15 @@ import {
   AlertCircle,
   Truck,
   Award,
+  FileText,
+  DollarSign,
+  Receipt,
 } from "lucide-react";
 import Layout from "../components/Layout";
 import { useAuth } from "../AuthContext";
 import { api } from "../api";
 import CsrCertificateModal from "../components/CsrCertificateModal";
+import EsgTaxReportModal from "../components/EsgTaxReportModal";
 import Card3D from "../components/Card3D";
 import {
   BarChart,
@@ -113,6 +117,7 @@ export default function AnalyticsPage() {
   const [roleData, setRoleData] = useState(null);
   const [isSyncing, setIsSyncing] = useState(false);
   const [showCertModal, setShowCertModal] = useState(false);
+  const [showEsgModal, setShowEsgModal] = useState(false);
 
   useEffect(() => {
     if (!user) return;
@@ -147,6 +152,12 @@ export default function AnalyticsPage() {
   const foodRescuedKg = dashboardData?.food_rescued_kg ?? (roleData?.quantity_donated || roleData?.meals_received || 0);
   const co2PreventedKg = dashboardData?.co2_prevented_kg ?? (roleData?.co2e_saved_kg || Math.round(foodRescuedKg * 2.5));
   const activeNgos = dashboardData?.ngos_active ?? (user.role === "ngo" ? 1 : 4);
+
+  // ESG Tax & Financial Savings calculations
+  const estimatedFoodValue = roleData?.estimated_food_value ?? Math.round(foodRescuedKg * 120);
+  const taxDeductionBenefit = roleData?.tax_deduction_benefit ?? Math.round(estimatedFoodValue * 0.5);
+  const landfillFeesSaved = roleData?.landfill_fees_saved ?? Math.round(foodRescuedKg * 15);
+  const totalFinancialImpact = roleData?.total_financial_impact ?? (taxDeductionBenefit + landfillFeesSaved);
 
   const categoryChartData = (dashboardData?.category_breakdown && dashboardData.category_breakdown.length > 0)
     ? dashboardData.category_breakdown
@@ -195,13 +206,22 @@ export default function AnalyticsPage() {
           </p>
         </div>
 
-        <button
-          onClick={() => setShowCertModal(true)}
-          className="inline-flex items-center gap-2 px-4 py-2.5 bg-forest-800 text-wheat-50 rounded-xl text-xs sm:text-sm font-semibold hover:bg-forest-700 shadow-sm transition-all active:scale-[0.99] self-start sm:self-auto"
-        >
-          <Award className="w-4 h-4 text-amber-300" />
-          <span>Official CSR &amp; Tax Certificate</span>
-        </button>
+        <div className="flex flex-wrap items-center gap-2.5">
+          <button
+            onClick={() => setShowEsgModal(true)}
+            className="inline-flex items-center gap-2 px-4 py-2.5 bg-emerald-700 hover:bg-emerald-800 text-wheat-50 rounded-xl text-xs sm:text-sm font-semibold shadow-xs transition-all active:scale-[0.99]"
+          >
+            <Receipt className="w-4 h-4 text-emerald-200" />
+            <span>Official ESG Tax Statement</span>
+          </button>
+          <button
+            onClick={() => setShowCertModal(true)}
+            className="inline-flex items-center gap-2 px-4 py-2.5 bg-forest-800 text-wheat-50 rounded-xl text-xs sm:text-sm font-semibold hover:bg-forest-700 shadow-xs transition-all active:scale-[0.99]"
+          >
+            <Award className="w-4 h-4 text-amber-300" />
+            <span>CSR Certificate</span>
+          </button>
+        </div>
       </div>
 
       {/* CSR Certificate Modal */}
@@ -211,6 +231,61 @@ export default function AnalyticsPage() {
         metrics={{ food_rescued_kg: foodRescuedKg, co2_prevented_kg: co2PreventedKg }}
         user={user}
       />
+
+      {/* ESG Tax Deduction & Financial Impact Card */}
+      <div className="mb-8 p-5 sm:p-6 rounded-2xl bg-gradient-to-r from-emerald-900 via-forest-900 to-forest-800 text-wheat-50 border border-emerald-700/50 shadow-md">
+        <div className="flex flex-col md:flex-row md:items-center justify-between gap-4 pb-4 border-b border-white/10">
+          <div>
+            <div className="flex items-center gap-2 mb-1">
+              <span className="px-2 py-0.5 rounded bg-emerald-500/20 text-emerald-300 font-mono text-[11px] font-semibold tracking-wider uppercase border border-emerald-400/30">
+                ESG Module 04
+              </span>
+              <span className="text-xs text-white/60 font-mono">Sec 80G / CSR Eligible</span>
+            </div>
+            <h2 className="text-lg sm:text-xl font-display font-semibold text-white">
+              Corporate ESG Tax Deduction &amp; Landfill Savings Ledger
+            </h2>
+          </div>
+          <button
+            onClick={() => setShowEsgModal(true)}
+            className="self-start md:self-auto inline-flex items-center gap-1.5 px-3.5 py-2 bg-emerald-500 hover:bg-emerald-400 text-forest-950 rounded-lg text-xs font-semibold shadow transition-all font-mono"
+          >
+            <FileText className="w-3.5 h-3.5" />
+            <span>View Full Audit Statement</span>
+          </button>
+        </div>
+
+        <div className="grid grid-cols-2 md:grid-cols-4 gap-4 pt-4">
+          <div>
+            <p className="text-[11px] font-mono text-white/60 uppercase tracking-wider">Estimated Food Value</p>
+            <p className="text-xl sm:text-2xl font-display font-bold text-white mt-0.5">
+              ₹{estimatedFoodValue.toLocaleString()}
+            </p>
+            <p className="text-[10px] text-white/50 mt-0.5 font-mono">₹120/kg fair-market benchmark</p>
+          </div>
+          <div>
+            <p className="text-[11px] font-mono text-emerald-300 uppercase tracking-wider">Tax Deduction (50%)</p>
+            <p className="text-xl sm:text-2xl font-display font-bold text-emerald-300 mt-0.5">
+              ₹{taxDeductionBenefit.toLocaleString()}
+            </p>
+            <p className="text-[10px] text-emerald-200/60 mt-0.5 font-mono">Direct tax liability write-off</p>
+          </div>
+          <div>
+            <p className="text-[11px] font-mono text-amber-300 uppercase tracking-wider">Landfill Fees Avoided</p>
+            <p className="text-xl sm:text-2xl font-display font-bold text-amber-300 mt-0.5">
+              ₹{landfillFeesSaved.toLocaleString()}
+            </p>
+            <p className="text-[10px] text-amber-200/60 mt-0.5 font-mono">Disposal tipping fees spared</p>
+          </div>
+          <div>
+            <p className="text-[11px] font-mono text-emerald-200 uppercase tracking-wider">Net Financial Benefit</p>
+            <p className="text-xl sm:text-2xl font-display font-bold text-emerald-200 mt-0.5">
+              ₹{totalFinancialImpact.toLocaleString()}
+            </p>
+            <p className="text-[10px] text-emerald-300/60 mt-0.5 font-mono">Total bottom-line ROI</p>
+          </div>
+        </div>
+      </div>
 
       {/* Top 4 Metric Cards (as in PDF Page 4) */}
       <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-4 mb-8">
@@ -403,6 +478,13 @@ export default function AnalyticsPage() {
           </table>
         </div>
       </div>
+
+      {/* Official ESG Tax Deduction & Savings Statement Modal */}
+      <EsgTaxReportModal
+        isOpen={showEsgModal}
+        onClose={() => setShowEsgModal(false)}
+        analytics={roleData}
+      />
     </Layout>
   );
 }

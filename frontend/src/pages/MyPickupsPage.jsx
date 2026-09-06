@@ -9,8 +9,10 @@ import {
   Clock,
   RefreshCw,
   Compass,
+  QrCode,
 } from "lucide-react";
 import Layout from "../components/Layout";
+import PickupQrModal from "../components/PickupQrModal";
 import { useAuth } from "../AuthContext";
 import { api } from "../api";
 
@@ -49,6 +51,7 @@ export default function MyPickupsPage() {
   });
   const [loading, setLoading] = useState(() => !api.getCached("my_pickups"));
   const [processingId, setProcessingId] = useState(null);
+  const [selectedQrPickup, setSelectedQrPickup] = useState(null);
 
   const load = () => {
     if (user?.role !== "ngo") return;
@@ -206,7 +209,15 @@ export default function MyPickupsPage() {
 
                 {/* Actions */}
                 {!isFinished && (
-                  <div className="flex items-center gap-2 pt-2 sm:pt-0 border-t sm:border-t-0 border-wheat-100 shrink-0">
+                  <div className="flex flex-wrap items-center gap-2 pt-2 sm:pt-0 border-t sm:border-t-0 border-wheat-100 shrink-0">
+                    <button
+                      onClick={() => setSelectedQrPickup(p)}
+                      className="inline-flex items-center gap-1.5 px-3 py-2 bg-emerald-50 text-emerald-700 border border-emerald-200 rounded-lg text-xs font-semibold hover:bg-emerald-100 transition-all shadow-2xs"
+                      title="Show Driver Proof-of-Rescue QR Pass"
+                    >
+                      <QrCode className="w-3.5 h-3.5 text-emerald-600" />
+                      <span>QR Pass</span>
+                    </button>
                     <button
                       onClick={() => markPickedUp(p.id)}
                       disabled={processingId === p.id}
@@ -230,6 +241,16 @@ export default function MyPickupsPage() {
           })}
         </div>
       )}
+
+      {/* Proof of Rescue Digital QR Pass Modal */}
+      <PickupQrModal
+        isOpen={Boolean(selectedQrPickup)}
+        onClose={() => {
+          setSelectedQrPickup(null);
+          load();
+        }}
+        pickup={selectedQrPickup}
+      />
     </Layout>
   );
 }

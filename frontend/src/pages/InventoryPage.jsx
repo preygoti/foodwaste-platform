@@ -22,11 +22,13 @@ import {
   AlertOctagon,
   Flame,
   ArrowRight,
+  Camera,
 } from "lucide-react";
 import Layout from "../components/Layout";
 import RiskStamp from "../components/RiskStamp";
 import CsvUploadModal from "../components/CsvUploadModal";
 import BarcodeScannerModal from "../components/BarcodeScannerModal";
+import AiVisionScannerModal from "../components/AiVisionScannerModal";
 import RescueChefModal from "../components/RescueChefModal";
 import { useAuth } from "../AuthContext";
 import { api } from "../api";
@@ -168,6 +170,7 @@ export default function InventoryPage() {
   const [showAddModal, setShowAddModal] = useState(false);
   const [showCsvModal, setShowCsvModal] = useState(false);
   const [showScannerModal, setShowScannerModal] = useState(false);
+  const [showAiVisionModal, setShowAiVisionModal] = useState(false);
   const [rescueChefItem, setRescueChefItem] = useState(null);
   const [listingModalItem, setListingModalItem] = useState(null);
   const [listingForm, setListingForm] = useState({ quantity: "", pickup_location: "" });
@@ -375,11 +378,19 @@ export default function InventoryPage() {
         {/* Action Button Group */}
         <div className="flex flex-wrap items-center gap-2 sm:gap-2.5">
           <button
+            onClick={() => setShowAiVisionModal(true)}
+            className="inline-flex items-center justify-center gap-2 px-3.5 py-2 rounded-lg text-xs sm:text-sm font-semibold bg-forest-800 text-wheat-50 hover:bg-forest-700 shadow-sm transition-all active:scale-[0.98]"
+          >
+            <Sparkles className="w-4 h-4 text-gold-400" />
+            <span>AI Freshness Scan</span>
+          </button>
+
+          <button
             onClick={() => setShowScannerModal(true)}
             className="inline-flex items-center justify-center gap-2 px-3.5 py-2 rounded-lg text-xs sm:text-sm font-medium bg-white text-forest-800 border border-forest-600/30 hover:bg-forest-50 hover:border-forest-600 shadow-2xs transition-all active:scale-[0.98]"
           >
             <Scan className="w-4 h-4 text-forest-600" />
-            <span>Scan Barcode / QR</span>
+            <span>Scan Barcode</span>
           </button>
 
           <button
@@ -392,7 +403,7 @@ export default function InventoryPage() {
 
           <button
             onClick={() => setShowAddModal(true)}
-            className="inline-flex items-center justify-center gap-2 px-4 py-2 rounded-lg text-xs sm:text-sm font-medium bg-forest-800 text-wheat-50 hover:bg-forest-700 shadow-sm transition-all active:scale-[0.98]"
+            className="inline-flex items-center justify-center gap-2 px-4 py-2 rounded-lg text-xs sm:text-sm font-medium bg-white text-forest-800 border border-wheat-300 hover:bg-wheat-100/50 shadow-2xs transition-all active:scale-[0.98]"
           >
             <Plus className="w-4 h-4" />
             <span>Add Item</span>
@@ -1184,6 +1195,28 @@ export default function InventoryPage() {
               avg_daily_usage: data.avg_daily_usage ? String(data.avg_daily_usage) : "1",
             });
             setShowScannerModal(false);
+            setShowAddModal(true);
+          }
+        }}
+      />
+
+      {/* AI VISION FRESHNESS SCANNER MODAL */}
+      <AiVisionScannerModal
+        isOpen={showAiVisionModal}
+        onClose={() => setShowAiVisionModal(false)}
+        onAutofill={(detectedData) => {
+          if (detectedData) {
+            setForm({
+              ...emptyForm,
+              name: detectedData.name || "",
+              category: detectedData.category || "produce",
+              quantity: detectedData.quantity ? String(detectedData.quantity) : "10",
+              unit: detectedData.unit || "kg",
+              expiry_date: detectedData.expiry_date || "",
+              storage_location: detectedData.storage_location || "",
+              avg_daily_usage: detectedData.avg_daily_usage || "2",
+            });
+            setShowAiVisionModal(false);
             setShowAddModal(true);
           }
         }}
