@@ -244,25 +244,28 @@ export default function BusinessListingsPage() {
                         className="flex flex-col sm:flex-row sm:items-center justify-between gap-3 p-3 bg-white rounded-xl border border-wheat-200 text-xs shadow-2xs"
                       >
                         <div className="space-y-0.5">
-                          <div className="flex items-center gap-2">
+                          <div className="flex flex-wrap items-center gap-2">
                             <p className="font-semibold text-forest-900 text-sm">
                               {p.ngo_name || "Partner NGO"}
                             </p>
                             <span
-                              className={`px-2 py-0.5 rounded-full font-mono text-[10px] font-semibold border ${
+                              className={`inline-flex items-center gap-1.5 px-2.5 py-0.5 rounded-full font-mono text-[10px] font-semibold whitespace-nowrap border shrink-0 ${
                                 p.status === "confirmed"
-                                  ? "bg-emerald-100 text-emerald-800 border-emerald-200"
+                                  ? "bg-emerald-100 text-emerald-800 border-emerald-300"
                                   : p.status === "picked_up"
-                                  ? "bg-forest-100 text-forest-800 border-forest-200"
+                                  ? "bg-forest-100 text-forest-800 border-forest-300"
                                   : p.status === "cancelled"
-                                  ? "bg-rose-100 text-rose-800 border-rose-200"
-                                  : "bg-amber-100 text-amber-800 border-amber-200"
+                                  ? "bg-rose-100 text-rose-800 border-rose-300"
+                                  : "bg-amber-100 text-amber-800 border-amber-300"
                               }`}
                             >
+                              {p.status === "confirmed" && (
+                                <span className="w-1.5 h-1.5 rounded-full bg-emerald-600 animate-pulse inline-block" />
+                              )}
                               {p.status === "pending"
                                 ? "Pending Approval"
                                 : p.status === "confirmed"
-                                ? "Confirmed (Awaiting Driver)"
+                                ? "Confirmed · Driver Assigned"
                                 : p.status === "picked_up"
                                 ? "Completed & Rescued"
                                 : "Cancelled"}

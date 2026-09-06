@@ -68,25 +68,51 @@ export default function VerifyQrModal({ isOpen, onClose, onVerified }) {
 
   if (!isOpen) return null;
 
-  const handleQrScanSuccess = async (qrText) => {
-    // Parse QR payload
-    let pickupId = null;
-    let token = "";
+  function parsePickupId(input) {
+    if (!input) return null;
+    const str = String(input).trim();
 
-    try {
-      if (qrText.startsWith("{")) {
-        const parsed = JSON.parse(qrText);
-        pickupId = parsed.pickup_id;
-        token = parsed.token || "";
-      } else if (qrText.includes("HL-") || qrText.includes("HL_")) {
-        const parts = qrText.split("-");
-        pickupId = parseInt(parts[1] || parts[0]);
-      } else {
-        pickupId = parseInt(qrText);
-      }
-    } catch (e) {
-      pickupId = parseInt(qrText);
+    // 1. JSON payload from QR
+    if (str.startsWith("{") && str.endsWith("}")) {
+      try {
+        const parsed = JSON.parse(str);
+        if (parsed.pickup_id) return parseInt(parsed.pickup_id);
+      } catch (_) {}
     }
+
+    // 2. HL-RES-5002
+    if (/HL[-_]RES[-_](\d+)/i.test(str)) {
+      const match = str.match(/HL[-_]RES[-_](\d+)/i);
+      const num = parseInt(match[1]);
+      return num > 5000 ? num - 5000 : num;
+    }
+
+    // 3. HL-2-2 or HL_2_2 or HL-2
+    if (/HL[-_](\d+)/i.test(str)) {
+      const match = str.match(/HL[-_](\d+)/i);
+      const num = parseInt(match[1]);
+      return num > 5000 ? num - 5000 : num;
+    }
+
+    // 4. Any hyphen/underscore split numbers (e.g. "2-2")
+    const parts = str.split(/[-_/\s]+/).filter((p) => /^\d+$/.test(p));
+    if (parts.length > 0) {
+      const num = parseInt(parts[0]);
+      return num > 5000 ? num - 5000 : num;
+    }
+
+    // 5. First group of digits
+    const anyDigits = str.match(/\d+/);
+    if (anyDigits) {
+      const num = parseInt(anyDigits[0]);
+      return num > 5000 ? num - 5000 : num;
+    }
+
+    return null;
+  }
+
+  const handleQrScanSuccess = async (qrText) => {
+    const pickupId = parsePickupId(qrText);
 
     if (!pickupId) {
       setError("Invalid QR Code payload. Please try again or enter pickup code manually.");
@@ -100,7 +126,7 @@ export default function VerifyQrModal({ isOpen, onClose, onVerified }) {
       } catch (e) {}
     }
 
-    submitVerification(pickupId, token);
+    submitVerification(pickupId, qrText);
   };
 
   const submitVerification = async (pickupId, token = "") => {
@@ -120,12 +146,12 @@ export default function VerifyQrModal({ isOpen, onClose, onVerified }) {
   const handleManualSubmit = (e) => {
     e.preventDefault();
     if (!manualCode.trim()) return;
-    const cleanId = manualCode.replace(/\D/g, "");
-    if (!cleanId) {
-      setError("Please enter a valid numeric pickup ID.");
+    const pickupId = parsePickupId(manualCode);
+    if (!pickupId) {
+      setError("Please enter a valid pickup code (e.g. HL-2-2 or 5002 or 2).");
       return;
     }
-    submitVerification(parseInt(cleanId), `MANUAL_${cleanId}`);
+    submitVerification(pickupId, `MANUAL_${manualCode.trim()}`);
   };
 
   const handleDone = () => {

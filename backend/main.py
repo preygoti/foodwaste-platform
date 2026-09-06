@@ -430,6 +430,14 @@ def create_listing(
                 status_code=400,
                 detail="Cannot list an expired inventory item into the surplus marketplace.",
             )
+        if inv_item:
+            remaining_qty = inv_item.quantity - payload.quantity
+            if remaining_qty <= 0:
+                # Entire item transferred to Surplus Marketplace - remove from inventory ledger
+                db.delete(inv_item)
+                payload.inventory_item_id = None
+            else:
+                inv_item.quantity = round(remaining_qty, 2)
 
     listing = models.Listing(
         business_id=user.id, inventory_item_id=payload.inventory_item_id,
@@ -576,9 +584,14 @@ def verify_pickup_handshake(
     """
     Food business scans NGO driver's QR code to verify and atomically complete the surplus food handoff.
     """
-    pickup = db.query(models.Pickup).filter(models.Pickup.id == pickup_id).first()
+    actual_id = pickup_id
+    pickup = db.query(models.Pickup).filter(models.Pickup.id == actual_id).first()
+    if not pickup and actual_id > 5000:
+        actual_id = actual_id - 5000
+        pickup = db.query(models.Pickup).filter(models.Pickup.id == actual_id).first()
+
     if not pickup:
-        raise HTTPException(404, "Pickup reservation not found")
+        raise HTTPException(404, f"Pickup reservation #{pickup_id} not found")
 
     listing = db.query(models.Listing).filter(models.Listing.id == pickup.listing_id).first()
     if not listing:

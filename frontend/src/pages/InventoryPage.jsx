@@ -308,11 +308,12 @@ export default function InventoryPage() {
         expiry_date: listingModalItem.expiry_date,
         pickup_location: listingForm.pickup_location,
       });
-      setListingSuccessMsg("Surplus item published to marketplace!");
+      setListingSuccessMsg("Item transferred to Surplus Listings!");
+      load(true);
       setTimeout(() => {
         setListingModalItem(null);
         setListingSuccessMsg("");
-      }, 1200);
+      }, 1000);
     } catch (err) {
       alert(`Failed to create listing: ${err.message}`);
     } finally {
@@ -656,16 +657,16 @@ export default function InventoryPage() {
         </div>
       ) : (
         <>
-          {/* DESKTOP TABLE VIEW (>= 768px) - 100% Full Width, No Horizontal Scroll */}
-          <div className="hidden md:block bg-white border border-wheat-200 rounded-xl overflow-hidden shadow-2xs">
-            <table className="w-full text-left text-sm border-collapse table-auto">
+          {/* DESKTOP TABLE VIEW (>= 768px) - Responsive & Clean Fitting */}
+          <div className="hidden md:block bg-white border border-wheat-200 rounded-xl overflow-x-auto shadow-2xs w-full">
+            <table className="w-full text-left text-sm border-collapse table-auto min-w-[680px]">
               <thead className="bg-wheat-100/70 border-b border-wheat-200 text-xs font-mono uppercase tracking-wider text-forest-800/60">
                 <tr>
-                  <th className="py-3.5 px-4 font-semibold text-left">Item &amp; Location</th>
-                  <th className="py-3.5 px-3 font-semibold text-left whitespace-nowrap">Quantity</th>
-                  <th className="py-3.5 px-4 font-semibold text-left whitespace-nowrap">Live Expiry Countdown</th>
-                  <th className="py-3.5 px-3 font-semibold text-center whitespace-nowrap">Status &amp; Risk</th>
-                  <th className="py-3.5 px-4 font-semibold text-right whitespace-nowrap">Actions</th>
+                  <th className="py-3 px-3.5 font-semibold text-left">Item &amp; Location</th>
+                  <th className="py-3 px-2.5 font-semibold text-left whitespace-nowrap">Quantity</th>
+                  <th className="py-3 px-3 font-semibold text-left whitespace-nowrap">Live Expiry Countdown</th>
+                  <th className="py-3 px-2 font-semibold text-center whitespace-nowrap">Status &amp; Risk</th>
+                  <th className="py-3 px-3 font-semibold text-right whitespace-nowrap">Actions</th>
                 </tr>
               </thead>
               <tbody className="divide-y divide-wheat-200/80">
@@ -681,42 +682,42 @@ export default function InventoryPage() {
                       }`}
                     >
                       {/* Name & Metadata */}
-                      <td className="py-3.5 px-4 align-middle">
+                      <td className="py-3 px-3.5 align-middle">
                         <div className="flex items-center gap-1.5 leading-tight">
                           {isItemExpired && <ShieldAlert className="w-4 h-4 text-rose-600 shrink-0" />}
                           <span className="font-semibold text-forest-800 text-sm">{item.name}</span>
                         </div>
-                        <div className="text-xs text-forest-800/50 flex flex-wrap items-center gap-2 mt-1">
-                          <span className="bg-wheat-100/80 px-2 py-0.5 rounded text-[11px] font-mono capitalize">
+                        <div className="text-xs text-forest-800/50 flex flex-wrap items-center gap-1.5 mt-1">
+                          <span className="bg-wheat-100/80 px-1.5 py-0.5 rounded text-[10px] font-mono capitalize">
                             {item.category}
                           </span>
                           {item.storage_location && (
-                            <span className="flex items-center gap-1 text-[11px] text-forest-800/50">
+                            <span className="flex items-center gap-0.5 text-[10px] text-forest-800/50">
                               <MapPin className="w-3 h-3 text-forest-800/40 shrink-0" />
-                              <span className="truncate max-w-[150px]">{item.storage_location}</span>
+                              <span className="truncate max-w-[130px]">{item.storage_location}</span>
                             </span>
                           )}
                         </div>
                       </td>
 
                       {/* Quantity & Reorder Advice */}
-                      <td className="py-3.5 px-3 align-middle whitespace-nowrap">
+                      <td className="py-3 px-2.5 align-middle whitespace-nowrap">
                         <p className="font-mono text-sm leading-tight">
                           <span className="font-bold text-forest-800">{item.quantity}</span>{" "}
                           <span className="text-forest-800/60 text-xs">{item.unit}</span>
                         </p>
                         {item.reorder_recommendation > 0 && !isItemExpired && (
-                          <div className="mt-1">
-                            <span className="inline-flex items-center gap-1 text-[10px] font-mono font-semibold text-forest-700 bg-forest-50 px-1.5 py-0.5 rounded border border-forest-200">
-                              Reorder +{item.reorder_recommendation} {item.unit}
+                          <div className="mt-0.5">
+                            <span className="inline-flex items-center gap-0.5 text-[9px] font-mono font-semibold text-forest-700 bg-forest-50 px-1 py-0.5 rounded border border-forest-200">
+                              Reorder +{item.reorder_recommendation}
                             </span>
                           </div>
                         )}
                       </td>
 
                       {/* Live Expiry Countdown */}
-                      <td className="py-3.5 px-4 align-middle whitespace-nowrap">
-                        <div className="space-y-1">
+                      <td className="py-3 px-3 align-middle whitespace-nowrap">
+                        <div className="space-y-0.5">
                           <p className="font-mono text-[11px] text-forest-800/60 flex items-center gap-1">
                             <Calendar className="w-3 h-3 text-forest-600 shrink-0" />
                             <span>{item.expiry_date}</span>
@@ -726,10 +727,10 @@ export default function InventoryPage() {
                       </td>
 
                       {/* Risk Stamp / Expired Badge */}
-                      <td className="py-3.5 px-3 align-middle text-center whitespace-nowrap">
+                      <td className="py-3 px-2 align-middle text-center whitespace-nowrap">
                         <div className="flex items-center justify-center">
                           {isItemExpired ? (
-                            <span className="inline-flex items-center gap-1 px-2.5 py-1 rounded-full text-xs font-mono font-bold bg-rose-100 text-rose-800 border border-rose-300">
+                            <span className="inline-flex items-center gap-1 px-2 py-0.5 rounded-full text-[11px] font-mono font-bold bg-rose-100 text-rose-800 border border-rose-300">
                               <Ban className="w-3 h-3" />
                               <span>EXPIRED</span>
                             </span>
@@ -740,12 +741,12 @@ export default function InventoryPage() {
                       </td>
 
                       {/* Action buttons */}
-                      <td className="py-3.5 px-4 align-middle text-right whitespace-nowrap">
-                        <div className="flex items-center justify-end gap-1.5">
+                      <td className="py-3 px-3 align-middle text-right whitespace-nowrap">
+                        <div className="flex items-center justify-end gap-1">
                           {isItemExpired ? (
                             <button
                               onClick={() => remove(item.id, item.name)}
-                              className="inline-flex items-center gap-1 px-3 py-1.5 text-xs font-semibold text-rose-700 bg-rose-100 hover:bg-rose-200 border border-rose-300 rounded-lg transition-colors shadow-2xs"
+                              className="inline-flex items-center gap-1 px-2.5 py-1 text-xs font-semibold text-rose-700 bg-rose-100 hover:bg-rose-200 border border-rose-300 rounded-lg transition-colors shadow-2xs"
                               title="Log disposal & remove"
                             >
                               <Trash2 className="w-3.5 h-3.5" />
@@ -755,15 +756,15 @@ export default function InventoryPage() {
                             <>
                               <button
                                 onClick={() => setRescueChefItem(item)}
-                                className="inline-flex items-center gap-1 px-2.5 py-1.5 text-xs font-semibold text-amber-900 bg-amber-50 hover:bg-amber-100 border border-amber-200/80 rounded-lg transition-colors shadow-2xs"
+                                className="inline-flex items-center gap-1 px-2 py-1 text-xs font-semibold text-amber-900 bg-amber-50 hover:bg-amber-100 border border-amber-200/80 rounded-lg transition-colors shadow-2xs"
                                 title="AI Zero-Waste Rescue Recipes"
                               >
                                 <Sparkles className="w-3.5 h-3.5 text-amber-600" />
-                                <span>Rescue Recipe</span>
+                                <span>Recipe</span>
                               </button>
                               <button
                                 onClick={() => openListingModal(item)}
-                                className="inline-flex items-center gap-1.5 px-3 py-1.5 text-xs font-semibold text-forest-800 bg-forest-50 hover:bg-forest-100 border border-forest-200/80 rounded-lg transition-colors shadow-2xs"
+                                className="inline-flex items-center gap-1 px-2.5 py-1 text-xs font-semibold text-forest-800 bg-forest-50 hover:bg-forest-100 border border-forest-200/80 rounded-lg transition-colors shadow-2xs"
                                 title="Add to surplus marketplace for NGOs"
                               >
                                 <Share2 className="w-3.5 h-3.5 text-forest-600" />
@@ -771,10 +772,10 @@ export default function InventoryPage() {
                               </button>
                               <button
                                 onClick={() => remove(item.id, item.name)}
-                                className="p-1.5 text-tomato-500 hover:text-tomato-700 hover:bg-tomato-50 rounded-lg transition-colors border border-transparent hover:border-tomato-200"
+                                className="p-1 text-tomato-500 hover:text-tomato-700 hover:bg-tomato-50 rounded-lg transition-colors border border-transparent hover:border-tomato-200"
                                 title="Delete item"
                               >
-                                <Trash2 className="w-4 h-4" />
+                                <Trash2 className="w-3.5 h-3.5" />
                               </button>
                             </>
                           )}

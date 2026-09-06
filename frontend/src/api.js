@@ -219,7 +219,9 @@ export const api = {
       headers: { "Content-Type": "application/json", ...authHeaders() },
       body: JSON.stringify(data),
     });
-    clearApiCache("listings");
+    clearApiCache("inventory");
+    clearApiCache("my_listings");
+    clearApiCache("browse_listings");
     clearApiCache("dashboard");
     return handle(res);
   },
