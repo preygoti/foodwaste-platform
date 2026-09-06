@@ -249,7 +249,12 @@ export const api = {
       body: JSON.stringify(data),
     });
     clearApiCache("pickups");
+    clearApiCache("my_pickups");
+    clearApiCache("my_listings");
+    clearApiCache("browse_listings");
     clearApiCache("dashboard");
+    clearApiCache("analytics_business");
+    clearApiCache("analytics_ngo");
     return handle(res);
   },
   async myPickups() {

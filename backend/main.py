@@ -471,6 +471,23 @@ def my_listings(
     return [_listing_out(l, db) for l in listings]
 
 
+@app.get("/listings/{listing_id}/pickups", response_model=List[schemas.PickupOut])
+def listing_pickups(
+    listing_id: int,
+    db: Session = Depends(get_db),
+    user: models.User = Depends(get_current_user),
+):
+    listing = db.query(models.Listing).filter(models.Listing.id == listing_id).first()
+    if not listing:
+        raise HTTPException(404, "Listing not found")
+    
+    if user.role == models.UserRole.business and listing.business_id != user.id:
+        raise HTTPException(403, "Not authorized to view pickups for another business's listing")
+
+    pickups = db.query(models.Pickup).filter(models.Pickup.listing_id == listing_id).order_by(models.Pickup.id.desc()).all()
+    return [_pickup_out(p, db) for p in pickups]
+
+
 # ---- Pickup / matching ----
 def _pickup_out(pickup: models.Pickup, db: Session) -> schemas.PickupOut:
     ngo = db.query(models.User).filter(models.User.id == pickup.ngo_id).first()

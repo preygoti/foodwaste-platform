@@ -7,6 +7,7 @@ import {
   Calendar,
   CheckCircle2,
   AlertCircle,
+  XCircle,
   Truck,
   RefreshCw,
   Package,
@@ -66,9 +67,7 @@ export default function BusinessListingsPage() {
         if (Array.isArray(data)) {
           setListings(data);
           const entries = await Promise.all(
-            data
-              .filter((l) => l.status !== "available")
-              .map(async (l) => [l.id, await api.listingPickups(l.id).catch(() => [])])
+            data.map(async (l) => [l.id, await api.listingPickups(l.id).catch(() => [])])
           );
           setPickupsByListing(Object.fromEntries(entries));
         }
@@ -112,6 +111,19 @@ export default function BusinessListingsPage() {
       load();
     } catch (err) {
       alert(`Error confirming pickup: ${err.message}`);
+    } finally {
+      setConfirmingId(null);
+    }
+  };
+
+  const rejectPickup = async (pickupId) => {
+    if (!window.confirm("Reject this pickup request? The food listing will return to available status for other NGOs.")) return;
+    setConfirmingId(pickupId);
+    try {
+      await api.updatePickup(pickupId, { status: "cancelled" });
+      load();
+    } catch (err) {
+      alert(`Error rejecting pickup: ${err.message}`);
     } finally {
       setConfirmingId(null);
     }
@@ -219,37 +231,98 @@ export default function BusinessListingsPage() {
                   </div>
                 </div>
 
-                {/* Pickup coordination section if matched */}
+                {/* Pickup coordination section */}
                 {pickups.length > 0 && (
-                  <div className="mt-4 pt-3 border-t border-wheat-200 bg-forest-50/50 -mx-5 -mb-5 p-4 rounded-b-xl space-y-2.5">
-                    <p className="text-[11px] font-mono font-semibold uppercase tracking-wider text-forest-800/60 flex items-center gap-1.5">
+                  <div className="mt-4 pt-3 border-t border-wheat-200 bg-forest-50/60 -mx-5 -mb-5 p-4 rounded-b-xl space-y-2.5">
+                    <p className="text-[11px] font-mono font-semibold uppercase tracking-wider text-forest-800/70 flex items-center gap-1.5">
                       <Truck className="w-3.5 h-3.5 text-forest-600" />
-                      Pickup Requests ({pickups.length})
+                      NGO Pickup Requests ({pickups.length})
                     </p>
                     {pickups.map((p) => (
                       <div
                         key={p.id}
-                        className="flex flex-col sm:flex-row sm:items-center justify-between gap-2 p-2.5 bg-white rounded-lg border border-forest-100 text-xs"
+                        className="flex flex-col sm:flex-row sm:items-center justify-between gap-3 p-3 bg-white rounded-xl border border-wheat-200 text-xs shadow-2xs"
                       >
-                        <div>
-                          <p className="font-semibold text-forest-800">
-                            {p.ngo_name || "Partner NGO"}
-                          </p>
-                          <p className="text-forest-800/60 text-[11px]">
-                            ~{p.meals_estimate} meals estimated · Status:{" "}
-                            <span className="capitalize font-mono font-medium">{p.status}</span>
+                        <div className="space-y-0.5">
+                          <div className="flex items-center gap-2">
+                            <p className="font-semibold text-forest-900 text-sm">
+                              {p.ngo_name || "Partner NGO"}
+                            </p>
+                            <span
+                              className={`px-2 py-0.5 rounded-full font-mono text-[10px] font-semibold border ${
+                                p.status === "confirmed"
+                                  ? "bg-emerald-100 text-emerald-800 border-emerald-200"
+                                  : p.status === "picked_up"
+                                  ? "bg-forest-100 text-forest-800 border-forest-200"
+                                  : p.status === "cancelled"
+                                  ? "bg-rose-100 text-rose-800 border-rose-200"
+                                  : "bg-amber-100 text-amber-800 border-amber-200"
+                              }`}
+                            >
+                              {p.status === "pending"
+                                ? "Pending Approval"
+                                : p.status === "confirmed"
+                                ? "Confirmed (Awaiting Driver)"
+                                : p.status === "picked_up"
+                                ? "Completed & Rescued"
+                                : "Cancelled"}
+                            </span>
+                          </div>
+                          <p className="text-forest-800/60 text-xs">
+                            ~{p.meals_estimate} meals requested
+                            {p.scheduled_time &&
+                              ` · Scheduled: ${new Date(p.scheduled_time).toLocaleString(undefined, {
+                                dateStyle: "short",
+                                timeStyle: "short",
+                              })}`}
                           </p>
                         </div>
-                        {p.status === "pending" && (
-                          <button
-                            onClick={() => confirmPickup(p.id)}
-                            disabled={confirmingId === p.id}
-                            className="inline-flex items-center justify-center gap-1 px-3 py-1.5 bg-forest-800 text-wheat-50 rounded-md text-xs font-medium hover:bg-forest-700 disabled:opacity-50 transition-all shrink-0"
-                          >
-                            <CheckCircle2 className="w-3.5 h-3.5" />
-                            <span>Confirm Pickup</span>
-                          </button>
-                        )}
+
+                        {/* Action buttons */}
+                        <div className="flex items-center gap-2 shrink-0">
+                          {p.status === "pending" && (
+                            <>
+                              <button
+                                onClick={() => confirmPickup(p.id)}
+                                disabled={confirmingId === p.id}
+                                className="inline-flex items-center justify-center gap-1 px-3 py-1.5 bg-emerald-700 hover:bg-emerald-800 text-white rounded-lg text-xs font-semibold disabled:opacity-50 transition-all shadow-2xs"
+                              >
+                                <CheckCircle2 className="w-3.5 h-3.5 text-emerald-200" />
+                                <span>Confirm Request</span>
+                              </button>
+                              <button
+                                onClick={() => rejectPickup(p.id)}
+                                disabled={confirmingId === p.id}
+                                className="inline-flex items-center justify-center gap-1 px-2.5 py-1.5 text-tomato-600 hover:bg-tomato-50 rounded-lg text-xs font-medium transition-colors"
+                                title="Reject pickup request"
+                              >
+                                <XCircle className="w-3.5 h-3.5" />
+                                <span>Reject</span>
+                              </button>
+                            </>
+                          )}
+
+                          {p.status === "confirmed" && (
+                            <>
+                              <button
+                                onClick={() => setShowVerifyQrModal(true)}
+                                className="inline-flex items-center justify-center gap-1 px-3 py-1.5 bg-emerald-600 hover:bg-emerald-700 text-white rounded-lg text-xs font-semibold transition-all shadow-2xs"
+                              >
+                                <Scan className="w-3.5 h-3.5" />
+                                <span>Scan Driver QR</span>
+                              </button>
+                              <button
+                                onClick={() => rejectPickup(p.id)}
+                                disabled={confirmingId === p.id}
+                                className="inline-flex items-center justify-center gap-1 px-2 py-1.5 text-tomato-600 hover:bg-tomato-50 rounded-lg text-xs font-medium transition-colors"
+                                title="Cancel pickup"
+                              >
+                                <XCircle className="w-3.5 h-3.5" />
+                                <span>Cancel</span>
+                              </button>
+                            </>
+                          )}
+                        </div>
                       </div>
                     ))}
                   </div>
