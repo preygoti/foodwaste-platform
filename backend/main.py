@@ -466,6 +466,14 @@ def browse_listings(
     # Food safety: Never show expired food listings to NGOs
     q = q.filter(models.Listing.expiry_date >= date.today())
 
+    # If the user is an NGO, exclude listings they have already requested (active pending or confirmed or completed)
+    if user.role == models.UserRole.ngo:
+        requested_ids_subquery = db.query(models.Pickup.listing_id).filter(
+            models.Pickup.ngo_id == user.id,
+            models.Pickup.status.in_([models.PickupStatus.pending, models.PickupStatus.confirmed, models.PickupStatus.picked_up])
+        ).scalar_subquery()
+        q = q.filter(~models.Listing.id.in_(requested_ids_subquery))
+
     listings = q.order_by(models.Listing.expiry_date.asc()).all()
     return [_listing_out(l, db) for l in listings]
 

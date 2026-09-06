@@ -358,7 +358,7 @@ class TestFoodWastePlatform(unittest.TestCase):
         self.assertEqual(res_listing.status_code, 200)
         listing_id = res_listing.json()["id"]
 
-        # 3. NGO 1 requests pickup -> Listing MUST still remain available
+        # 3. NGO 1 requests pickup -> Listing MUST still remain available for others, but hidden from NGO 1
         res_p1 = client.post("/pickups", headers=ngo1_headers, json={
             "listing_id": listing_id,
             "meals_estimate": 50.0,
@@ -366,6 +366,11 @@ class TestFoodWastePlatform(unittest.TestCase):
         })
         self.assertEqual(res_p1.status_code, 200)
         p1_id = res_p1.json()["id"]
+
+        # 3b. NGO 1 browses available listings -> MUST NOT see it (it's in NGO 1's My Pickups!)
+        res_browse_ngo1 = client.get("/listings", headers=ngo1_headers)
+        ngo1_available_ids = [l["id"] for l in res_browse_ngo1.json()]
+        self.assertNotIn(listing_id, ngo1_available_ids)
 
         # 4. NGO 2 browses available listings -> Must STILL see the listing!
         res_browse = client.get("/listings", headers=ngo2_headers)

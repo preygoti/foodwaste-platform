@@ -240,6 +240,7 @@ export const api = {
       body: JSON.stringify(data),
     });
     clearApiCache("pickups");
+    clearApiCache("my_pickups");
     clearApiCache("browse_listings");
     clearApiCache("dashboard");
     return handle(res);
