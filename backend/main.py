@@ -286,6 +286,27 @@ def update_inventory_item(
     return _inventory_out(item)
 
 
+@app.delete("/inventory/expired/clear")
+def clear_all_expired_inventory(
+    db: Session = Depends(get_db),
+    user: models.User = Depends(require_role("business")),
+):
+    expired_items = db.query(models.InventoryItem).filter(
+        models.InventoryItem.business_id == user.id,
+        models.InventoryItem.expiry_date < date.today()
+    ).all()
+    
+    expired_ids = [i.id for i in expired_items]
+    if expired_ids:
+        db.query(models.Listing).filter(models.Listing.inventory_item_id.in_(expired_ids)).update(
+            {models.Listing.inventory_item_id: None}, synchronize_session=False
+        )
+        for item in expired_items:
+            db.delete(item)
+        db.commit()
+    return {"ok": True, "deleted": len(expired_ids)}
+
+
 @app.delete("/inventory/{item_id}")
 def delete_inventory_item(
     item_id: int,
@@ -297,6 +318,12 @@ def delete_inventory_item(
     ).first()
     if not item:
         raise HTTPException(404, "Item not found")
+    
+    # Safely unlink any listings referencing this inventory item before deleting
+    db.query(models.Listing).filter(models.Listing.inventory_item_id == item_id).update(
+        {models.Listing.inventory_item_id: None}, synchronize_session=False
+    )
+    
     db.delete(item)
     db.commit()
     return {"ok": True}

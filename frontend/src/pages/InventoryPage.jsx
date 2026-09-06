@@ -254,9 +254,19 @@ export default function InventoryPage() {
     if (!window.confirm(`Are you sure you want to remove/dispose "${name}" from inventory?`)) return;
     try {
       await api.deleteInventoryItem(id);
-      load();
+      load(true);
     } catch (err) {
       alert(`Failed to delete item: ${err.message}`);
+    }
+  };
+
+  const handleClearAllExpired = async () => {
+    if (!window.confirm(`Are you sure you want to log disposal and remove all ${expiredItems.length} expired items from inventory?`)) return;
+    try {
+      await api.clearExpiredInventory();
+      load(true);
+    } catch (err) {
+      alert(`Failed to clear expired items: ${err.message}`);
     }
   };
 
@@ -440,7 +450,7 @@ export default function InventoryPage() {
 
       {/* EXPIRED ITEMS NOTICE BANNER */}
       {activeTab === "expired" && (
-        <div className="mb-6 p-4 rounded-xl bg-rose-50 border border-rose-200 flex flex-col sm:flex-row sm:items-center justify-between gap-3 text-rose-900 shadow-2xs">
+        <div className="mb-6 p-4 rounded-xl bg-rose-50 border border-rose-200 flex flex-col sm:flex-row sm:items-center justify-between gap-4 text-rose-900 shadow-2xs">
           <div className="flex items-start gap-3">
             <ShieldAlert className="w-5 h-5 text-rose-600 shrink-0 mt-0.5" />
             <div>
@@ -452,6 +462,15 @@ export default function InventoryPage() {
               </p>
             </div>
           </div>
+          {expiredItems.length > 0 && (
+            <button
+              onClick={handleClearAllExpired}
+              className="inline-flex items-center justify-center gap-1.5 px-4 py-2 text-xs sm:text-sm font-semibold text-white bg-rose-700 hover:bg-rose-800 rounded-lg transition-colors shrink-0 shadow-sm"
+            >
+              <Trash2 className="w-4 h-4" />
+              <span>Dispose All ({expiredItems.length})</span>
+            </button>
+          )}
         </div>
       )}
 

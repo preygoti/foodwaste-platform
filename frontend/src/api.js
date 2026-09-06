@@ -194,6 +194,14 @@ export const api = {
     clearApiCache();
     return handle(res);
   },
+  async clearExpiredInventory() {
+    const res = await fetch(`${API_URL}/inventory/expired/clear`, {
+      method: "DELETE",
+      headers: authHeaders(),
+    });
+    clearApiCache();
+    return handle(res);
+  },
   async bulkUploadCsv(rows) {
     const res = await fetch(`${API_URL}/inventory/bulk-csv`, {
       method: "POST",
