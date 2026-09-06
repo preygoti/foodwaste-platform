@@ -21,6 +21,7 @@ import {
   Ban,
   AlertOctagon,
   Flame,
+  ArrowRight,
 } from "lucide-react";
 import Layout from "../components/Layout";
 import RiskStamp from "../components/RiskStamp";
@@ -447,6 +448,28 @@ export default function InventoryPage() {
           </span>
         </button>
       </div>
+
+      {/* ACTIVE TAB EXPIRED QUARANTINE NOTICE */}
+      {activeTab === "active" && expiredItems.length > 0 && (
+        <div className="mb-6 p-4 rounded-xl bg-rose-50 border border-rose-200 flex flex-col sm:flex-row sm:items-center justify-between gap-3 text-rose-900 shadow-2xs">
+          <div className="flex items-center gap-3">
+            <ShieldAlert className="w-5 h-5 text-rose-600 shrink-0" />
+            <p className="text-xs sm:text-sm">
+              <strong>{expiredItems.length} item{expiredItems.length === 1 ? "" : "s"}</strong> expired and segregated to Food Safety Quarantine ({expiredTotalWeight.toLocaleString()} kg).
+            </p>
+          </div>
+          <button
+            onClick={() => {
+              setActiveTab("expired");
+              setFilter("all");
+            }}
+            className="inline-flex items-center gap-1.5 px-3.5 py-1.5 rounded-lg text-xs font-semibold bg-rose-700 text-white hover:bg-rose-800 transition-colors shrink-0 shadow-sm"
+          >
+            <span>View Expired Items ({expiredItems.length})</span>
+            <ArrowRight className="w-3.5 h-3.5" />
+          </button>
+        </div>
+      )}
 
       {/* EXPIRED ITEMS NOTICE BANNER */}
       {activeTab === "expired" && (
