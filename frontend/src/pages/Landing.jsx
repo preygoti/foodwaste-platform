@@ -9,7 +9,10 @@ import {
   Building2,
   Clock,
   CheckCircle2,
+  Leaf,
+  Award,
 } from "lucide-react";
+import Card3D from "../components/Card3D";
 
 export default function Landing() {
   return (
@@ -93,75 +96,89 @@ export default function Landing() {
           </div>
         </div>
 
-        {/* Live Ledger Preview Mock Card */}
-        <div className="md:col-span-5">
-          <div className="bg-white border border-wheat-200 rounded-2xl shadow-lg p-5 sm:p-6 space-y-4">
-            <div className="flex items-center justify-between border-b border-wheat-100 pb-3">
-              <p className="font-mono text-xs uppercase tracking-widest text-forest-800/60 font-semibold">
-                Live Inventory Ledger
-              </p>
-              <span className="px-2 py-0.5 rounded text-[10px] font-mono bg-forest-50 text-forest-600 border border-forest-100">
-                Auto-Synced
-              </span>
-            </div>
-
-            <div className="space-y-3">
-              {[
-                {
-                  name: "Whole Milk · 40L",
-                  location: "Cold Storage A",
-                  days: "2 days left",
-                  risk: "HIGH RISK · 85",
-                  color: "#c1442d",
-                  bg: "rgba(193, 68, 45, 0.1)",
-                },
-                {
-                  name: "Sourdough Loaves · 18",
-                  location: "Bakery Rack 1",
-                  days: "4 days left",
-                  risk: "WATCH · 52",
-                  color: "#b48d38",
-                  bg: "rgba(180, 141, 56, 0.1)",
-                },
-                {
-                  name: "Canned Chickpeas · 120",
-                  location: "Dry Pantry B",
-                  days: "180 days left",
-                  risk: "FRESH · 12",
-                  color: "#2d5940",
-                  bg: "rgba(45, 89, 64, 0.1)",
-                },
-              ].map((row) => (
-                <div
-                  key={row.name}
-                  className="p-3 rounded-xl bg-wheat-50/50 border border-wheat-200 flex items-center justify-between gap-2"
-                >
-                  <div>
-                    <p className="text-sm font-semibold text-forest-800">{row.name}</p>
-                    <p className="text-[11px] text-forest-800/50">
-                      {row.location} · <span className="font-medium text-forest-800/70">{row.days}</span>
-                    </p>
-                  </div>
-                  <span
-                    className="font-mono text-[10px] font-semibold px-2.5 py-1 rounded-full whitespace-nowrap"
-                    style={{ color: row.color, backgroundColor: row.bg }}
-                  >
-                    {row.risk}
-                  </span>
-                </div>
-              ))}
-            </div>
-
-            <div className="pt-2 flex items-center justify-between text-xs text-forest-800/60 border-t border-wheat-100">
-              <span>Redistribution Target</span>
-              <span className="font-mono font-semibold text-forest-800">100% Waste Avoidance</span>
-            </div>
+        {/* 3D Live Ledger Preview Mock Card with Floating Badges */}
+        <div className="md:col-span-5 relative">
+          {/* Ambient 3D Floating Pill 1 (Top Left) */}
+          <div className="absolute -top-4 -left-4 z-20 hidden sm:flex items-center gap-1.5 px-3 py-1.5 bg-forest-800 text-wheat-50 rounded-full shadow-lg text-xs font-mono font-semibold animate-float-slow border border-forest-600">
+            <Leaf className="w-3.5 h-3.5 text-emerald-400" />
+            <span>100% Zero Landfill Waste</span>
           </div>
+
+          {/* Ambient 3D Floating Pill 2 (Bottom Right) */}
+          <div className="absolute -bottom-4 -right-3 z-20 hidden sm:flex items-center gap-1.5 px-3 py-1.5 bg-tomato-500 text-white rounded-full shadow-lg text-xs font-mono font-semibold animate-float-delayed border border-tomato-400">
+            <Sparkles className="w-3.5 h-3.5 text-amber-200" />
+            <span>Live AI Risk Prediction</span>
+          </div>
+
+          <Card3D maxTilt={10} scale={1.03}>
+            <div className="bg-white border border-wheat-200 rounded-2xl shadow-xl p-5 sm:p-6 space-y-4">
+              <div className="flex items-center justify-between border-b border-wheat-100 pb-3">
+                <p className="font-mono text-xs uppercase tracking-widest text-forest-800/60 font-semibold">
+                  Live Inventory Ledger
+                </p>
+                <span className="px-2 py-0.5 rounded text-[10px] font-mono bg-forest-50 text-forest-600 border border-forest-100">
+                  Auto-Synced &bull; 60 FPS
+                </span>
+              </div>
+
+              <div className="space-y-3">
+                {[
+                  {
+                    name: "Whole Milk · 40L",
+                    location: "Cold Storage A",
+                    days: "2 days left",
+                    risk: "HIGH RISK · 85",
+                    color: "#c1442d",
+                    bg: "rgba(193, 68, 45, 0.1)",
+                  },
+                  {
+                    name: "Sourdough Loaves · 18",
+                    location: "Bakery Rack 1",
+                    days: "4 days left",
+                    risk: "WATCH · 52",
+                    color: "#b48d38",
+                    bg: "rgba(180, 141, 56, 0.1)",
+                  },
+                  {
+                    name: "Canned Chickpeas · 120",
+                    location: "Dry Pantry B",
+                    days: "180 days left",
+                    risk: "FRESH · 12",
+                    color: "#2d5940",
+                    bg: "rgba(45, 89, 64, 0.1)",
+                  },
+                ].map((row) => (
+                  <div
+                    key={row.name}
+                    className="p-3 rounded-xl bg-wheat-50/50 border border-wheat-200 flex items-center justify-between gap-2 hover:border-forest-400/50 transition-colors"
+                  >
+                    <div>
+                      <p className="text-sm font-semibold text-forest-800">{row.name}</p>
+                      <p className="text-[11px] text-forest-800/50">
+                        {row.location} · <span className="font-medium text-forest-800/70">{row.days}</span>
+                      </p>
+                    </div>
+                    <span
+                      className="font-mono text-[10px] font-semibold px-2.5 py-1 rounded-full whitespace-nowrap"
+                      style={{ color: row.color, backgroundColor: row.bg }}
+                    >
+                      {row.risk}
+                    </span>
+                  </div>
+                ))}
+              </div>
+
+              <div className="pt-2 flex items-center justify-between text-xs text-forest-800/60 border-t border-wheat-100">
+                <span>Redistribution Target</span>
+                <span className="font-mono font-semibold text-forest-800">100% Waste Avoidance</span>
+              </div>
+            </div>
+          </Card3D>
         </div>
       </section>
 
       {/* ------------------------------------------------------------- */}
-      {/* FEATURE PILLARS                                               */}
+      {/* FEATURE PILLARS WITH 3D TILT                                 */}
       {/* ------------------------------------------------------------- */}
       <section className="bg-white border-y border-wheat-200 py-16">
         <div className="max-w-6xl mx-auto px-4 sm:px-6 lg:px-8">
@@ -197,25 +214,24 @@ export default function Landing() {
             ].map((card) => {
               const Icon = card.icon;
               return (
-                <div
-                  key={card.num}
-                  className="p-6 rounded-2xl bg-wheat-50/60 border border-wheat-200 flex flex-col justify-between"
-                >
-                  <div>
-                    <div className="flex items-center justify-between mb-4">
-                      <span className="font-mono text-xs font-bold text-tomato-500">{card.num}</span>
-                      <div className="p-2 rounded-lg bg-forest-800 text-wheat-50">
-                        <Icon className="w-4 h-4" />
+                <Card3D key={card.num} maxTilt={6} scale={1.02}>
+                  <div className="p-6 rounded-2xl bg-wheat-50/60 border border-wheat-200 flex flex-col justify-between h-full shadow-2xs hover:shadow-md transition-shadow">
+                    <div>
+                      <div className="flex items-center justify-between mb-4">
+                        <span className="font-mono text-xs font-bold text-tomato-500">{card.num}</span>
+                        <div className="p-2 rounded-lg bg-forest-800 text-wheat-50">
+                          <Icon className="w-4 h-4" />
+                        </div>
                       </div>
+                      <h3 className="font-display text-lg text-forest-800 font-semibold mb-2">
+                        {card.title}
+                      </h3>
+                      <p className="text-xs sm:text-sm text-forest-800/70 leading-relaxed">
+                        {card.desc}
+                      </p>
                     </div>
-                    <h3 className="font-display text-lg text-forest-800 font-semibold mb-2">
-                      {card.title}
-                    </h3>
-                    <p className="text-xs sm:text-sm text-forest-800/70 leading-relaxed">
-                      {card.desc}
-                    </p>
                   </div>
-                </div>
+                </Card3D>
               );
             })}
           </div>

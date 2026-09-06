@@ -21,6 +21,7 @@ import Layout from "../components/Layout";
 import { useAuth } from "../AuthContext";
 import { api } from "../api";
 import CsrCertificateModal from "../components/CsrCertificateModal";
+import Card3D from "../components/Card3D";
 import {
   BarChart,
   Bar,
@@ -77,23 +78,25 @@ function StatusBadge({ status }) {
 
 function StatCard({ label, value, subtext, icon: Icon, accent, bgAccent }) {
   return (
-    <div className="bg-white border border-wheat-200 rounded-xl p-5 shadow-2xs flex items-start justify-between">
-      <div className="space-y-1">
-        <p className="text-xs uppercase tracking-wide text-forest-800/50 font-mono">{label}</p>
-        <p className="font-display text-2xl sm:text-3xl font-semibold" style={{ color: accent || "#1f3a2e" }}>
-          {value}
-        </p>
-        {subtext && <p className="text-xs text-forest-800/60 mt-0.5">{subtext}</p>}
-      </div>
-      {Icon && (
-        <div
-          className="p-2.5 rounded-xl shrink-0"
-          style={{ backgroundColor: bgAccent || "rgba(45, 89, 64, 0.08)", color: accent || "#2d5940" }}
-        >
-          <Icon className="w-5 h-5" />
+    <Card3D maxTilt={7} scale={1.02}>
+      <div className="bg-white border border-wheat-200 rounded-xl p-5 shadow-2xs flex items-start justify-between h-full hover:shadow-md transition-shadow">
+        <div className="space-y-1">
+          <p className="text-xs uppercase tracking-wide text-forest-800/50 font-mono">{label}</p>
+          <p className="font-display text-2xl sm:text-3xl font-semibold" style={{ color: accent || "#1f3a2e" }}>
+            {value}
+          </p>
+          {subtext && <p className="text-xs text-forest-800/60 mt-0.5">{subtext}</p>}
         </div>
-      )}
-    </div>
+        {Icon && (
+          <div
+            className="p-2.5 rounded-xl shrink-0"
+            style={{ backgroundColor: bgAccent || "rgba(45, 89, 64, 0.08)", color: accent || "#2d5940" }}
+          >
+            <Icon className="w-5 h-5" />
+          </div>
+        )}
+      </div>
+    </Card3D>
   );
 }
 
