@@ -603,140 +603,135 @@ export default function InventoryPage() {
         </div>
       ) : (
         <>
-          {/* DESKTOP TABLE VIEW (>= 768px) */}
+          {/* DESKTOP TABLE VIEW (>= 768px) - 100% Full Width, No Horizontal Scroll */}
           <div className="hidden md:block bg-white border border-wheat-200 rounded-xl overflow-hidden shadow-2xs">
-            <div className="overflow-x-auto">
-              <table className="w-full text-left text-sm border-collapse min-w-[950px]">
-                <thead className="bg-wheat-100/70 border-b border-wheat-200 text-xs font-mono uppercase tracking-wider text-forest-800/60">
-                  <tr>
-                    <th className="py-3.5 px-4 font-semibold text-left min-w-[200px]">Item &amp; Category</th>
-                    <th className="py-3.5 px-4 font-semibold text-left whitespace-nowrap min-w-[110px]">Quantity</th>
-                    <th className="py-3.5 px-4 font-semibold text-left whitespace-nowrap min-w-[210px]">Live Expiry Countdown</th>
-                    <th className="py-3.5 px-4 font-semibold text-center whitespace-nowrap min-w-[130px]">Reorder Advice</th>
-                    <th className="py-3.5 px-4 font-semibold text-center whitespace-nowrap min-w-[160px]">Status &amp; Risk</th>
-                    <th className="py-3.5 px-4 font-semibold text-right whitespace-nowrap min-w-[260px]">Actions</th>
-                  </tr>
-                </thead>
-                <tbody className="divide-y divide-wheat-200/80">
-                  {filtered.map((item) => {
-                    const cd = computeLiveExpiryCountdown(item.expiry_date, now);
-                    const isItemExpired = cd.isExpired || item.days_to_expiry <= 0;
+            <table className="w-full text-left text-sm border-collapse table-auto">
+              <thead className="bg-wheat-100/70 border-b border-wheat-200 text-xs font-mono uppercase tracking-wider text-forest-800/60">
+                <tr>
+                  <th className="py-3.5 px-4 font-semibold text-left">Item &amp; Location</th>
+                  <th className="py-3.5 px-3 font-semibold text-left whitespace-nowrap">Quantity</th>
+                  <th className="py-3.5 px-4 font-semibold text-left whitespace-nowrap">Live Expiry Countdown</th>
+                  <th className="py-3.5 px-3 font-semibold text-center whitespace-nowrap">Status &amp; Risk</th>
+                  <th className="py-3.5 px-4 font-semibold text-right whitespace-nowrap">Actions</th>
+                </tr>
+              </thead>
+              <tbody className="divide-y divide-wheat-200/80">
+                {filtered.map((item) => {
+                  const cd = computeLiveExpiryCountdown(item.expiry_date, now);
+                  const isItemExpired = cd.isExpired || item.days_to_expiry <= 0;
 
-                    return (
-                      <tr
-                        key={item.id}
-                        className={`transition-colors ${
-                          isItemExpired ? "bg-rose-50/40 hover:bg-rose-50/70" : "hover:bg-wheat-50/50"
-                        }`}
-                      >
-                        {/* Name & Metadata */}
-                        <td className="py-3.5 px-4 align-middle">
-                          <p className="font-semibold text-forest-800 text-sm flex items-center gap-1.5 leading-tight">
-                            {isItemExpired && <ShieldAlert className="w-4 h-4 text-rose-600 shrink-0" />}
-                            <span>{item.name}</span>
-                          </p>
-                          <div className="text-xs text-forest-800/50 flex flex-wrap items-center gap-2 mt-1">
-                            <span className="bg-wheat-100/70 px-2 py-0.5 rounded text-[11px] font-mono capitalize">
-                              {item.category}
+                  return (
+                    <tr
+                      key={item.id}
+                      className={`transition-colors ${
+                        isItemExpired ? "bg-rose-50/40 hover:bg-rose-50/70" : "hover:bg-wheat-50/50"
+                      }`}
+                    >
+                      {/* Name & Metadata */}
+                      <td className="py-3.5 px-4 align-middle">
+                        <div className="flex items-center gap-1.5 leading-tight">
+                          {isItemExpired && <ShieldAlert className="w-4 h-4 text-rose-600 shrink-0" />}
+                          <span className="font-semibold text-forest-800 text-sm">{item.name}</span>
+                        </div>
+                        <div className="text-xs text-forest-800/50 flex flex-wrap items-center gap-2 mt-1">
+                          <span className="bg-wheat-100/80 px-2 py-0.5 rounded text-[11px] font-mono capitalize">
+                            {item.category}
+                          </span>
+                          {item.storage_location && (
+                            <span className="flex items-center gap-1 text-[11px] text-forest-800/50">
+                              <MapPin className="w-3 h-3 text-forest-800/40 shrink-0" />
+                              <span className="truncate max-w-[150px]">{item.storage_location}</span>
                             </span>
-                            {item.storage_location && (
-                              <span className="flex items-center gap-1 text-[11px] text-forest-800/50">
-                                <MapPin className="w-3 h-3 text-forest-800/40" />
-                                <span>{item.storage_location}</span>
-                              </span>
-                            )}
-                          </div>
-                        </td>
+                          )}
+                        </div>
+                      </td>
 
-                        {/* Quantity */}
-                        <td className="py-3.5 px-4 font-mono text-sm whitespace-nowrap align-middle">
+                      {/* Quantity & Reorder Advice */}
+                      <td className="py-3.5 px-3 align-middle whitespace-nowrap">
+                        <p className="font-mono text-sm leading-tight">
                           <span className="font-bold text-forest-800">{item.quantity}</span>{" "}
                           <span className="text-forest-800/60 text-xs">{item.unit}</span>
-                        </td>
-
-                        {/* Live Expiry Countdown */}
-                        <td className="py-3.5 px-4 whitespace-nowrap align-middle">
-                          <div className="space-y-1">
-                            <p className="font-mono text-[11px] text-forest-800/60 flex items-center gap-1">
-                              <Calendar className="w-3 h-3 text-forest-600" />
-                              <span>{item.expiry_date}</span>
-                            </p>
-                            <LiveCountdownBadge expiryDateStr={item.expiry_date} now={now} />
+                        </p>
+                        {item.reorder_recommendation > 0 && !isItemExpired && (
+                          <div className="mt-1">
+                            <span className="inline-flex items-center gap-1 text-[10px] font-mono font-semibold text-forest-700 bg-forest-50 px-1.5 py-0.5 rounded border border-forest-200">
+                              Reorder +{item.reorder_recommendation} {item.unit}
+                            </span>
                           </div>
-                        </td>
+                        )}
+                      </td>
 
-                        {/* Reorder Recommendation */}
-                        <td className="py-3.5 px-4 font-mono text-xs text-center whitespace-nowrap align-middle">
-                          {item.reorder_recommendation > 0 ? (
-                            <span className="inline-flex items-center gap-1 text-forest-700 bg-forest-50 px-2.5 py-1 rounded-md border border-forest-200 font-semibold">
-                              +{item.reorder_recommendation} {item.unit}
+                      {/* Live Expiry Countdown */}
+                      <td className="py-3.5 px-4 align-middle whitespace-nowrap">
+                        <div className="space-y-1">
+                          <p className="font-mono text-[11px] text-forest-800/60 flex items-center gap-1">
+                            <Calendar className="w-3 h-3 text-forest-600 shrink-0" />
+                            <span>{item.expiry_date}</span>
+                          </p>
+                          <LiveCountdownBadge expiryDateStr={item.expiry_date} now={now} />
+                        </div>
+                      </td>
+
+                      {/* Risk Stamp / Expired Badge */}
+                      <td className="py-3.5 px-3 align-middle text-center whitespace-nowrap">
+                        <div className="flex items-center justify-center">
+                          {isItemExpired ? (
+                            <span className="inline-flex items-center gap-1 px-2.5 py-1 rounded-full text-xs font-mono font-bold bg-rose-100 text-rose-800 border border-rose-300">
+                              <Ban className="w-3 h-3" />
+                              <span>EXPIRED</span>
                             </span>
                           ) : (
-                            <span className="text-forest-800/30 font-mono">&mdash;</span>
+                            <RiskStamp level={item.risk_level} score={item.risk_score} />
                           )}
-                        </td>
+                        </div>
+                      </td>
 
-                        {/* Risk Stamp / Expired Badge */}
-                        <td className="py-3.5 px-4 text-center whitespace-nowrap align-middle">
-                          <div className="flex items-center justify-center">
-                            {isItemExpired ? (
-                              <span className="inline-flex items-center gap-1 px-2.5 py-1 rounded-full text-xs font-mono font-bold bg-rose-100 text-rose-800 border border-rose-300">
-                                <Ban className="w-3 h-3" />
-                                <span>EXPIRED</span>
-                              </span>
-                            ) : (
-                              <RiskStamp level={item.risk_level} score={item.risk_score} />
-                            )}
-                          </div>
-                        </td>
-
-                        {/* Action buttons */}
-                        <td className="py-3.5 px-4 text-right whitespace-nowrap align-middle">
-                          <div className="flex items-center justify-end gap-1.5 flex-nowrap">
-                            {isItemExpired ? (
+                      {/* Action buttons */}
+                      <td className="py-3.5 px-4 align-middle text-right whitespace-nowrap">
+                        <div className="flex items-center justify-end gap-1.5">
+                          {isItemExpired ? (
+                            <button
+                              onClick={() => remove(item.id, item.name)}
+                              className="inline-flex items-center gap-1 px-3 py-1.5 text-xs font-semibold text-rose-700 bg-rose-100 hover:bg-rose-200 border border-rose-300 rounded-lg transition-colors shadow-2xs"
+                              title="Log disposal & remove"
+                            >
+                              <Trash2 className="w-3.5 h-3.5" />
+                              <span>Log Disposal</span>
+                            </button>
+                          ) : (
+                            <>
+                              <button
+                                onClick={() => setRescueChefItem(item)}
+                                className="inline-flex items-center gap-1 px-2.5 py-1.5 text-xs font-semibold text-amber-900 bg-amber-50 hover:bg-amber-100 border border-amber-200/80 rounded-lg transition-colors shadow-2xs"
+                                title="AI Zero-Waste Rescue Recipes"
+                              >
+                                <Sparkles className="w-3.5 h-3.5 text-amber-600" />
+                                <span>Rescue Recipe</span>
+                              </button>
+                              <button
+                                onClick={() => openListingModal(item)}
+                                className="inline-flex items-center gap-1 px-2.5 py-1.5 text-xs font-semibold text-forest-700 bg-forest-50 hover:bg-forest-100 border border-forest-100 rounded-lg transition-colors shadow-2xs"
+                                title="List as surplus on marketplace"
+                              >
+                                <Share2 className="w-3.5 h-3.5 text-forest-600" />
+                                <span>List Surplus</span>
+                              </button>
                               <button
                                 onClick={() => remove(item.id, item.name)}
-                                className="inline-flex items-center gap-1 px-3 py-1.5 text-xs font-semibold text-rose-700 bg-rose-100 hover:bg-rose-200 border border-rose-300 rounded-lg transition-colors shadow-2xs"
-                                title="Log disposal & remove"
+                                className="p-1.5 text-tomato-500 hover:text-tomato-700 hover:bg-tomato-50 rounded-lg transition-colors border border-transparent hover:border-tomato-200"
+                                title="Delete item"
                               >
-                                <Trash2 className="w-3.5 h-3.5" />
-                                <span>Log Disposal</span>
+                                <Trash2 className="w-4 h-4" />
                               </button>
-                            ) : (
-                              <>
-                                <button
-                                  onClick={() => setRescueChefItem(item)}
-                                  className="inline-flex items-center gap-1 px-2.5 py-1.5 text-xs font-semibold text-amber-900 bg-amber-50 hover:bg-amber-100 border border-amber-200/80 rounded-lg transition-colors shadow-2xs"
-                                  title="AI Zero-Waste Rescue Recipes"
-                                >
-                                  <Sparkles className="w-3.5 h-3.5 text-amber-600" />
-                                  <span>Rescue Recipe</span>
-                                </button>
-                                <button
-                                  onClick={() => openListingModal(item)}
-                                  className="inline-flex items-center gap-1 px-2.5 py-1.5 text-xs font-semibold text-forest-700 bg-forest-50 hover:bg-forest-100 border border-forest-100 rounded-lg transition-colors shadow-2xs"
-                                  title="List as surplus on marketplace"
-                                >
-                                  <Share2 className="w-3.5 h-3.5 text-forest-600" />
-                                  <span>List Surplus</span>
-                                </button>
-                                <button
-                                  onClick={() => remove(item.id, item.name)}
-                                  className="p-1.5 text-tomato-500 hover:text-tomato-700 hover:bg-tomato-50 rounded-lg transition-colors border border-transparent hover:border-tomato-200"
-                                  title="Delete item"
-                                >
-                                  <Trash2 className="w-4 h-4" />
-                                </button>
-                              </>
-                            )}
-                          </div>
-                        </td>
-                      </tr>
-                    );
-                  })}
-                </tbody>
-              </table>
-            </div>
+                            </>
+                          )}
+                        </div>
+                      </td>
+                    </tr>
+                  );
+                })}
+              </tbody>
+            </table>
           </div>
 
           {/* MOBILE CARDS VIEW (< 768px) */}

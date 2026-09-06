@@ -364,8 +364,8 @@ export default function AnalyticsPage() {
           <Truck className="w-5 h-5 text-forest-600" />
         </div>
 
-        <div className="overflow-x-auto -mx-5 sm:-mx-6 px-5 sm:px-6">
-          <table className="w-full text-left text-xs sm:text-sm">
+        <div className="w-full">
+          <table className="w-full text-left text-xs sm:text-sm table-auto">
             <thead>
               <tr className="border-b border-wheat-200 text-forest-800/60 font-mono text-[11px] uppercase tracking-wider">
                 <th className="pb-3 pr-4 font-semibold">Listing ID</th>

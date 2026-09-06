@@ -314,8 +314,8 @@ export default function CsvUploadModal({ isOpen, open, onClose, onSuccess }) {
                   ✓ Validated
                 </span>
               </div>
-              <div className="border border-wheat-200 rounded-lg overflow-x-auto max-h-48">
-                <table className="w-full text-left text-xs border-collapse">
+              <div className="border border-wheat-200 rounded-lg max-h-48 overflow-y-auto">
+                <table className="w-full text-left text-xs border-collapse table-auto">
                   <thead className="bg-wheat-100 text-forest-800/70 sticky top-0">
                     <tr>
                       <th className="py-2 px-3 font-semibold">Item</th>
