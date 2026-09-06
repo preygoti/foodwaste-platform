@@ -46,17 +46,25 @@ function findValue(row, aliases) {
 }
 
 function detectCategory(catStr, itemName) {
-  const raw = (catStr || itemName || "").toLowerCase();
+  const raw = String(catStr || itemName || "").toLowerCase().trim();
   for (const c of VALID_CATEGORIES) {
-    if (raw.includes(c)) return c;
+    if (raw.startsWith(c) || raw.includes(c)) return c;
   }
-  if (/fruit|veg|apple|banana|tomato|spinach|berry|lettuce|onion|potato|carrot/i.test(raw)) return "produce";
+  if (/fruit|veg|apple|banana|tomato|spinach|berry|lettuce|onion|potato|carrot|produced/i.test(raw)) return "produce";
   if (/milk|cheese|yogurt|butter|cream|dairy|paneer|curd/i.test(raw)) return "dairy";
-  if (/bread|loaf|bakery|cake|croissant|pastry|cookie|biscuit|flour/i.test(raw)) return "bakery";
+  if (/bread|loaf|bakery|cake|croissant|pastry|cookie|biscuit|flour|buns/i.test(raw)) return "bakery";
   if (/rice|curry|meal|pasta|cooked|prepared|biryani|roast|soup/i.test(raw)) return "prepared";
   if (/can|canned|tinned|bean|chickpea|tuna/i.test(raw)) return "canned";
   if (/frozen|freezer|ice|salmon|fillet|nugget/i.test(raw)) return "frozen";
   return "general";
+}
+
+function normalizeYear(yrStr) {
+  let y = parseInt(yrStr, 10);
+  if (y < 100) {
+    y = y >= 50 ? 1900 + y : 2000 + y;
+  }
+  return String(y);
 }
 
 function normalizeDate(dateStr) {
@@ -66,30 +74,57 @@ function normalizeDate(dateStr) {
     return d.toISOString().split("T")[0];
   }
   const trimmed = String(dateStr).trim();
-  if (/^\d{4}-\d{2}-\d{2}$/.test(trimmed)) {
-    return trimmed;
+
+  // 1. ISO format: YYYY-MM-DD or YYYY/MM/DD or YYYY.MM.DD
+  const ymd4Match = trimmed.match(/^(\d{4})[\/. -](\d{1,2})[\/. -](\d{1,2})$/);
+  if (ymd4Match) {
+    const [, y, m, d] = ymd4Match;
+    return `${y}-${String(m).padStart(2, "0")}-${String(d).padStart(2, "0")}`;
   }
-  const ymdMatch = trimmed.match(/^(\d{4})[\/. -](\d{1,2})[\/. -](\d{1,2})$/);
-  if (ymdMatch) {
-    const [, y, m, d] = ymdMatch;
-    return `${y}-${m.padStart(2, "0")}-${d.padStart(2, "0")}`;
-  }
-  const dmyMatch = trimmed.match(/^(\d{1,2})[\/. -](\d{1,2})[\/. -](\d{4})$/);
-  if (dmyMatch) {
-    let [, p1, p2, year] = dmyMatch;
-    let month, day;
-    if (parseInt(p1, 10) > 12) {
-      day = p1;
+
+  // 2. 3-part date: DD-MM-YYYY, DD-MM-YY, MM-DD-YYYY, MM-DD-YY
+  const partsMatch = trimmed.match(/^(\d{1,4})[\/. -](\d{1,2})[\/. -](\d{1,4})$/);
+  if (partsMatch) {
+    let [, p1, p2, p3] = partsMatch;
+    let year, month, day;
+
+    if (p1.length === 4) {
+      year = p1;
       month = p2;
-    } else if (parseInt(p2, 10) > 12) {
-      month = p1;
-      day = p2;
+      day = p3;
+    } else if (p3.length === 4) {
+      year = p3;
+      const n1 = parseInt(p1, 10);
+      const n2 = parseInt(p2, 10);
+      if (n1 > 12) {
+        day = p1;
+        month = p2;
+      } else if (n2 > 12) {
+        month = p1;
+        day = p2;
+      } else {
+        day = p1;
+        month = p2;
+      }
     } else {
-      month = p1;
-      day = p2;
+      year = normalizeYear(p3);
+      const n1 = parseInt(p1, 10);
+      const n2 = parseInt(p2, 10);
+      if (n1 > 12) {
+        day = p1;
+        month = p2;
+      } else if (n2 > 12) {
+        month = p1;
+        day = p2;
+      } else {
+        day = p1;
+        month = p2;
+      }
     }
+
     return `${year}-${String(month).padStart(2, "0")}-${String(day).padStart(2, "0")}`;
   }
+
   const d = new Date(trimmed);
   if (!isNaN(d.getTime())) {
     const yyyy = d.getFullYear();
@@ -97,6 +132,7 @@ function normalizeDate(dateStr) {
     const dd = String(d.getDate()).padStart(2, "0");
     return `${yyyy}-${mm}-${dd}`;
   }
+
   const fallback = new Date();
   fallback.setDate(fallback.getDate() + 7);
   return fallback.toISOString().split("T")[0];
