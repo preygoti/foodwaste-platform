@@ -181,7 +181,16 @@ export default function BusinessListingsPage() {
         <div className="grid grid-cols-1 md:grid-cols-2 gap-4 sm:gap-5">
           {listings.map((l) => {
             const statusCfg = STATUS_CONFIG[l.status] || STATUS_CONFIG.available;
-            const pickups = pickupsByListing[l.id] || [];
+            const rawPickups = pickupsByListing[l.id] || [];
+            
+            // Prioritize assigned/rescued partner; otherwise show active pending bids
+            const assignedPickup = rawPickups.find((p) => p.status === "confirmed" || p.status === "picked_up");
+            const pendingPickups = rawPickups.filter((p) => p.status === "pending");
+            const displayedPickups = assignedPickup 
+              ? [assignedPickup] 
+              : pendingPickups.length > 0 
+                ? pendingPickups 
+                : rawPickups.filter((p) => p.status !== "cancelled");
 
             return (
               <div
@@ -232,20 +241,20 @@ export default function BusinessListingsPage() {
                 </div>
 
                 {/* Pickup coordination section */}
-                {pickups.length > 0 && (
+                {displayedPickups.length > 0 && (
                   <div className="mt-4 pt-3 border-t border-wheat-200 bg-forest-50/60 -mx-5 -mb-5 p-4 rounded-b-xl space-y-2.5">
                     <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-1.5">
                       <p className="text-[11px] font-mono font-semibold uppercase tracking-wider text-forest-800/80 flex items-center gap-1.5">
                         <Truck className="w-3.5 h-3.5 text-forest-600" />
-                        NGO Pickup Requests ({pickups.length})
+                        {assignedPickup ? "Assigned Rescue Partner" : `NGO Pickup Requests (${displayedPickups.length})`}
                       </p>
-                      {pickups.filter((p) => p.status === "pending").length > 1 && (
+                      {displayedPickups.filter((p) => p.status === "pending").length > 1 && (
                         <span className="text-[11px] text-amber-800 bg-amber-100/90 border border-amber-200 px-2 py-0.5 rounded-md font-mono">
-                          ⚡ {pickups.filter((p) => p.status === "pending").length} competing NGO requests &bull; Accepting one auto-rejects others
+                          ⚡ {displayedPickups.filter((p) => p.status === "pending").length} competing NGO requests &bull; Accepting one auto-rejects others
                         </span>
                       )}
                     </div>
-                    {pickups.map((p) => (
+                    {displayedPickups.map((p) => (
                       <div
                         key={p.id}
                         className="flex flex-col sm:flex-row sm:items-center justify-between gap-3 p-3 bg-white rounded-xl border border-wheat-200 text-xs shadow-2xs"

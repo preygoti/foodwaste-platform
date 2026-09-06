@@ -238,14 +238,6 @@ export default function MyPickupsPage() {
                           <span>Driver ID &amp; QR Pass</span>
                         </button>
                         <button
-                          onClick={() => markPickedUp(p.id)}
-                          disabled={processingId === p.id}
-                          className="inline-flex items-center gap-1.5 px-3.5 py-2 bg-forest-800 text-wheat-50 rounded-lg text-xs font-semibold hover:bg-forest-700 disabled:opacity-50 transition-all shadow-2xs"
-                        >
-                          <CheckCircle2 className="w-3.5 h-3.5 text-emerald-300" />
-                          <span>Mark Picked Up</span>
-                        </button>
-                        <button
                           onClick={() => cancel(p.id)}
                           disabled={processingId === p.id}
                           className="inline-flex items-center gap-1 px-3 py-2 text-tomato-500 hover:bg-tomato-500/10 rounded-lg text-xs font-medium transition-colors"
