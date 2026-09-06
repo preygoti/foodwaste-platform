@@ -136,9 +136,13 @@ def forgot_password(payload: schemas.ForgotPasswordRequest, db: Session = Depend
             detail=f"Failed to dispatch verification email: {err_msg}. Please check your email configuration.",
         )
 
-    # In local testing when RESEND_API_KEY is not set, provide debug_otp
-    resend_api_key = os.environ.get("RESEND_API_KEY", "").strip()
-    debug_otp = otp_code if not resend_api_key else None
+    # In testing/dev when no HTTPS email provider key is configured, provide debug_otp
+    has_email_api = bool(
+        os.environ.get("BREVO_API_KEY") or
+        os.environ.get("RESEND_API_KEY") or
+        os.environ.get("SENDGRID_API_KEY")
+    )
+    debug_otp = otp_code if not has_email_api else None
 
     return schemas.ForgotPasswordResponse(
         message="Verification code sent to your email address (Valid for 10 minutes)",

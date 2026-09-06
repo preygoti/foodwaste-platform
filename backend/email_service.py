@@ -127,15 +127,135 @@ def _get_email_html(otp_code: str) -> str:
 </html>"""
 
 
+def _send_via_resend(to_email: str, otp_code: str, resend_api_key: str) -> Tuple[bool, Optional[str]]:
+    """Sends OTP email via the Resend HTTP API (Port 443 HTTPS - Works on Render/Cloud)."""
+    from_email = os.environ.get("EMAILS_FROM", "Harvest Ledger <onboarding@resend.dev>").strip()
+    if not from_email:
+        from_email = "Harvest Ledger <onboarding@resend.dev>"
+
+    url = "https://api.resend.com/emails"
+    headers = {
+        "Authorization": f"Bearer {resend_api_key}",
+        "Content-Type": "application/json",
+        "User-Agent": "HarvestLedger/1.0",
+    }
+    payload = {
+        "from": from_email,
+        "to": [to_email],
+        "subject": f"Harvest Ledger: {otp_code} is your password reset code",
+        "html": _get_email_html(otp_code),
+    }
+
+    try:
+        logger.info(f"[Resend] Dispatching HTTPS email to {to_email} with sender '{from_email}'...")
+        response = requests.post(url, json=payload, headers=headers, timeout=15)
+        if response.status_code in (200, 201):
+            res_data = response.json()
+            email_id = res_data.get("id", "unknown")
+            logger.info(f"[Resend] Email successfully sent with ID '{email_id}' to {to_email}")
+            return True, None
+        else:
+            err_text = response.text
+            logger.error(f"[Resend] API failed with status {response.status_code}: {err_text}")
+            try:
+                err_data = response.json()
+                err_msg = err_data.get("message") or err_data.get("error") or err_text
+            except Exception:
+                err_msg = err_text
+            return False, f"Resend API error ({response.status_code}): {err_msg}"
+    except Exception as e:
+        logger.error(f"[Resend] Request exception: {e}")
+        return False, f"Email service error: {str(e)}"
+
+
+def _send_via_brevo(to_email: str, otp_code: str, brevo_api_key: str) -> Tuple[bool, Optional[str]]:
+    """
+    Sends OTP email via Brevo (Sendinblue) HTTP API (Port 443 HTTPS - Works on Render/Cloud).
+    Free tier allows 300 emails/day to ANY recipient without domain verification!
+    """
+    sender_email = os.environ.get("BREVO_SENDER_EMAIL") or os.environ.get("EMAILS_FROM") or "noreply@harvestledger.org"
+    sender_name = "Harvest Ledger"
+    if "<" in sender_email and ">" in sender_email:
+        sender_name = sender_email.split("<")[0].strip() or "Harvest Ledger"
+        sender_email = sender_email.split("<")[1].replace(">", "").strip()
+
+    url = "https://api.brevo.com/v3/smtp/email"
+    headers = {
+        "api-key": brevo_api_key,
+        "Content-Type": "application/json",
+        "accept": "application/json",
+    }
+    payload = {
+        "sender": {"name": sender_name, "email": sender_email},
+        "to": [{"email": to_email}],
+        "subject": f"Harvest Ledger: {otp_code} is your password reset code",
+        "htmlContent": _get_email_html(otp_code),
+        "textContent": f"Hello,\n\nYour Harvest Ledger password reset code is: {otp_code}\n\nThis code expires in 10 minutes.",
+    }
+
+    try:
+        logger.info(f"[Brevo] Dispatching HTTPS email to {to_email}...")
+        response = requests.post(url, json=payload, headers=headers, timeout=15)
+        if response.status_code in (200, 201, 202):
+            res_data = response.json()
+            msg_id = res_data.get("messageId", "ok")
+            logger.info(f"[Brevo] Email successfully sent with ID '{msg_id}' to {to_email}")
+            return True, None
+        else:
+            err_text = response.text
+            logger.error(f"[Brevo] API failed with status {response.status_code}: {err_text}")
+            try:
+                err_data = response.json()
+                err_msg = err_data.get("message") or err_text
+            except Exception:
+                err_msg = err_text
+            return False, f"Brevo API error ({response.status_code}): {err_msg}"
+    except Exception as e:
+        logger.error(f"[Brevo] Request exception: {e}")
+        return False, f"Brevo service error: {str(e)}"
+
+
+def _send_via_sendgrid(to_email: str, otp_code: str, sendgrid_api_key: str) -> Tuple[bool, Optional[str]]:
+    """Sends OTP email via SendGrid HTTP API (Port 443 HTTPS)."""
+    from_email = os.environ.get("SENDGRID_FROM_EMAIL") or os.environ.get("EMAILS_FROM") or "noreply@harvestledger.org"
+    from_name = "Harvest Ledger"
+    if "<" in from_email and ">" in from_email:
+        from_name = from_email.split("<")[0].strip() or "Harvest Ledger"
+        from_email = from_email.split("<")[1].replace(">", "").strip()
+
+    url = "https://api.sendgrid.com/v3/mail/send"
+    headers = {
+        "Authorization": f"Bearer {sendgrid_api_key}",
+        "Content-Type": "application/json",
+    }
+    payload = {
+        "personalizations": [{"to": [{"email": to_email}]}],
+        "from": {"email": from_email, "name": from_name},
+        "subject": f"Harvest Ledger: {otp_code} is your password reset code",
+        "content": [
+            {"type": "text/html", "value": _get_email_html(otp_code)},
+        ],
+    }
+
+    try:
+        logger.info(f"[SendGrid] Dispatching HTTPS email to {to_email}...")
+        response = requests.post(url, json=payload, headers=headers, timeout=15)
+        if response.status_code in (200, 201, 202):
+            logger.info(f"[SendGrid] Email successfully sent to {to_email}")
+            return True, None
+        else:
+            err_text = response.text
+            logger.error(f"[SendGrid] API failed with status {response.status_code}: {err_text}")
+            return False, f"SendGrid API error ({response.status_code}): {err_text}"
+    except Exception as e:
+        logger.error(f"[SendGrid] Request exception: {e}")
+        return False, f"SendGrid service error: {str(e)}"
+
+
 def _send_via_smtp(to_email: str, otp_code: str) -> Tuple[bool, Optional[str]]:
     """
-    Sends OTP email using standard SMTP (Gmail App Password, Outlook, Custom SMTP, etc.).
-    Environment variables:
-      - SMTP_HOST / EMAIL_HOST (default: smtp.gmail.com)
-      - SMTP_PORT / EMAIL_PORT (default: 587)
-      - SMTP_USER / EMAIL_HOST_USER
-      - SMTP_PASSWORD / EMAIL_HOST_PASSWORD / SMTP_PASS
-      - SMTP_FROM / EMAILS_FROM (default: Harvest Ledger <SMTP_USER>)
+    Sends OTP email using standard SMTP (port 587/465).
+    Note: Cloud hosts like Render.com block raw outbound SMTP ports.
     """
     host = os.environ.get("SMTP_HOST") or os.environ.get("EMAIL_HOST") or "smtp.gmail.com"
     port_str = os.environ.get("SMTP_PORT") or os.environ.get("EMAIL_PORT") or "587"
@@ -165,9 +285,9 @@ def _send_via_smtp(to_email: str, otp_code: str) -> Tuple[bool, Optional[str]]:
     try:
         logger.info(f"[SMTP] Connecting to {host}:{port} for {to_email}...")
         if port == 465:
-            server = smtplib.SMTP_SSL(host, port, timeout=15)
+            server = smtplib.SMTP_SSL(host, port, timeout=10)
         else:
-            server = smtplib.SMTP(host, port, timeout=15)
+            server = smtplib.SMTP(host, port, timeout=10)
             server.ehlo()
             server.starttls()
             server.ehlo()
@@ -177,77 +297,55 @@ def _send_via_smtp(to_email: str, otp_code: str) -> Tuple[bool, Optional[str]]:
         server.quit()
         logger.info(f"[SMTP] Verification OTP successfully sent to {to_email}")
         return True, None
+    except OSError as e:
+        # e.g. [Errno 101] Network is unreachable (Render/Cloud firewall blocking raw SMTP ports)
+        logger.error(f"[SMTP] Network socket error (likely blocked by cloud hosting firewall): {e}")
+        return False, (
+            "Cloud host (Render) blocked raw outbound SMTP (Errno 101). "
+            "Please configure an HTTPS email API (RESEND_API_KEY or BREVO_API_KEY) in Render environment variables."
+        )
     except Exception as e:
         logger.error(f"[SMTP] Error sending email via SMTP: {e}")
         return False, f"SMTP Error: {str(e)}"
 
 
-def _send_via_resend(to_email: str, otp_code: str, resend_api_key: str) -> Tuple[bool, Optional[str]]:
-    """Sends OTP email via the Resend HTTP API."""
-    from_email = os.environ.get("EMAILS_FROM", "Harvest Ledger <onboarding@resend.dev>").strip()
-    if not from_email:
-        from_email = "Harvest Ledger <onboarding@resend.dev>"
-
-    url = "https://api.resend.com/emails"
-    headers = {
-        "Authorization": f"Bearer {resend_api_key}",
-        "Content-Type": "application/json",
-        "User-Agent": "HarvestLedger/1.0",
-    }
-    payload = {
-        "from": from_email,
-        "to": [to_email],
-        "subject": f"Harvest Ledger: {otp_code} is your password reset code",
-        "html": _get_email_html(otp_code),
-    }
-
-    try:
-        logger.info(f"[Resend] Dispatching email to {to_email} with sender '{from_email}'...")
-        response = requests.post(url, json=payload, headers=headers, timeout=15)
-        if response.status_code in (200, 201):
-            res_data = response.json()
-            email_id = res_data.get("id", "unknown")
-            logger.info(f"[Resend] Email successfully sent with ID '{email_id}' to {to_email}")
-            return True, None
-        else:
-            err_text = response.text
-            logger.error(f"[Resend] API failed with status {response.status_code}: {err_text}")
-            try:
-                err_data = response.json()
-                err_msg = err_data.get("message") or err_data.get("error") or err_text
-            except Exception:
-                err_msg = err_text
-            return False, f"Resend API error ({response.status_code}): {err_msg}"
-    except Exception as e:
-        logger.error(f"[Resend] Request exception: {e}")
-        return False, f"Email service error: {str(e)}"
-
-
 def send_otp_email(to_email: str, otp_code: str) -> Tuple[bool, Optional[str]]:
     """
     Dispatches a secure 6-digit OTP email for password reset.
-    Supported backends:
-      1. SMTP (e.g. Gmail App Password, Outlook, custom SMTP via SMTP_USER & SMTP_PASSWORD)
-      2. Resend API (via RESEND_API_KEY)
-      3. Local Development Mode (logs OTP to console and provides debug code if neither is configured)
+    Supported backends in priority order:
+      1. Brevo HTTP API (BREVO_API_KEY - HTTPS port 443, sends to any recipient)
+      2. Resend HTTP API (RESEND_API_KEY - HTTPS port 443)
+      3. SendGrid HTTP API (SENDGRID_API_KEY - HTTPS port 443)
+      4. Standard SMTP (SMTP_USER & SMTP_PASSWORD - Port 587/465)
+      5. Local Development Mode / Fallback (logs code to console)
     """
-    # 1. Check for SMTP configuration (Gmail / Custom SMTP)
+    # 1. Brevo HTTP API (Port 443 HTTPS)
+    brevo_api_key = os.environ.get("BREVO_API_KEY") or os.environ.get("SENDINBLUE_API_KEY", "").strip()
+    if brevo_api_key:
+        return _send_via_brevo(to_email, otp_code, brevo_api_key)
+
+    # 2. Resend HTTP API (Port 443 HTTPS)
+    resend_api_key = os.environ.get("RESEND_API_KEY", "").strip()
+    if resend_api_key:
+        return _send_via_resend(to_email, otp_code, resend_api_key)
+
+    # 3. SendGrid HTTP API (Port 443 HTTPS)
+    sendgrid_api_key = os.environ.get("SENDGRID_API_KEY", "").strip()
+    if sendgrid_api_key:
+        return _send_via_sendgrid(to_email, otp_code, sendgrid_api_key)
+
+    # 4. Standard SMTP (Port 587/465)
     smtp_user = os.environ.get("SMTP_USER") or os.environ.get("EMAIL_HOST_USER") or os.environ.get("SMTP_EMAIL", "").strip()
     smtp_pass = os.environ.get("SMTP_PASSWORD") or os.environ.get("EMAIL_HOST_PASSWORD") or os.environ.get("SMTP_PASS", "").strip()
     if smtp_user and smtp_pass:
         return _send_via_smtp(to_email, otp_code)
 
-    # 2. Check for Resend API configuration
-    resend_api_key = os.environ.get("RESEND_API_KEY", "").strip()
-    if resend_api_key:
-        return _send_via_resend(to_email, otp_code, resend_api_key)
-
-    # 3. If neither is configured:
+    # 5. Local Dev & Testing Fallback
     database_url = os.environ.get("DATABASE_URL", "")
     is_production = database_url.startswith("postgres") or os.environ.get("RENDER")
 
     if is_production:
-        err = "Email service not configured. Please add SMTP credentials (SMTP_USER & SMTP_PASSWORD) or RESEND_API_KEY to your Render environment variables."
+        err = "Email service not configured. Cloud hosting (Render) requires HTTPS email API (RESEND_API_KEY or BREVO_API_KEY) in environment variables."
         logger.error(f"[EmailService] {err}")
         return False, err
 
