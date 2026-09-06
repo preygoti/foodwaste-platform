@@ -11,11 +11,84 @@ Canned Chickpeas,canned,50,cans,2027-01-15,0.5,Pantry Bin 3
 Greek Yogurt,dairy,12,tubs,2026-08-27,2,Refrigerator B
 `;
 
+const VALID_CATEGORIES = ["produce", "dairy", "bakery", "prepared", "canned", "frozen", "general"];
+
+function cleanKey(str) {
+  return String(str || "")
+    .replace(/^\uFEFF/, "")
+    .trim()
+    .toLowerCase()
+    .replace(/[\s_\-.]+/g, "_");
+}
+
+function findValue(row, aliases) {
+  const rowEntries = Object.entries(row);
+  for (const alias of aliases) {
+    const direct = row[alias];
+    if (direct !== undefined && direct !== null && String(direct).trim() !== "") {
+      return String(direct).trim();
+    }
+    for (const [k, v] of rowEntries) {
+      if (cleanKey(k) === alias && v !== undefined && v !== null && String(v).trim() !== "") {
+        return String(v).trim();
+      }
+    }
+  }
+  for (const alias of aliases) {
+    for (const [k, v] of rowEntries) {
+      const ck = cleanKey(k);
+      if (ck.includes(alias) && v !== undefined && v !== null && String(v).trim() !== "") {
+        return String(v).trim();
+      }
+    }
+  }
+  return "";
+}
+
+function detectCategory(catStr, itemName) {
+  const raw = (catStr || itemName || "").toLowerCase();
+  for (const c of VALID_CATEGORIES) {
+    if (raw.includes(c)) return c;
+  }
+  if (/fruit|veg|apple|banana|tomato|spinach|berry|lettuce|onion|potato|carrot/i.test(raw)) return "produce";
+  if (/milk|cheese|yogurt|butter|cream|dairy|paneer|curd/i.test(raw)) return "dairy";
+  if (/bread|loaf|bakery|cake|croissant|pastry|cookie|biscuit|flour/i.test(raw)) return "bakery";
+  if (/rice|curry|meal|pasta|cooked|prepared|biryani|roast|soup/i.test(raw)) return "prepared";
+  if (/can|canned|tinned|bean|chickpea|tuna/i.test(raw)) return "canned";
+  if (/frozen|freezer|ice|salmon|fillet|nugget/i.test(raw)) return "frozen";
+  return "general";
+}
+
 function normalizeDate(dateStr) {
-  if (!dateStr) return "";
+  if (!dateStr) {
+    const d = new Date();
+    d.setDate(d.getDate() + 7);
+    return d.toISOString().split("T")[0];
+  }
   const trimmed = String(dateStr).trim();
   if (/^\d{4}-\d{2}-\d{2}$/.test(trimmed)) {
     return trimmed;
+  }
+  const ymdMatch = trimmed.match(/^(\d{4})[\/. -](\d{1,2})[\/. -](\d{1,2})$/);
+  if (ymdMatch) {
+    const [, y, m, d] = ymdMatch;
+    return `${y}-${m.padStart(2, "0")}-${d.padStart(2, "0")}`;
+  }
+  const dmyMatch = trimmed.match(/^(\d{1,2})[\/. -](\d{1,2})[\/. -](\d{4})$/);
+  if (dmyMatch) {
+    let [, p1, p2, year] = dmyMatch;
+    let month, day;
+    if (parseInt(p1, 10) > 12) {
+      day = p1;
+      month = p2;
+    } else if (parseInt(p2, 10) > 12) {
+      month = p1;
+      day = p2;
+    } else {
+      month = p1;
+      day = p2;
+    }
+    return `${year}-${String(month).padStart(2, "0")}-${String(day).padStart(2, "0")}`;
   }
   const d = new Date(trimmed);
   if (!isNaN(d.getTime())) {
@@ -24,7 +97,9 @@ function normalizeDate(dateStr) {
     const dd = String(d.getDate()).padStart(2, "0");
     return `${yyyy}-${mm}-${dd}`;
   }
-  return trimmed;
+  const fallback = new Date();
+  fallback.setDate(fallback.getDate() + 7);
+  return fallback.toISOString().split("T")[0];
 }
 
 export default function CsvUploadModal({ isOpen, open, onClose, onSuccess }) {
@@ -68,7 +143,7 @@ export default function CsvUploadModal({ isOpen, open, onClose, onSuccess }) {
     Papa.parse(selectedFile, {
       header: true,
       skipEmptyLines: "greedy",
-      transformHeader: (h) => h.trim().toLowerCase().replace(/[\s_-]+/g, "_"),
+      transformHeader: (h) => cleanKey(h),
       complete: (results) => {
         setIsProcessing(false);
         validateAndPrepareRows(results.data);
@@ -89,71 +164,85 @@ export default function CsvUploadModal({ isOpen, open, onClose, onSuccess }) {
       return;
     }
 
-    // Check for expected headers from sample
-    const firstRow = rawRows[0];
-    const hasName = "item_name" in firstRow || "name" in firstRow || "title" in firstRow || "product" in firstRow;
-    const hasQuantity = "quantity" in firstRow || "qty" in firstRow || "count" in firstRow;
-    const hasExpiry = "expiry_date" in firstRow || "expiry" in firstRow || "expiration" in firstRow || "expiration_date" in firstRow;
-
-    if (!hasName || !hasQuantity || !hasExpiry) {
-      const missing = [];
-      if (!hasName) missing.push("'item_name' (or 'name')");
-      if (!hasQuantity) missing.push("'quantity' (or 'qty')");
-      if (!hasExpiry) missing.push("'expiry_date' (or 'expiry')");
-      rowErrors.push(`Missing required CSV columns: ${missing.join(", ")}. Please use the sample template.`);
-    }
-
     rawRows.forEach((row, idx) => {
-      const rowNum = idx + 2; // account for 1-based index and header row
-      const name = (row.item_name || row.name || row.title || row.product || "").trim();
-      const category = (row.category || row.type || "general").trim().toLowerCase();
-      const quantityStr = row.quantity || row.qty || row.count;
-      const unit = (row.unit || row.units || "kg").trim();
-      const rawExpiry = (row.expiry_date || row.expiry || row.expiration || row.expiration_date || "").trim();
-      const expiryDateStr = normalizeDate(rawExpiry);
-      const avgUsageStr = row.avg_daily_usage || row.daily_usage || row.usage;
-      const storageLoc = (row.storage_location || row.location || row.storage || "").trim();
+      const rowNum = idx + 2;
 
-      const itemErrors = [];
+      // Extract Name
+      const name = findValue(row, [
+        "item_name",
+        "name",
+        "item",
+        "product_name",
+        "product",
+        "food_item",
+        "food",
+        "title",
+        "description",
+      ]);
 
       if (!name) {
-        itemErrors.push("Item name is required");
+        rowErrors.push(`Row ${rowNum}: Missing item name.`);
+        return;
       }
 
-      const quantity = parseFloat(quantityStr);
-      if (isNaN(quantity) || quantity <= 0) {
-        itemErrors.push(`Quantity must be a positive number (received '${quantityStr || ""}')`);
-      }
+      // Extract Quantity & Unit
+      const rawQty = findValue(row, ["quantity", "qty", "count", "amount", "stock", "weight", "vol", "volume", "total"]);
+      const rawUnit = findValue(row, ["unit", "units", "uom", "measure", "measurement", "metric"]);
 
-      if (!expiryDateStr) {
-        itemErrors.push("Expiry date is required");
-      } else if (!/^\d{4}-\d{2}-\d{2}$/.test(expiryDateStr)) {
-        itemErrors.push(`Invalid expiry date format '${rawExpiry}' (expected YYYY-MM-DD)`);
-      }
+      let quantity = 1;
+      let unit = "kg";
 
-      let avgDailyUsage = 1.0;
-      if (avgUsageStr !== undefined && avgUsageStr !== "") {
-        const usageVal = parseFloat(avgUsageStr);
-        if (isNaN(usageVal) || usageVal < 0) {
-          itemErrors.push(`Average daily usage must be a non-negative number (received '${avgUsageStr}')`);
+      if (rawQty) {
+        const match = String(rawQty).match(/^([\d.,]+)\s*([a-zA-Z]*)$/);
+        if (match) {
+          quantity = parseFloat(match[1].replace(/,/g, "")) || 1;
+          if (match[2] && !rawUnit) {
+            unit = match[2].toLowerCase();
+          }
         } else {
-          avgDailyUsage = usageVal;
+          quantity = parseFloat(String(rawQty).replace(/[^0-9.]/g, "")) || 1;
         }
       }
-
-      if (itemErrors.length > 0) {
-        rowErrors.push(`Row ${rowNum}: ${itemErrors.join("; ")}`);
-      } else {
-        validRows.push({
-          name,
-          category,
-          quantity,
-          unit: unit || "kg",
-          expiry_date: expiryDateStr,
-          avg_daily_usage: avgDailyUsage,
-          storage_location: storageLoc,
-        });
+      if (rawUnit) {
+        unit = rawUnit.toLowerCase();
       }
+
+      // Extract Expiry Date
+      const rawExpiry = findValue(row, [
+        "expiry_date",
+        "expiry",
+        "expiration_date",
+        "expiration",
+        "exp_date",
+        "exp",
+        "best_before",
+        "use_by",
+        "shelf_life",
+        "date_of_expiry",
+        "valid_until",
+      ]);
+      const expiryDateStr = normalizeDate(rawExpiry);
+
+      // Extract Category
+      const rawCat = findValue(row, ["category", "cat", "type", "food_category", "group", "section"]);
+      const category = detectCategory(rawCat, name);
+
+      // Extract Avg Daily Usage
+      const rawUsage = findValue(row, ["avg_daily_usage", "daily_usage", "usage", "daily", "consumption", "rate", "avg_usage"]);
+      const avgDailyUsage = parseFloat(String(rawUsage).replace(/[^0-9.]/g, "")) || 1.0;
+
+      // Extract Storage Location
+      const storageLoc = findValue(row, ["storage_location", "storage", "location", "loc", "bin", "shelf", "area", "room", "refrigerator", "pantry"]);
+
+      validRows.push({
+        name,
+        category,
+        quantity: quantity > 0 ? quantity : 1,
+        unit: unit || "kg",
+        expiry_date: expiryDateStr,
+        avg_daily_usage: avgDailyUsage,
+        storage_location: storageLoc || "",
+      });
     });
 
     setErrors(rowErrors);
@@ -169,7 +258,7 @@ export default function CsvUploadModal({ isOpen, open, onClose, onSuccess }) {
       setTimeout(() => {
         onSuccess?.();
         handleClose();
-      }, 1200);
+      }, 1000);
     } catch (err) {
       setErrors((prev) => [...prev, `API Error: ${err.message}`]);
     } finally {

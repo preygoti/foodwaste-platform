@@ -158,7 +158,14 @@ export const api = {
   },
 
   // Inventory (Business Only)
-  async listInventory() {
+  async listInventory(forceFresh = false) {
+    if (forceFresh) {
+      clearApiCache("inventory");
+      const res = await fetch(`${API_URL}/inventory`, { headers: authHeaders() });
+      const data = await handle(res);
+      setCached("inventory", data);
+      return data;
+    }
     return fetchCached(`${API_URL}/inventory`, "inventory");
   },
   async createInventoryItem(data) {
@@ -167,8 +174,7 @@ export const api = {
       headers: { "Content-Type": "application/json", ...authHeaders() },
       body: JSON.stringify(data),
     });
-    clearApiCache("inventory");
-    clearApiCache("dashboard");
+    clearApiCache();
     return handle(res);
   },
   async updateInventoryItem(id, data) {
@@ -177,7 +183,7 @@ export const api = {
       headers: { "Content-Type": "application/json", ...authHeaders() },
       body: JSON.stringify(data),
     });
-    clearApiCache("inventory");
+    clearApiCache();
     return handle(res);
   },
   async deleteInventoryItem(id) {
@@ -185,8 +191,7 @@ export const api = {
       method: "DELETE",
       headers: authHeaders(),
     });
-    clearApiCache("inventory");
-    clearApiCache("dashboard");
+    clearApiCache();
     return handle(res);
   },
   async bulkUploadCsv(rows) {
@@ -195,8 +200,7 @@ export const api = {
       headers: { "Content-Type": "application/json", ...authHeaders() },
       body: JSON.stringify(rows),
     });
-    clearApiCache("inventory");
-    clearApiCache("dashboard");
+    clearApiCache();
     return handle(res);
   },
 

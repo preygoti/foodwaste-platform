@@ -312,16 +312,20 @@ def bulk_upload_csv(
     created = []
     for payload in rows:
         item = models.InventoryItem(
-            business_id=user.id, name=payload.name, category=payload.category,
-            quantity=payload.quantity, unit=payload.unit,
+            business_id=user.id,
+            name=str(payload.name).strip(),
+            category=str(payload.category or "general").strip().lower(),
+            quantity=float(payload.quantity),
+            unit=str(payload.unit or "kg").strip(),
             purchase_date=payload.purchase_date or date.today(),
-            expiry_date=payload.expiry_date, storage_location=payload.storage_location or "",
-            avg_daily_usage=payload.avg_daily_usage or 1.0,
+            expiry_date=payload.expiry_date,
+            storage_location=str(payload.storage_location or "").strip(),
+            avg_daily_usage=float(payload.avg_daily_usage or 1.0),
         )
         db.add(item)
         created.append(item)
     db.commit()
-    return {"created": len(created)}
+    return {"created": len(created), "ok": True}
 
 
 # ============================================================

@@ -64,9 +64,9 @@ class GenericResponse(BaseModel):
 # ---------- Inventory ----------
 class InventoryCreate(BaseModel):
     name: str
-    category: str = "general"
+    category: Optional[str] = "general"
     quantity: float
-    unit: str = "kg"
+    unit: Optional[str] = "kg"
     purchase_date: Optional[date] = None
     expiry_date: date
     storage_location: Optional[str] = ""

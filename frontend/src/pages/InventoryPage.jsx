@@ -178,14 +178,14 @@ export default function InventoryPage() {
   const [submittingAdd, setSubmittingAdd] = useState(false);
   const [addError, setAddError] = useState("");
 
-  const load = () => {
+  const load = (forceFresh = false) => {
     if (user?.role !== "business") return;
-    if (!api.getCached("inventory")) {
+    if (forceFresh || !api.getCached("inventory")) {
       setLoading(true);
     }
     setError("");
     api
-      .listInventory()
+      .listInventory(forceFresh)
       .then((data) => {
         if (Array.isArray(data)) {
           setItems(data.sort((a, b) => a.days_to_expiry - b.days_to_expiry));
@@ -1116,7 +1116,7 @@ export default function InventoryPage() {
         onClose={() => setShowCsvModal(false)}
         onSuccess={() => {
           setShowCsvModal(false);
-          load();
+          load(true);
         }}
       />
 
@@ -1127,7 +1127,7 @@ export default function InventoryPage() {
         onClose={() => setShowScannerModal(false)}
         onSuccess={() => {
           setShowScannerModal(false);
-          load();
+          load(true);
         }}
         onDetected={(data) => {
           if (data) {
