@@ -11,16 +11,34 @@ Canned Chickpeas,canned,50,cans,2027-01-15,0.5,Pantry Bin 3
 Greek Yogurt,dairy,12,tubs,2026-08-27,2,Refrigerator B
 `;
 
-export default function CsvUploadModal({ isOpen, onClose, onSuccess }) {
+function normalizeDate(dateStr) {
+  if (!dateStr) return "";
+  const trimmed = String(dateStr).trim();
+  if (/^\d{4}-\d{2}-\d{2}$/.test(trimmed)) {
+    return trimmed;
+  }
+  const d = new Date(trimmed);
+  if (!isNaN(d.getTime())) {
+    const yyyy = d.getFullYear();
+    const mm = String(d.getMonth() + 1).padStart(2, "0");
+    const dd = String(d.getDate()).padStart(2, "0");
+    return `${yyyy}-${mm}-${dd}`;
+  }
+  return trimmed;
+}
+
+export default function CsvUploadModal({ isOpen, open, onClose, onSuccess }) {
+  const show = isOpen ?? open;
   const [file, setFile] = useState(null);
   const [parsedData, setParsedData] = useState([]);
   const [errors, setErrors] = useState([]);
   const [isProcessing, setIsProcessing] = useState(false);
   const [isUploading, setIsUploading] = useState(false);
   const [successCount, setSuccessCount] = useState(null);
+  const [isDragging, setIsDragging] = useState(false);
   const fileInputRef = useRef(null);
 
-  if (!isOpen) return null;
+  if (!show) return null;
 
   const downloadSampleCsv = () => {
     const blob = new Blob([SAMPLE_CSV_CONTENT], { type: "text/csv;charset=utf-8;" });
@@ -73,27 +91,28 @@ export default function CsvUploadModal({ isOpen, onClose, onSuccess }) {
 
     // Check for expected headers from sample
     const firstRow = rawRows[0];
-    const hasName = "item_name" in firstRow || "name" in firstRow;
-    const hasQuantity = "quantity" in firstRow;
-    const hasExpiry = "expiry_date" in firstRow || "expiry" in firstRow;
+    const hasName = "item_name" in firstRow || "name" in firstRow || "title" in firstRow || "product" in firstRow;
+    const hasQuantity = "quantity" in firstRow || "qty" in firstRow || "count" in firstRow;
+    const hasExpiry = "expiry_date" in firstRow || "expiry" in firstRow || "expiration" in firstRow || "expiration_date" in firstRow;
 
     if (!hasName || !hasQuantity || !hasExpiry) {
       const missing = [];
-      if (!hasName) missing.push("'item_name'");
-      if (!hasQuantity) missing.push("'quantity'");
-      if (!hasExpiry) missing.push("'expiry_date'");
-      rowErrors.push(`Missing required CSV header columns: ${missing.join(", ")}. Please use the sample template.`);
+      if (!hasName) missing.push("'item_name' (or 'name')");
+      if (!hasQuantity) missing.push("'quantity' (or 'qty')");
+      if (!hasExpiry) missing.push("'expiry_date' (or 'expiry')");
+      rowErrors.push(`Missing required CSV columns: ${missing.join(", ")}. Please use the sample template.`);
     }
 
     rawRows.forEach((row, idx) => {
       const rowNum = idx + 2; // account for 1-based index and header row
-      const name = (row.item_name || row.name || "").trim();
-      const category = (row.category || "general").trim().toLowerCase();
-      const quantityStr = row.quantity;
-      const unit = (row.unit || "kg").trim();
-      const expiryDateStr = (row.expiry_date || row.expiry || "").trim();
-      const avgUsageStr = row.avg_daily_usage;
-      const storageLoc = (row.storage_location || "").trim();
+      const name = (row.item_name || row.name || row.title || row.product || "").trim();
+      const category = (row.category || row.type || "general").trim().toLowerCase();
+      const quantityStr = row.quantity || row.qty || row.count;
+      const unit = (row.unit || row.units || "kg").trim();
+      const rawExpiry = (row.expiry_date || row.expiry || row.expiration || row.expiration_date || "").trim();
+      const expiryDateStr = normalizeDate(rawExpiry);
+      const avgUsageStr = row.avg_daily_usage || row.daily_usage || row.usage;
+      const storageLoc = (row.storage_location || row.location || row.storage || "").trim();
 
       const itemErrors = [];
 
@@ -108,11 +127,8 @@ export default function CsvUploadModal({ isOpen, onClose, onSuccess }) {
 
       if (!expiryDateStr) {
         itemErrors.push("Expiry date is required");
-      } else {
-        const parsedDate = new Date(expiryDateStr);
-        if (isNaN(parsedDate.getTime())) {
-          itemErrors.push(`Invalid expiry date format '${expiryDateStr}' (expected YYYY-MM-DD)`);
-        }
+      } else if (!/^\d{4}-\d{2}-\d{2}$/.test(expiryDateStr)) {
+        itemErrors.push(`Invalid expiry date format '${rawExpiry}' (expected YYYY-MM-DD)`);
       }
 
       let avgDailyUsage = 1.0;
@@ -153,7 +169,7 @@ export default function CsvUploadModal({ isOpen, onClose, onSuccess }) {
       setTimeout(() => {
         onSuccess?.();
         handleClose();
-      }, 1400);
+      }, 1200);
     } catch (err) {
       setErrors((prev) => [...prev, `API Error: ${err.message}`]);
     } finally {
@@ -223,7 +239,22 @@ export default function CsvUploadModal({ isOpen, onClose, onSuccess }) {
           {/* Upload Dropzone */}
           <div
             onClick={() => fileInputRef.current?.click()}
-            className="border-2 border-dashed border-wheat-200 hover:border-forest-600/60 rounded-xl p-6 sm:p-8 text-center cursor-pointer transition-all bg-wheat-50/50 hover:bg-forest-50/20 group"
+            onDragOver={(e) => {
+              e.preventDefault();
+              setIsDragging(true);
+            }}
+            onDragLeave={() => setIsDragging(false)}
+            onDrop={(e) => {
+              e.preventDefault();
+              setIsDragging(false);
+              const droppedFile = e.dataTransfer.files?.[0];
+              if (droppedFile) processCsvFile(droppedFile);
+            }}
+            className={`border-2 border-dashed rounded-xl p-6 sm:p-8 text-center cursor-pointer transition-all ${
+              isDragging
+                ? "border-forest-600 bg-forest-100/40 ring-2 ring-forest-400/30 scale-[1.01]"
+                : "border-wheat-200 hover:border-forest-600/60 bg-wheat-50/50 hover:bg-forest-50/20"
+            } group`}
           >
             <input
               ref={fileInputRef}

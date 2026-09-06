@@ -1116,6 +1116,7 @@ export default function InventoryPage() {
 
       {/* CSV UPLOAD MODAL */}
       <CsvUploadModal
+        isOpen={showCsvModal}
         open={showCsvModal}
         onClose={() => setShowCsvModal(false)}
         onSuccess={() => {
@@ -1126,19 +1127,28 @@ export default function InventoryPage() {
 
       {/* BARCODE SCANNER MODAL */}
       <BarcodeScannerModal
+        isOpen={showScannerModal}
         open={showScannerModal}
         onClose={() => setShowScannerModal(false)}
-        onDetected={(data) => {
-          setForm({
-            ...emptyForm,
-            name: data.name || "",
-            category: data.category || "general",
-            quantity: data.quantity ? String(data.quantity) : "1",
-            unit: data.unit || "kg",
-            expiry_date: data.expiry_date || "",
-          });
+        onSuccess={() => {
           setShowScannerModal(false);
-          setShowAddModal(true);
+          load();
+        }}
+        onDetected={(data) => {
+          if (data) {
+            setForm({
+              ...emptyForm,
+              name: data.name || "",
+              category: data.category || "general",
+              quantity: data.quantity ? String(data.quantity) : "1",
+              unit: data.unit || "kg",
+              expiry_date: data.expiry_date || "",
+              storage_location: data.storage_location || "",
+              avg_daily_usage: data.avg_daily_usage ? String(data.avg_daily_usage) : "1",
+            });
+            setShowScannerModal(false);
+            setShowAddModal(true);
+          }
         }}
       />
 

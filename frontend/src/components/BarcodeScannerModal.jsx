@@ -48,7 +48,8 @@ function getSuggestedExpiryDate(category) {
   return date.toISOString().split("T")[0];
 }
 
-export default function BarcodeScannerModal({ isOpen, onClose, onSuccess }) {
+export default function BarcodeScannerModal({ isOpen, open, onClose, onSuccess, onDetected }) {
+  const show = isOpen ?? open;
   const [activeTab, setActiveTab] = useState("camera"); // "camera" | "manual"
   const [scannerStarted, setScannerStarted] = useState(false);
   const [cameraError, setCameraError] = useState("");
@@ -75,7 +76,7 @@ export default function BarcodeScannerModal({ isOpen, onClose, onSuccess }) {
   const readerElementId = "harvest-qr-reader";
 
   useEffect(() => {
-    if (!isOpen) {
+    if (!show) {
       stopScanner();
       resetState();
       return;
@@ -91,7 +92,7 @@ export default function BarcodeScannerModal({ isOpen, onClose, onSuccess }) {
         stopScanner();
       };
     }
-  }, [isOpen, activeTab, scannedCode]);
+  }, [show, activeTab, scannedCode]);
 
   const resetState = () => {
     setScannedCode("");
@@ -290,7 +291,7 @@ export default function BarcodeScannerModal({ isOpen, onClose, onSuccess }) {
     setActiveTab("camera");
   };
 
-  if (!isOpen) return null;
+  if (!show) return null;
 
   return (
     <div className="fixed inset-0 z-50 flex items-center justify-center p-4 bg-black/60 backdrop-blur-sm overflow-y-auto">
