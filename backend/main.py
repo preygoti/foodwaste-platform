@@ -8,7 +8,7 @@ from fastapi import FastAPI, Depends, HTTPException, status
 from fastapi.middleware.cors import CORSMiddleware
 from fastapi.security import OAuth2PasswordRequestForm
 from sqlalchemy import func
-from sqlalchemy.orm import Session
+from sqlalchemy.orm import Session, joinedload
 
 import models
 import schemas
@@ -582,8 +582,11 @@ def food_rescue_dashboard(
     # 1. Active Listings
     listings_active = db.query(models.Listing).filter(models.Listing.status == models.ListingStatus.available).count()
 
-    # 2. Pickups & Food Rescued
-    all_pickups = db.query(models.Pickup).all()
+    # 2. Pickups & Food Rescued (with eager load)
+    all_pickups = db.query(models.Pickup).options(
+        joinedload(models.Pickup.listing).joinedload(models.Listing.business),
+        joinedload(models.Pickup.ngo)
+    ).all()
     completed_pickups = [p for p in all_pickups if p.status == models.PickupStatus.picked_up]
 
     total_rescued_kg = sum(
@@ -601,11 +604,13 @@ def food_rescue_dashboard(
     if active_ngos_count == 0:
         active_ngos_count = db.query(models.User).filter(models.User.role == models.UserRole.ngo).count()
 
-    # 4. Category Breakdown (Last 30 Days / All Time)
+    # 4. Category Breakdown & Top Donors (Eager loaded in 1 query)
     categories = ["Cooked Meals", "Bread & Bakery", "Fruits & Veg", "Dairy", "Grains", "Packaged"]
     cat_map = {c: 0.0 for c in categories}
+    donor_map = {}
 
-    for l in db.query(models.Listing).all():
+    all_listings = db.query(models.Listing).options(joinedload(models.Listing.business)).all()
+    for l in all_listings:
         cat_lower = (l.category or "general").lower()
         if "bakery" in cat_lower or "bread" in cat_lower:
             cat_map["Bread & Bakery"] += l.quantity
@@ -620,25 +625,22 @@ def food_rescue_dashboard(
         else:
             cat_map["Packaged"] += l.quantity
 
+        b_name = l.business.org_name if l.business else "Food Donor"
+        donor_map[b_name] = donor_map.get(b_name, 0.0) + (l.quantity or 0.0)
+
     category_breakdown = [
         schemas.CategoryRescueStat(category=c, quantity_kg=round(cat_map[c], 1))
         for c in categories
     ]
-
-    # 5. Top Donor Partners
-    donor_map = {}
-    for l in db.query(models.Listing).all():
-        b_name = l.business.org_name if l.business else "Food Donor"
-        donor_map[b_name] = donor_map.get(b_name, 0.0) + (l.quantity or 0.0)
 
     top_donors = [
         schemas.TopDonorStat(donor_name=name, quantity_kg=round(qty, 1))
         for name, qty in sorted(donor_map.items(), key=lambda x: x[1], reverse=True)[:5]
     ]
 
-    # 6. Recent Rescue Operations
+    # 5. Recent Rescue Operations
     recent_ops = []
-    recent_pickups = db.query(models.Pickup).order_by(models.Pickup.created_at.desc()).limit(10).all()
+    recent_pickups = all_pickups[:10]
     for p in recent_pickups:
         listing = p.listing
         donor_name = listing.business.org_name if listing and listing.business else "Food Business Partner"

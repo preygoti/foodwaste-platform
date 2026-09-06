@@ -99,13 +99,21 @@ function StatCard({ label, value, subtext, icon: Icon, accent, bgAccent }) {
 
 export default function AnalyticsPage() {
   const { user } = useAuth();
-  const [dashboardData, setDashboardData] = useState(null);
+  const [dashboardData, setDashboardData] = useState(() => {
+    try {
+      const cached = sessionStorage.getItem("hl_analytics_cache");
+      return cached ? JSON.parse(cached) : null;
+    } catch {
+      return null;
+    }
+  });
   const [roleData, setRoleData] = useState(null);
-  const [loading, setLoading] = useState(true);
+  const [isSyncing, setIsSyncing] = useState(false);
+  const [showCertModal, setShowCertModal] = useState(false);
 
   useEffect(() => {
     if (!user) return;
-    setLoading(true);
+    setIsSyncing(true);
 
     const fetchAnalytics = async () => {
       try {
@@ -113,30 +121,24 @@ export default function AnalyticsPage() {
           api.getDashboardMetrics().catch(() => null),
           user.role === "business" ? api.businessAnalytics().catch(() => null) : api.ngoAnalytics().catch(() => null),
         ]);
-        setDashboardData(dashRes);
-        setRoleData(specificRes);
+        if (dashRes) {
+          setDashboardData(dashRes);
+          try {
+            sessionStorage.setItem("hl_analytics_cache", JSON.stringify(dashRes));
+          } catch {}
+        }
+        if (specificRes) {
+          setRoleData(specificRes);
+        }
       } catch (err) {
         console.warn("Analytics fetch error:", err);
       } finally {
-        setLoading(false);
+        setIsSyncing(false);
       }
     };
 
     fetchAnalytics();
   }, [user?.id, user?.role]);
-
-  if (loading) {
-    return (
-      <Layout>
-        <div className="bg-white border border-wheat-200 rounded-xl p-12 text-center shadow-2xs">
-          <RefreshCw className="w-6 h-6 animate-spin text-forest-600 mx-auto mb-3" />
-          <p className="text-sm font-medium text-forest-800">Calculating your environmental and social impact...</p>
-        </div>
-      </Layout>
-    );
-  }
-
-  const [showCertModal, setShowCertModal] = useState(false);
 
   const activeListings = dashboardData?.listings_active ?? (roleData?.total_listings || 0);
   const foodRescuedKg = dashboardData?.food_rescued_kg ?? (roleData?.quantity_donated || roleData?.meals_received || 0);
