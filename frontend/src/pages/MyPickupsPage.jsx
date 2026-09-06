@@ -43,21 +43,27 @@ const STATUS_CONFIG = {
 
 export default function MyPickupsPage() {
   const { user } = useAuth();
-  const [pickups, setPickups] = useState([]);
-  const [loading, setLoading] = useState(true);
+  const [pickups, setPickups] = useState(() => {
+    const cached = api.getCached("my_pickups");
+    return Array.isArray(cached) ? cached : [];
+  });
+  const [loading, setLoading] = useState(() => !api.getCached("my_pickups"));
   const [processingId, setProcessingId] = useState(null);
 
   const load = () => {
     if (user?.role !== "ngo") return;
-    setLoading(true);
+    if (!api.getCached("my_pickups")) {
+      setLoading(true);
+    }
     api
       .myPickups()
-      .then(setPickups)
+      .then((data) => {
+        if (Array.isArray(data)) setPickups(data);
+      })
       .finally(() => setLoading(false));
   };
 
   useEffect(() => {
-    setPickups([]);
     if (user?.role === "ngo") {
       load();
     } else {

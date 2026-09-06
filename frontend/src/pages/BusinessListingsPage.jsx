@@ -44,31 +44,36 @@ const STATUS_CONFIG = {
 
 export default function BusinessListingsPage() {
   const { user } = useAuth();
-  const [listings, setListings] = useState([]);
+  const [listings, setListings] = useState(() => {
+    const cached = api.getCached("my_listings");
+    return Array.isArray(cached) ? cached : [];
+  });
   const [pickupsByListing, setPickupsByListing] = useState({});
-  const [loading, setLoading] = useState(true);
+  const [loading, setLoading] = useState(() => !api.getCached("my_listings"));
   const [confirmingId, setConfirmingId] = useState(null);
 
   const load = () => {
     if (user?.role !== "business") return;
-    setLoading(true);
+    if (!api.getCached("my_listings")) {
+      setLoading(true);
+    }
     api
       .myListings()
       .then(async (data) => {
-        setListings(data);
-        const entries = await Promise.all(
-          data
-            .filter((l) => l.status !== "available")
-            .map(async (l) => [l.id, await api.listingPickups(l.id)])
-        );
-        setPickupsByListing(Object.fromEntries(entries));
+        if (Array.isArray(data)) {
+          setListings(data);
+          const entries = await Promise.all(
+            data
+              .filter((l) => l.status !== "available")
+              .map(async (l) => [l.id, await api.listingPickups(l.id).catch(() => [])])
+          );
+          setPickupsByListing(Object.fromEntries(entries));
+        }
       })
       .finally(() => setLoading(false));
   };
 
   useEffect(() => {
-    setListings([]);
-    setPickupsByListing({});
     if (user?.role === "business") {
       load();
     } else {

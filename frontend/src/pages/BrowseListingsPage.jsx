@@ -124,8 +124,11 @@ function LiveCountdownBadge({ expiryDateStr, now }) {
 export default function BrowseListingsPage() {
   const { user } = useAuth();
   const now = useLiveTicker(1000);
-  const [listings, setListings] = useState([]);
-  const [loading, setLoading] = useState(true);
+  const [listings, setListings] = useState(() => {
+    const cached = api.getCached("browse_listings");
+    return Array.isArray(cached) ? cached : [];
+  });
+  const [loading, setLoading] = useState(() => !api.getCached("browse_listings"));
   const [error, setError] = useState("");
   const [categoryFilter, setCategoryFilter] = useState("all");
   const [searchQuery, setSearchQuery] = useState("");
@@ -140,17 +143,20 @@ export default function BrowseListingsPage() {
 
   const load = () => {
     if (user?.role !== "ngo") return;
-    setLoading(true);
+    if (!api.getCached("browse_listings")) {
+      setLoading(true);
+    }
     setError("");
     api
       .browseListings()
-      .then(setListings)
+      .then((data) => {
+        if (Array.isArray(data)) setListings(data);
+      })
       .catch((err) => setError(err.message))
       .finally(() => setLoading(false));
   };
 
   useEffect(() => {
-    setListings([]);
     if (user?.role === "ngo") {
       load();
     } else {

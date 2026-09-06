@@ -1,6 +1,49 @@
 const API_URL =
   import.meta.env.VITE_API_URL || "https://foodwaste-platform.onrender.com";
 
+// In-Memory Fast SWR Cache for 0ms Instant Page Transitions
+const memoryCache = new Map();
+
+function getCached(key) {
+  if (memoryCache.has(key)) return memoryCache.get(key);
+  try {
+    const s = sessionStorage.getItem(`hl_cache_${key}`);
+    if (s) {
+      const data = JSON.parse(s);
+      memoryCache.set(key, data);
+      return data;
+    }
+  } catch (_) {}
+  return null;
+}
+
+function setCached(key, data) {
+  memoryCache.set(key, data);
+  try {
+    sessionStorage.setItem(`hl_cache_${key}`, JSON.stringify(data));
+  } catch (_) {}
+}
+
+export function clearApiCache(prefix = "") {
+  if (!prefix) {
+    memoryCache.clear();
+    try {
+      Object.keys(sessionStorage).forEach((k) => {
+        if (k.startsWith("hl_cache_")) sessionStorage.removeItem(k);
+      });
+    } catch (_) {}
+  } else {
+    for (const k of memoryCache.keys()) {
+      if (k.startsWith(prefix)) memoryCache.delete(k);
+    }
+    try {
+      Object.keys(sessionStorage).forEach((k) => {
+        if (k.startsWith(`hl_cache_${prefix}`)) sessionStorage.removeItem(k);
+      });
+    } catch (_) {}
+  }
+}
+
 function authHeaders() {
   const token = localStorage.getItem("token");
   return token ? { Authorization: `Bearer ${token}` } : {};
@@ -9,8 +52,8 @@ function authHeaders() {
 async function handle(res) {
   if (!res.ok) {
     if (res.status === 401) {
-      // Invalidate stale token and notify AuthContext
       localStorage.removeItem("token");
+      clearApiCache();
       if (typeof window !== "undefined") {
         window.dispatchEvent(new CustomEvent("auth:unauthorized"));
       }
@@ -27,7 +70,26 @@ async function handle(res) {
   return res.json();
 }
 
+/** Fetch with instant cache return and background revalidation */
+async function fetchCached(url, cacheKey) {
+  const resPromise = fetch(url, { headers: authHeaders() })
+    .then(handle)
+    .then((data) => {
+      setCached(cacheKey, data);
+      return data;
+    });
+
+  // If cache is warm, return fresh promise that also has instant cache attachment
+  const cached = getCached(cacheKey);
+  if (cached) {
+    resPromise._cached = cached;
+  }
+  return resPromise;
+}
+
 export const api = {
+  getCached,
+
   async register(data) {
     const payload = {
       ...data,
@@ -39,6 +101,7 @@ export const api = {
       headers: { "Content-Type": "application/json" },
       body: JSON.stringify(payload),
     });
+    clearApiCache();
     return handle(res);
   },
 
@@ -51,6 +114,7 @@ export const api = {
       headers: { "Content-Type": "application/x-www-form-urlencoded" },
       body: form,
     });
+    clearApiCache();
     return handle(res);
   },
 
@@ -95,8 +159,7 @@ export const api = {
 
   // Inventory (Business Only)
   async listInventory() {
-    const res = await fetch(`${API_URL}/inventory`, { headers: authHeaders() });
-    return handle(res);
+    return fetchCached(`${API_URL}/inventory`, "inventory");
   },
   async createInventoryItem(data) {
     const res = await fetch(`${API_URL}/inventory`, {
@@ -104,6 +167,8 @@ export const api = {
       headers: { "Content-Type": "application/json", ...authHeaders() },
       body: JSON.stringify(data),
     });
+    clearApiCache("inventory");
+    clearApiCache("dashboard");
     return handle(res);
   },
   async updateInventoryItem(id, data) {
@@ -112,6 +177,7 @@ export const api = {
       headers: { "Content-Type": "application/json", ...authHeaders() },
       body: JSON.stringify(data),
     });
+    clearApiCache("inventory");
     return handle(res);
   },
   async deleteInventoryItem(id) {
@@ -119,6 +185,8 @@ export const api = {
       method: "DELETE",
       headers: authHeaders(),
     });
+    clearApiCache("inventory");
+    clearApiCache("dashboard");
     return handle(res);
   },
   async bulkUploadCsv(rows) {
@@ -127,6 +195,8 @@ export const api = {
       headers: { "Content-Type": "application/json", ...authHeaders() },
       body: JSON.stringify(rows),
     });
+    clearApiCache("inventory");
+    clearApiCache("dashboard");
     return handle(res);
   },
 
@@ -137,15 +207,15 @@ export const api = {
       headers: { "Content-Type": "application/json", ...authHeaders() },
       body: JSON.stringify(data),
     });
+    clearApiCache("listings");
+    clearApiCache("dashboard");
     return handle(res);
   },
   async browseListings() {
-    const res = await fetch(`${API_URL}/listings?status_filter=available`, { headers: authHeaders() });
-    return handle(res);
+    return fetchCached(`${API_URL}/listings?status_filter=available`, "browse_listings");
   },
   async myListings() {
-    const res = await fetch(`${API_URL}/listings/mine`, { headers: authHeaders() });
-    return handle(res);
+    return fetchCached(`${API_URL}/listings/mine`, "my_listings");
   },
 
   // Pickups
@@ -155,6 +225,9 @@ export const api = {
       headers: { "Content-Type": "application/json", ...authHeaders() },
       body: JSON.stringify(data),
     });
+    clearApiCache("pickups");
+    clearApiCache("browse_listings");
+    clearApiCache("dashboard");
     return handle(res);
   },
   async updatePickup(id, data) {
@@ -163,28 +236,25 @@ export const api = {
       headers: { "Content-Type": "application/json", ...authHeaders() },
       body: JSON.stringify(data),
     });
+    clearApiCache("pickups");
+    clearApiCache("dashboard");
     return handle(res);
   },
   async myPickups() {
-    const res = await fetch(`${API_URL}/pickups/mine`, { headers: authHeaders() });
-    return handle(res);
+    return fetchCached(`${API_URL}/pickups/mine`, "my_pickups");
   },
   async listingPickups(listingId) {
-    const res = await fetch(`${API_URL}/listings/${listingId}/pickups`, { headers: authHeaders() });
-    return handle(res);
+    return fetchCached(`${API_URL}/listings/${listingId}/pickups`, `listing_${listingId}_pickups`);
   },
 
   // Analytics & Food Rescue Dashboard
   async businessAnalytics() {
-    const res = await fetch(`${API_URL}/analytics/business`, { headers: authHeaders() });
-    return handle(res);
+    return fetchCached(`${API_URL}/analytics/business`, "analytics_business");
   },
   async ngoAnalytics() {
-    const res = await fetch(`${API_URL}/analytics/ngo`, { headers: authHeaders() });
-    return handle(res);
+    return fetchCached(`${API_URL}/analytics/ngo`, "analytics_ngo");
   },
   async getDashboardMetrics() {
-    const res = await fetch(`${API_URL}/analytics/dashboard`, { headers: authHeaders() });
-    return handle(res);
+    return fetchCached(`${API_URL}/analytics/dashboard`, "dashboard_metrics");
   },
 };

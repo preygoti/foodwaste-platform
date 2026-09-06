@@ -150,8 +150,11 @@ function LiveCountdownBadge({ expiryDateStr, now }) {
 export default function InventoryPage() {
   const { user } = useAuth();
   const now = useLiveTicker(1000); // 1-second reactive ticking
-  const [items, setItems] = useState([]);
-  const [loading, setLoading] = useState(true);
+  const [items, setItems] = useState(() => {
+    const cached = api.getCached("inventory");
+    return Array.isArray(cached) ? cached.sort((a, b) => a.days_to_expiry - b.days_to_expiry) : [];
+  });
+  const [loading, setLoading] = useState(() => !api.getCached("inventory"));
   const [error, setError] = useState("");
 
   // Navigation tab: 'active' | 'expired'
@@ -177,17 +180,22 @@ export default function InventoryPage() {
 
   const load = () => {
     if (user?.role !== "business") return;
-    setLoading(true);
+    if (!api.getCached("inventory")) {
+      setLoading(true);
+    }
     setError("");
     api
       .listInventory()
-      .then((data) => setItems(data.sort((a, b) => a.days_to_expiry - b.days_to_expiry)))
+      .then((data) => {
+        if (Array.isArray(data)) {
+          setItems(data.sort((a, b) => a.days_to_expiry - b.days_to_expiry));
+        }
+      })
       .catch((e) => setError(e.message))
       .finally(() => setLoading(false));
   };
 
   useEffect(() => {
-    setItems([]);
     if (user?.role === "business") {
       load();
     } else {
