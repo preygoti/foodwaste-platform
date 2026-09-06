@@ -15,10 +15,12 @@ import {
   CheckCircle2,
   AlertCircle,
   Truck,
+  Award,
 } from "lucide-react";
 import Layout from "../components/Layout";
 import { useAuth } from "../AuthContext";
 import { api } from "../api";
+import CsrCertificateModal from "../components/CsrCertificateModal";
 import {
   BarChart,
   Bar,
@@ -134,6 +136,8 @@ export default function AnalyticsPage() {
     );
   }
 
+  const [showCertModal, setShowCertModal] = useState(false);
+
   const activeListings = dashboardData?.listings_active ?? (roleData?.total_listings || 0);
   const foodRescuedKg = dashboardData?.food_rescued_kg ?? (roleData?.quantity_donated || roleData?.meals_received || 0);
   const co2PreventedKg = dashboardData?.co2_prevented_kg ?? (roleData?.co2e_saved_kg || Math.round(foodRescuedKg * 2.5));
@@ -173,17 +177,35 @@ export default function AnalyticsPage() {
   return (
     <Layout>
       {/* Top Header */}
-      <div className="mb-8">
-        <span className="font-mono text-xs uppercase tracking-widest text-tomato-500 font-semibold block mb-1">
-          Module 03 &bull; Sustainability &amp; Operations
-        </span>
-        <h1 className="font-display text-2xl sm:text-3xl text-forest-800 font-semibold">
-          Food Rescue Dashboard
-        </h1>
-        <p className="text-xs sm:text-sm text-forest-800/60 mt-1">
-          Connecting surplus food to NGOs and communities in need.
-        </p>
+      <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-4 mb-8">
+        <div>
+          <span className="font-mono text-xs uppercase tracking-widest text-tomato-500 font-semibold block mb-1">
+            Module 03 &bull; Sustainability &amp; Operations
+          </span>
+          <h1 className="font-display text-2xl sm:text-3xl text-forest-800 font-semibold">
+            Food Rescue Dashboard
+          </h1>
+          <p className="text-xs sm:text-sm text-forest-800/60 mt-1">
+            Connecting surplus food to NGOs and communities in need.
+          </p>
+        </div>
+
+        <button
+          onClick={() => setShowCertModal(true)}
+          className="inline-flex items-center gap-2 px-4 py-2.5 bg-forest-800 text-wheat-50 rounded-xl text-xs sm:text-sm font-semibold hover:bg-forest-700 shadow-sm transition-all active:scale-[0.99] self-start sm:self-auto"
+        >
+          <Award className="w-4 h-4 text-amber-300" />
+          <span>Official CSR &amp; Tax Certificate</span>
+        </button>
       </div>
+
+      {/* CSR Certificate Modal */}
+      <CsrCertificateModal
+        isOpen={showCertModal}
+        onClose={() => setShowCertModal(false)}
+        metrics={{ food_rescued_kg: foodRescuedKg, co2_prevented_kg: co2PreventedKg }}
+        user={user}
+      />
 
       {/* Top 4 Metric Cards (as in PDF Page 4) */}
       <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-4 mb-8">

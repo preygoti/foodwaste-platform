@@ -26,6 +26,7 @@ import Layout from "../components/Layout";
 import RiskStamp from "../components/RiskStamp";
 import CsvUploadModal from "../components/CsvUploadModal";
 import BarcodeScannerModal from "../components/BarcodeScannerModal";
+import RescueChefModal from "../components/RescueChefModal";
 import { useAuth } from "../AuthContext";
 import { api } from "../api";
 
@@ -163,6 +164,7 @@ export default function InventoryPage() {
   const [showAddModal, setShowAddModal] = useState(false);
   const [showCsvModal, setShowCsvModal] = useState(false);
   const [showScannerModal, setShowScannerModal] = useState(false);
+  const [rescueChefItem, setRescueChefItem] = useState(null);
   const [listingModalItem, setListingModalItem] = useState(null);
   const [listingForm, setListingForm] = useState({ quantity: "", pickup_location: "" });
   const [listingSubmitting, setListingSubmitting] = useState(false);
@@ -693,6 +695,14 @@ export default function InventoryPage() {
                             ) : (
                               <>
                                 <button
+                                  onClick={() => setRescueChefItem(item)}
+                                  className="inline-flex items-center gap-1 px-2.5 py-1.5 text-xs font-semibold text-amber-800 bg-amber-50 hover:bg-amber-100 border border-amber-200/80 rounded-md transition-colors shadow-2xs"
+                                  title="AI Zero-Waste Rescue Recipes"
+                                >
+                                  <Sparkles className="w-3.5 h-3.5 text-amber-600" />
+                                  <span>Rescue Recipe</span>
+                                </button>
+                                <button
                                   onClick={() => openListingModal(item)}
                                   className="inline-flex items-center gap-1 px-2.5 py-1.5 text-xs font-semibold text-forest-600 hover:text-forest-800 hover:bg-forest-50 rounded-md transition-colors"
                                   title="List as surplus on marketplace"
@@ -807,6 +817,14 @@ export default function InventoryPage() {
                       </button>
                     ) : (
                       <>
+                        <button
+                          onClick={() => setRescueChefItem(item)}
+                          className="inline-flex items-center gap-1.5 px-3 py-1.5 text-xs font-semibold text-amber-900 bg-amber-50 hover:bg-amber-100 rounded-lg border border-amber-200 transition-colors"
+                        >
+                          <Sparkles className="w-3.5 h-3.5 text-amber-600" />
+                          <span>Rescue Recipe</span>
+                        </button>
+
                         <button
                           onClick={() => openListingModal(item)}
                           className="inline-flex items-center gap-1.5 px-3 py-1.5 text-xs font-semibold text-forest-800 bg-forest-50 hover:bg-forest-100 rounded-lg border border-forest-100 transition-colors"
@@ -1112,6 +1130,12 @@ export default function InventoryPage() {
           setShowScannerModal(false);
           setShowAddModal(true);
         }}
+      />
+
+      {/* RESCUE CHEF ZERO-WASTE RECIPES MODAL */}
+      <RescueChefModal
+        item={rescueChefItem}
+        onClose={() => setRescueChefItem(null)}
       />
     </Layout>
   );
