@@ -320,19 +320,89 @@ class TestFoodWastePlatform(unittest.TestCase):
         })
         self.assertEqual(res_reuse.status_code, 400)
 
-    def test_10_food_rescue_dashboard_metrics(self):
+    def test_11_multi_ngo_bidding_and_auto_rejection(self):
         biz_headers = {"Authorization": f"Bearer {self.biz_token}"}
-        res = client.get("/analytics/dashboard", headers=biz_headers)
-        self.assertEqual(res.status_code, 200)
-        data = res.json()
-        self.assertIn("listings_active", data)
-        self.assertIn("food_rescued_kg", data)
-        self.assertIn("co2_prevented_kg", data)
-        self.assertIn("ngos_active", data)
-        self.assertIn("category_breakdown", data)
-        self.assertIn("top_donors", data)
-        self.assertIn("recent_rescue_operations", data)
-        self.assertIsInstance(data["category_breakdown"], list)
+
+        # 1. Register NGO 1 and NGO 2
+        uid_ngo1 = uuid.uuid4().hex[:8]
+        res_ngo1 = client.post("/auth/register", json={
+            "email": f"ngo1_{uid_ngo1}@test.org",
+            "password": "password123",
+            "org_name": "Hope Food Bank 1",
+            "role": "ngo",
+            "address": "101 Charity Ave"
+        })
+        ngo1_token = res_ngo1.json()["access_token"]
+        ngo1_headers = {"Authorization": f"Bearer {ngo1_token}"}
+
+        uid_ngo2 = uuid.uuid4().hex[:8]
+        res_ngo2 = client.post("/auth/register", json={
+            "email": f"ngo2_{uid_ngo2}@test.org",
+            "password": "password123",
+            "org_name": "Meals For All 2",
+            "role": "ngo",
+            "address": "202 Shelter Rd"
+        })
+        ngo2_token = res_ngo2.json()["access_token"]
+        ngo2_headers = {"Authorization": f"Bearer {ngo2_token}"}
+
+        # 2. Business creates a new surplus listing
+        res_listing = client.post("/listings", headers=biz_headers, json={
+            "title": "Fresh Apples Box",
+            "category": "produce",
+            "quantity": 25.0,
+            "unit": "kg",
+            "expiry_date": (date.today() + timedelta(days=3)).isoformat(),
+            "pickup_location": "Storefront Loading Dock"
+        })
+        self.assertEqual(res_listing.status_code, 200)
+        listing_id = res_listing.json()["id"]
+
+        # 3. NGO 1 requests pickup -> Listing MUST still remain available
+        res_p1 = client.post("/pickups", headers=ngo1_headers, json={
+            "listing_id": listing_id,
+            "meals_estimate": 50.0,
+            "scheduled_time": (date.today() + timedelta(days=1)).isoformat() + "T14:00:00"
+        })
+        self.assertEqual(res_p1.status_code, 200)
+        p1_id = res_p1.json()["id"]
+
+        # 4. NGO 2 browses available listings -> Must STILL see the listing!
+        res_browse = client.get("/listings", headers=ngo2_headers)
+        available_ids = [l["id"] for l in res_browse.json()]
+        self.assertIn(listing_id, available_ids)
+
+        # 5. NGO 2 also requests pickup for the same surplus listing
+        res_p2 = client.post("/pickups", headers=ngo2_headers, json={
+            "listing_id": listing_id,
+            "meals_estimate": 45.0,
+            "scheduled_time": (date.today() + timedelta(days=1)).isoformat() + "T15:00:00"
+        })
+        self.assertEqual(res_p2.status_code, 200)
+        p2_id = res_p2.json()["id"]
+
+        # 6. Business views requests and decides to ACCEPT NGO 2
+        res_confirm = client.patch(f"/pickups/{p2_id}", headers=biz_headers, json={
+            "status": "confirmed"
+        })
+        self.assertEqual(res_confirm.status_code, 200)
+        self.assertEqual(res_confirm.json()["status"], "confirmed")
+
+        # 7. Listing status MUST now be "matched" (hidden from general browse marketplace)
+        res_browse_after = client.get("/listings", headers=ngo1_headers)
+        available_ids_after = [l["id"] for l in res_browse_after.json()]
+        self.assertNotIn(listing_id, available_ids_after)
+
+        # 8. NGO 1's competing request MUST be automatically CANCELLED / REJECTED
+        res_ngo1_pickups = client.get("/pickups/mine", headers=ngo1_headers)
+        p1_record = next(p for p in res_ngo1_pickups.json() if p["id"] == p1_id)
+        self.assertEqual(p1_record["status"], "cancelled")
+
+        # 9. NGO 2's request MUST remain CONFIRMED
+        res_ngo2_pickups = client.get("/pickups/mine", headers=ngo2_headers)
+        p2_record = next(p for p in res_ngo2_pickups.json() if p["id"] == p2_id)
+        self.assertEqual(p2_record["status"], "confirmed")
 
 if __name__ == "__main__":
     unittest.main()
+

@@ -517,16 +517,26 @@ def request_pickup(
     if not listing:
         raise HTTPException(404, "Listing not found")
     if listing.status != models.ListingStatus.available:
-        raise HTTPException(400, "Listing is no longer available")
+        raise HTTPException(400, "This surplus listing has already been accepted and assigned to another organization.")
     if listing.expiry_date < date.today():
         raise HTTPException(400, "Cannot claim an expired listing. This food donation has expired.")
+
+    # Prevent duplicate active requests from the same NGO
+    existing = db.query(models.Pickup).filter(
+        models.Pickup.listing_id == payload.listing_id,
+        models.Pickup.ngo_id == user.id,
+        models.Pickup.status.in_([models.PickupStatus.pending, models.PickupStatus.confirmed]),
+    ).first()
+    if existing:
+        raise HTTPException(400, "You already have an active request for this surplus listing.")
 
     pickup = models.Pickup(
         listing_id=payload.listing_id, ngo_id=user.id,
         scheduled_time=payload.scheduled_time, meals_estimate=payload.meals_estimate or 0.0,
         status=models.PickupStatus.pending,
     )
-    listing.status = models.ListingStatus.matched
+    # Surplus item remains available for other NGOs to request until the donor confirms/accepts one!
+    listing.status = models.ListingStatus.available
     db.add(pickup)
     db.commit()
     db.refresh(pickup)
@@ -551,10 +561,36 @@ def update_pickup(
 
     if payload.status:
         pickup.status = payload.status
-        if payload.status == "picked_up" and listing:
+
+        # 1. DONOR ACCEPTS THIS NGO'S REQUEST:
+        if payload.status == "confirmed" and listing:
+            # Mark listing matched (hidden from browse marketplace for all other NGOs!)
+            listing.status = models.ListingStatus.matched
+
+            # Automatically reject/cancel all other competing pending requests for this listing
+            other_pending = db.query(models.Pickup).filter(
+                models.Pickup.listing_id == pickup.listing_id,
+                models.Pickup.id != pickup.id,
+                models.Pickup.status == models.PickupStatus.pending,
+            ).all()
+            for op in other_pending:
+                op.status = models.PickupStatus.cancelled
+
+        # 2. PICKUP COMPLETED:
+        elif payload.status == "picked_up" and listing:
             listing.status = models.ListingStatus.completed
-        if payload.status == "cancelled" and listing:
-            listing.status = models.ListingStatus.available
+
+        # 3. REQUEST REJECTED / CANCELLED:
+        elif payload.status == "cancelled" and listing:
+            # Check if any confirmed pickup remains; if not, return listing to available for other NGOs
+            has_other_confirmed = db.query(models.Pickup).filter(
+                models.Pickup.listing_id == pickup.listing_id,
+                models.Pickup.id != pickup.id,
+                models.Pickup.status == models.PickupStatus.confirmed,
+            ).first()
+            if not has_other_confirmed:
+                listing.status = models.ListingStatus.available
+
     if payload.scheduled_time:
         pickup.scheduled_time = payload.scheduled_time
     if payload.meals_estimate is not None:

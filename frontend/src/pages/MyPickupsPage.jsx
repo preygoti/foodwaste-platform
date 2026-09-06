@@ -21,25 +21,25 @@ const STATUS_CONFIG = {
     color: "#b48d38",
     bg: "rgba(180, 141, 56, 0.08)",
     border: "rgba(180, 141, 56, 0.35)",
-    label: "Pending Approval",
+    label: "Pending Donor Review",
   },
   confirmed: {
     color: "#2d5940",
     bg: "rgba(45, 89, 64, 0.08)",
     border: "rgba(45, 89, 64, 0.35)",
-    label: "Confirmed by Donor",
+    label: "Confirmed & Assigned! 🎉",
   },
   picked_up: {
     color: "#1f3a2e",
     bg: "rgba(31, 58, 46, 0.12)",
     border: "rgba(31, 58, 46, 0.4)",
-    label: "Completed",
+    label: "Completed & Rescued",
   },
   cancelled: {
     color: "#c1442d",
     bg: "rgba(193, 68, 45, 0.08)",
     border: "rgba(193, 68, 45, 0.35)",
-    label: "Cancelled",
+    label: "Request Not Selected / Rejected",
   },
 };
 
@@ -205,6 +205,23 @@ export default function MyPickupsPage() {
                       </span>
                     )}
                   </div>
+
+                  {/* Contextual Status Guidance */}
+                  {p.status === "cancelled" && (
+                    <p className="text-[11px] text-rose-700 font-mono bg-rose-50/80 px-2.5 py-1 rounded-md border border-rose-200 mt-2">
+                      ❌ Request Not Selected: The donor business assigned this surplus item to another NGO or cancelled the reservation.
+                    </p>
+                  )}
+                  {p.status === "confirmed" && (
+                    <p className="text-[11px] text-emerald-800 font-mono bg-emerald-50/80 px-2.5 py-1 rounded-md border border-emerald-200 mt-2">
+                      ✅ Request Accepted! Your NGO was selected by the donor. Show your Driver ID &amp; QR Pass upon pickup.
+                    </p>
+                  )}
+                  {p.status === "pending" && (
+                    <p className="text-[11px] text-amber-800 font-mono bg-amber-50/80 px-2.5 py-1 rounded-md border border-amber-200 mt-2">
+                      ⏳ Pending Selection: The food donor is reviewing requests from local NGOs and will select a recipient.
+                    </p>
+                  )}
                 </div>
 
                 {/* Actions */}

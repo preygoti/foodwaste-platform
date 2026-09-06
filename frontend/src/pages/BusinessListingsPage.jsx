@@ -234,10 +234,17 @@ export default function BusinessListingsPage() {
                 {/* Pickup coordination section */}
                 {pickups.length > 0 && (
                   <div className="mt-4 pt-3 border-t border-wheat-200 bg-forest-50/60 -mx-5 -mb-5 p-4 rounded-b-xl space-y-2.5">
-                    <p className="text-[11px] font-mono font-semibold uppercase tracking-wider text-forest-800/70 flex items-center gap-1.5">
-                      <Truck className="w-3.5 h-3.5 text-forest-600" />
-                      NGO Pickup Requests ({pickups.length})
-                    </p>
+                    <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-1.5">
+                      <p className="text-[11px] font-mono font-semibold uppercase tracking-wider text-forest-800/80 flex items-center gap-1.5">
+                        <Truck className="w-3.5 h-3.5 text-forest-600" />
+                        NGO Pickup Requests ({pickups.length})
+                      </p>
+                      {pickups.filter((p) => p.status === "pending").length > 1 && (
+                        <span className="text-[11px] text-amber-800 bg-amber-100/90 border border-amber-200 px-2 py-0.5 rounded-md font-mono">
+                          ⚡ {pickups.filter((p) => p.status === "pending").length} competing NGO requests &bull; Accepting one auto-rejects others
+                        </span>
+                      )}
+                    </div>
                     {pickups.map((p) => (
                       <div
                         key={p.id}
@@ -263,12 +270,12 @@ export default function BusinessListingsPage() {
                                 <span className="w-1.5 h-1.5 rounded-full bg-emerald-600 animate-pulse inline-block" />
                               )}
                               {p.status === "pending"
-                                ? "Pending Approval"
+                                ? "Pending Selection"
                                 : p.status === "confirmed"
                                 ? "Confirmed · Driver Assigned"
                                 : p.status === "picked_up"
                                 ? "Completed & Rescued"
-                                : "Cancelled"}
+                                : "Request Not Selected / Cancelled"}
                             </span>
                           </div>
                           <p className="text-forest-800/60 text-xs">
@@ -288,19 +295,20 @@ export default function BusinessListingsPage() {
                               <button
                                 onClick={() => confirmPickup(p.id)}
                                 disabled={confirmingId === p.id}
-                                className="inline-flex items-center justify-center gap-1 px-3 py-1.5 bg-emerald-700 hover:bg-emerald-800 text-white rounded-lg text-xs font-semibold disabled:opacity-50 transition-all shadow-2xs"
+                                className="inline-flex items-center justify-center gap-1.5 px-3 py-1.5 bg-emerald-700 hover:bg-emerald-800 text-white rounded-lg text-xs font-semibold disabled:opacity-50 transition-all shadow-2xs"
+                                title="Accept this NGO request (will assign listing and reject other pending requests)"
                               >
                                 <CheckCircle2 className="w-3.5 h-3.5 text-emerald-200" />
-                                <span>Confirm Request</span>
+                                <span>Accept &amp; Assign</span>
                               </button>
                               <button
                                 onClick={() => rejectPickup(p.id)}
                                 disabled={confirmingId === p.id}
-                                className="inline-flex items-center justify-center gap-1 px-2.5 py-1.5 text-tomato-600 hover:bg-tomato-50 rounded-lg text-xs font-medium transition-colors"
-                                title="Reject pickup request"
+                                className="inline-flex items-center justify-center gap-1 px-2.5 py-1.5 text-tomato-600 hover:bg-tomato-50 rounded-lg text-xs font-medium transition-colors border border-transparent hover:border-tomato-200"
+                                title="Decline this pickup request"
                               >
                                 <XCircle className="w-3.5 h-3.5" />
-                                <span>Reject</span>
+                                <span>Decline</span>
                               </button>
                             </>
                           )}

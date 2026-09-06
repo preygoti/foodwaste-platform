@@ -659,14 +659,14 @@ export default function InventoryPage() {
         <>
           {/* DESKTOP TABLE VIEW (>= 768px) - Responsive & Clean Fitting */}
           <div className="hidden md:block bg-white border border-wheat-200 rounded-xl overflow-x-auto shadow-2xs w-full">
-            <table className="w-full text-left text-sm border-collapse table-auto min-w-[680px]">
+            <table className="w-full text-left text-sm border-collapse table-auto min-w-[700px]">
               <thead className="bg-wheat-100/70 border-b border-wheat-200 text-xs font-mono uppercase tracking-wider text-forest-800/60">
                 <tr>
                   <th className="py-3 px-3.5 font-semibold text-left">Item &amp; Location</th>
                   <th className="py-3 px-2.5 font-semibold text-left whitespace-nowrap">Quantity</th>
                   <th className="py-3 px-3 font-semibold text-left whitespace-nowrap">Live Expiry Countdown</th>
                   <th className="py-3 px-2 font-semibold text-center whitespace-nowrap">Status &amp; Risk</th>
-                  <th className="py-3 px-3 font-semibold text-center whitespace-nowrap">Actions</th>
+                  <th className="py-3 px-4 font-semibold text-center whitespace-nowrap min-w-[210px]">Actions</th>
                 </tr>
               </thead>
               <tbody className="divide-y divide-wheat-200/80">
@@ -740,9 +740,9 @@ export default function InventoryPage() {
                         </div>
                       </td>
 
-                      {/* Action buttons - Centered */}
-                      <td className="py-3 px-3 align-middle text-center whitespace-nowrap">
-                        <div className="flex items-center justify-center gap-1.5">
+                      {/* Action buttons - Precisely Centered */}
+                      <td className="py-3 px-4 align-middle text-center whitespace-nowrap">
+                        <div className="inline-flex items-center justify-center gap-1.5 mx-auto">
                           {isItemExpired ? (
                             <button
                               onClick={() => remove(item.id, item.name)}
