@@ -763,11 +763,11 @@ export default function InventoryPage() {
                               </button>
                               <button
                                 onClick={() => openListingModal(item)}
-                                className="inline-flex items-center gap-1 px-2.5 py-1.5 text-xs font-semibold text-forest-700 bg-forest-50 hover:bg-forest-100 border border-forest-100 rounded-lg transition-colors shadow-2xs"
-                                title="List as surplus on marketplace"
+                                className="inline-flex items-center gap-1.5 px-3 py-1.5 text-xs font-semibold text-forest-800 bg-forest-50 hover:bg-forest-100 border border-forest-200/80 rounded-lg transition-colors shadow-2xs"
+                                title="Add to surplus marketplace for NGOs"
                               >
                                 <Share2 className="w-3.5 h-3.5 text-forest-600" />
-                                <span>List Surplus</span>
+                                <span>Add to Surplus</span>
                               </button>
                               <button
                                 onClick={() => remove(item.id, item.name)}
@@ -885,10 +885,10 @@ export default function InventoryPage() {
 
                         <button
                           onClick={() => openListingModal(item)}
-                          className="inline-flex items-center gap-1.5 px-3 py-1.5 text-xs font-semibold text-forest-800 bg-forest-50 hover:bg-forest-100 rounded-lg border border-forest-100 transition-colors"
+                          className="inline-flex items-center gap-1.5 px-3 py-1.5 text-xs font-semibold text-forest-800 bg-forest-50 hover:bg-forest-100 rounded-lg border border-forest-200 transition-colors"
                         >
                           <Share2 className="w-3.5 h-3.5 text-forest-600" />
-                          <span>List as Surplus</span>
+                          <span>Add to Surplus</span>
                         </button>
 
                         <button
@@ -1069,21 +1069,28 @@ export default function InventoryPage() {
       )}
 
       {/* ------------------------------------------------------------- */}
-      {/* MODAL 2: LIST SURPLUS DIALOG                                  */}
+      {/* MODAL 2: ADD TO SURPLUS DIALOG                                */}
       {/* ------------------------------------------------------------- */}
       {listingModalItem && (
-        <div className="fixed inset-0 z-50 flex items-center justify-center p-4 bg-black/60 backdrop-blur-sm">
-          <div className="relative w-full max-w-md bg-white border border-wheat-200 rounded-xl shadow-2xl overflow-hidden animate-in fade-in zoom-in-95 duration-150">
-            <div className="flex items-center justify-between px-6 py-5 border-b border-wheat-200 bg-wheat-50">
-              <div className="flex items-center gap-2">
-                <span className="p-1.5 rounded-md bg-forest-800 text-wheat-50">
-                  <Share2 className="w-4 h-4" />
+        <div className="fixed inset-0 z-50 flex items-center justify-center p-4 bg-forest-950/70 backdrop-blur-xs">
+          <div className="relative w-full max-w-md bg-white border border-wheat-200 rounded-2xl shadow-2xl overflow-hidden animate-in fade-in zoom-in-95 duration-150">
+            <div className="flex items-center justify-between px-6 py-5 border-b border-wheat-200 bg-gradient-to-r from-forest-900 via-forest-800 to-forest-800 text-wheat-50">
+              <div>
+                <span className="text-[10px] font-mono tracking-widest uppercase text-emerald-300 font-semibold block mb-0.5">
+                  Redistribution Marketplace · Module 03
                 </span>
-                <h2 className="font-display text-xl text-forest-800">List as Surplus</h2>
+                <h2 className="font-display text-lg sm:text-xl font-bold text-white flex items-center gap-2">
+                  <Share2 className="w-5 h-5 text-emerald-300" />
+                  <span>Add to Surplus Marketplace</span>
+                </h2>
+                <p className="text-xs text-wheat-200/80 mt-0.5">
+                  Post near-expiry inventory for verified NGOs and food banks.
+                </p>
               </div>
               <button
                 onClick={() => setListingModalItem(null)}
-                className="p-2 text-forest-800/50 hover:text-forest-800 rounded-lg hover:bg-wheat-200/50 transition-colors"
+                className="p-1.5 text-wheat-300 hover:text-white rounded-lg hover:bg-white/10 transition-colors"
+                title="Close"
               >
                 <X className="w-5 h-5" />
               </button>

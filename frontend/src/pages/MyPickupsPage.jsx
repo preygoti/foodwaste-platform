@@ -212,11 +212,11 @@ export default function MyPickupsPage() {
                   <div className="flex flex-wrap items-center gap-2 pt-2 sm:pt-0 border-t sm:border-t-0 border-wheat-100 shrink-0">
                     <button
                       onClick={() => setSelectedQrPickup(p)}
-                      className="inline-flex items-center gap-1.5 px-3 py-2 bg-emerald-50 text-emerald-700 border border-emerald-200 rounded-lg text-xs font-semibold hover:bg-emerald-100 transition-all shadow-2xs"
-                      title="Show Driver Proof-of-Rescue QR Pass"
+                      className="inline-flex items-center gap-1.5 px-3.5 py-2 bg-emerald-50 text-emerald-800 border border-emerald-300/80 rounded-lg text-xs font-semibold hover:bg-emerald-100 transition-all shadow-2xs"
+                      title="Generate Driver Identity & Proof-of-Rescue QR Card"
                     >
-                      <QrCode className="w-3.5 h-3.5 text-emerald-600" />
-                      <span>QR Pass</span>
+                      <QrCode className="w-3.5 h-3.5 text-emerald-700" />
+                      <span>Driver ID &amp; QR Pass</span>
                     </button>
                     <button
                       onClick={() => markPickedUp(p.id)}
