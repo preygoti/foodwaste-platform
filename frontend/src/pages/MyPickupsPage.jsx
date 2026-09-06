@@ -69,6 +69,8 @@ export default function MyPickupsPage() {
   useEffect(() => {
     if (user?.role === "ngo") {
       load();
+      const interval = setInterval(load, 4000);
+      return () => clearInterval(interval);
     } else {
       setLoading(false);
     }

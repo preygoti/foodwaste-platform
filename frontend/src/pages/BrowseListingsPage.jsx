@@ -147,16 +147,38 @@ export default function BrowseListingsPage() {
   const [claimSuccess, setClaimSuccess] = useState(false);
   const [claimError, setClaimError] = useState("");
 
+  const [myPickupListingIds, setMyPickupListingIds] = useState(() => {
+    const cached = api.getCached("my_pickups") || [];
+    return new Set(
+      Array.isArray(cached)
+        ? cached
+            .filter((p) => p.status === "pending" || p.status === "confirmed" || p.status === "picked_up")
+            .map((p) => p.listing_id)
+        : []
+    );
+  });
+
   const load = () => {
     if (user?.role !== "ngo") return;
     if (!api.getCached("browse_listings")) {
       setLoading(true);
     }
     setError("");
-    api
-      .browseListings()
-      .then((data) => {
-        if (Array.isArray(data)) setListings(data);
+    Promise.all([
+      api.browseListings(),
+      api.myPickups().catch(() => [])
+    ])
+      .then(([browseData, pickupsData]) => {
+        if (Array.isArray(browseData)) setListings(browseData);
+        if (Array.isArray(pickupsData)) {
+          setMyPickupListingIds(
+            new Set(
+              pickupsData
+                .filter((p) => p.status === "pending" || p.status === "confirmed" || p.status === "picked_up")
+                .map((p) => p.listing_id)
+            )
+          );
+        }
       })
       .catch((err) => setError(err.message))
       .finally(() => setLoading(false));
@@ -165,6 +187,8 @@ export default function BrowseListingsPage() {
   useEffect(() => {
     if (user?.role === "ngo") {
       load();
+      const interval = setInterval(load, 5000);
+      return () => clearInterval(interval);
     } else {
       setLoading(false);
     }
@@ -238,6 +262,9 @@ export default function BrowseListingsPage() {
   // Filter out any expired listings in real-time, plus search/category filtering
   const activeUnexpiredListings = useMemo(() => {
     return listings.filter((l) => {
+      // 0. Exclude listings already requested by this NGO (they are in My Pickups!)
+      if (myPickupListingIds.has(l.id)) return false;
+
       // 1. Food safety: Exclude expired items
       const cd = computeLiveExpiryCountdown(l.expiry_date, now);
       if (cd.isExpired) return false;
@@ -257,7 +284,7 @@ export default function BrowseListingsPage() {
 
       return true;
     });
-  }, [listings, now, categoryFilter, searchQuery]);
+  }, [listings, myPickupListingIds, now, categoryFilter, searchQuery]);
 
   return (
     <Layout>
