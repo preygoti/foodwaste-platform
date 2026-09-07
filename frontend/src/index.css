@@ -37,7 +37,8 @@ html, body {
 
 input[type="date"],
 input[type="time"],
-input[type="datetime-local"] {
+input[type="datetime-local"],
+select {
   min-width: 0 !important;
   max-width: 100% !important;
   box-sizing: border-box !important;
