@@ -576,7 +576,7 @@ export default function BrowseListingsPage() {
                       placeholder="e.g. 25"
                       value={mealsEstimate}
                       onChange={(e) => setMealsEstimate(e.target.value)}
-                      className="w-full max-w-[240px] mx-auto block box-border border border-wheat-200 rounded-xl px-3.5 py-2.5 text-sm text-center focus:outline-none focus:ring-2 focus:ring-forest-400 bg-white shadow-sm"
+                      className="w-[175px] max-w-full mx-auto block box-border border border-wheat-200 rounded-xl px-3 py-2 text-sm text-center focus:outline-none focus:ring-2 focus:ring-forest-400 bg-white shadow-sm"
                     />
                     <p className="text-[11px] text-forest-800/50 mt-1 text-center">
                       Based on ~2.5 community meals per unit.
@@ -593,7 +593,7 @@ export default function BrowseListingsPage() {
                       required
                       value={pickupDate}
                       onChange={(e) => setPickupDate(e.target.value)}
-                      className="w-full max-w-[240px] mx-auto block box-border bg-white border border-wheat-200 rounded-xl px-3.5 py-2.5 text-sm text-forest-900 focus:outline-none focus:ring-2 focus:ring-forest-400 font-mono text-center shadow-sm"
+                      className="w-[175px] max-w-full mx-auto block box-border bg-white border border-wheat-200 rounded-xl px-3 py-2 text-sm text-forest-900 focus:outline-none focus:ring-2 focus:ring-forest-400 font-mono text-center shadow-sm"
                     />
                   </div>
 
@@ -606,7 +606,7 @@ export default function BrowseListingsPage() {
                       required
                       value={pickupTime}
                       onChange={(e) => setPickupTime(e.target.value)}
-                      className="w-full max-w-[240px] mx-auto block box-border bg-white border border-wheat-200 rounded-xl px-3.5 py-2.5 text-sm text-forest-900 focus:outline-none focus:ring-2 focus:ring-forest-400 font-mono text-center cursor-pointer shadow-sm"
+                      className="w-[205px] max-w-full mx-auto block box-border bg-white border border-wheat-200 rounded-xl px-3 py-2 text-sm text-forest-900 focus:outline-none focus:ring-2 focus:ring-forest-400 font-mono text-center cursor-pointer shadow-sm"
                     >
                       <option value="08:00">08:00 AM (Morning)</option>
                       <option value="09:00">09:00 AM (Morning)</option>
