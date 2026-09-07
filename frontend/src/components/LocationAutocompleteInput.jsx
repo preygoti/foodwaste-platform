@@ -71,7 +71,7 @@ export default function LocationAutocompleteInput({
           onFocus={() => setIsOpen(true)}
           onChange={handleChange}
           placeholder={placeholder}
-          className="w-full border border-wheat-200 rounded-lg pl-8 pr-7 py-2 h-10 text-xs sm:text-sm text-forest-900 placeholder:text-forest-800/40 focus:outline-none focus:ring-2 focus:ring-forest-400 bg-white box-border"
+          className="w-full border border-wheat-200 rounded-lg pl-8 pr-7 py-2 h-10 min-h-[40px] max-h-[40px] text-xs sm:text-sm text-forest-900 placeholder:text-forest-800/40 focus:outline-none focus:ring-2 focus:ring-forest-400 bg-white box-border"
         />
 
         <MapPin className="w-3.5 h-3.5 text-forest-800/40 absolute left-2.5 top-1/2 -translate-y-1/2 pointer-events-none" />

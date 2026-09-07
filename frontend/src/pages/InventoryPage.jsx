@@ -973,7 +973,7 @@ export default function InventoryPage() {
                   placeholder="e.g. Fresh Milk, Sourdough Loaf"
                   value={form.name}
                   onChange={updateForm("name")}
-                  className="w-full border border-wheat-200 rounded-lg px-3 py-2 h-10 text-xs sm:text-sm text-forest-900 placeholder:text-forest-800/40 focus:outline-none focus:ring-2 focus:ring-forest-400 bg-white box-border"
+                  className="w-full border border-wheat-200 rounded-lg px-3 py-2 h-10 min-h-[40px] max-h-[40px] text-xs sm:text-sm text-forest-900 placeholder:text-forest-800/40 focus:outline-none focus:ring-2 focus:ring-forest-400 bg-white box-border"
                 />
               </div>
 
@@ -985,7 +985,7 @@ export default function InventoryPage() {
                   <select
                     value={form.category}
                     onChange={updateForm("category")}
-                    className={`w-full border border-wheat-200 rounded-lg px-3 py-2 h-10 text-xs sm:text-sm focus:outline-none focus:ring-2 focus:ring-forest-400 bg-white capitalize box-border ${
+                    className={`w-full border border-wheat-200 rounded-lg px-3 py-2 h-10 min-h-[40px] max-h-[40px] text-xs sm:text-sm focus:outline-none focus:ring-2 focus:ring-forest-400 bg-white capitalize box-border ${
                       !form.category ? "text-forest-800/40" : "text-forest-900"
                     }`}
                   >
@@ -1006,7 +1006,7 @@ export default function InventoryPage() {
                 />
               </div>
 
-              <div className="grid grid-cols-2 gap-2.5 sm:gap-3">
+              <div className="grid grid-cols-1 sm:grid-cols-2 gap-3">
                 <div>
                   <label className="block text-[11px] sm:text-xs uppercase tracking-wider text-forest-800/70 font-semibold mb-1">
                     Quantity *
@@ -1019,7 +1019,7 @@ export default function InventoryPage() {
                     placeholder="e.g. 10"
                     value={form.quantity}
                     onChange={updateForm("quantity")}
-                    className="w-full border border-wheat-200 rounded-lg px-3 py-2 h-10 text-xs sm:text-sm text-forest-900 placeholder:text-forest-800/40 focus:outline-none focus:ring-2 focus:ring-forest-400 bg-white box-border"
+                    className="w-full border border-wheat-200 rounded-lg px-3 py-2 h-10 min-h-[40px] max-h-[40px] text-xs sm:text-sm text-forest-900 placeholder:text-forest-800/40 focus:outline-none focus:ring-2 focus:ring-forest-400 bg-white box-border"
                   />
                 </div>
 
@@ -1030,7 +1030,7 @@ export default function InventoryPage() {
                   <select
                     value={form.unit}
                     onChange={updateForm("unit")}
-                    className={`w-full border border-wheat-200 rounded-lg px-3 py-2 h-10 text-xs sm:text-sm focus:outline-none focus:ring-2 focus:ring-forest-400 bg-white box-border ${
+                    className={`w-full border border-wheat-200 rounded-lg px-3 py-2 h-10 min-h-[40px] max-h-[40px] text-xs sm:text-sm focus:outline-none focus:ring-2 focus:ring-forest-400 bg-white box-border ${
                       !form.unit ? "text-forest-800/40" : "text-forest-900"
                     }`}
                   >
@@ -1054,7 +1054,7 @@ export default function InventoryPage() {
                     required
                     value={form.expiry_date}
                     onChange={updateForm("expiry_date")}
-                    className="w-full border border-wheat-200 rounded-lg px-3 py-2 h-10 text-xs sm:text-sm text-forest-900 focus:outline-none focus:ring-2 focus:ring-forest-400 bg-white font-mono box-border"
+                    className="w-full border border-wheat-200 rounded-lg px-3 py-2 h-10 min-h-[40px] max-h-[40px] text-xs sm:text-sm text-forest-900 focus:outline-none focus:ring-2 focus:ring-forest-400 bg-white font-mono box-border appearance-none"
                   />
                 </div>
 
@@ -1069,7 +1069,7 @@ export default function InventoryPage() {
                     placeholder="e.g. 1"
                     value={form.avg_daily_usage}
                     onChange={updateForm("avg_daily_usage")}
-                    className="w-full border border-wheat-200 rounded-lg px-3 py-2 h-10 text-xs sm:text-sm text-forest-900 placeholder:text-forest-800/40 focus:outline-none focus:ring-2 focus:ring-forest-400 bg-white box-border"
+                    className="w-full border border-wheat-200 rounded-lg px-3 py-2 h-10 min-h-[40px] max-h-[40px] text-xs sm:text-sm text-forest-900 placeholder:text-forest-800/40 focus:outline-none focus:ring-2 focus:ring-forest-400 bg-white box-border"
                   />
                 </div>
               </div>
