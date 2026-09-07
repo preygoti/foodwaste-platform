@@ -377,38 +377,42 @@ export default function InventoryPage() {
         </div>
 
         {/* Action Button Group */}
-        <div className="grid grid-cols-2 sm:flex sm:flex-wrap items-center gap-2 sm:gap-2.5 w-full sm:w-auto">
-          <button
-            onClick={() => setShowAiVisionModal(true)}
-            className="inline-flex items-center justify-center gap-1.5 sm:gap-2 px-3 sm:px-3.5 py-2.5 sm:py-2 rounded-xl text-xs sm:text-sm font-semibold bg-forest-800 text-wheat-50 hover:bg-forest-700 shadow-sm transition-all active:scale-[0.98] w-full sm:w-auto"
-          >
-            <Sparkles className="w-4 h-4 text-gold-400 shrink-0" />
-            <span className="truncate">AI Scan</span>
-          </button>
-
-          <button
-            onClick={() => setShowScannerModal(true)}
-            className="inline-flex items-center justify-center gap-1.5 sm:gap-2 px-3 sm:px-3.5 py-2.5 sm:py-2 rounded-xl text-xs sm:text-sm font-medium bg-white text-forest-800 border border-forest-600/30 hover:bg-forest-50 hover:border-forest-600 shadow-2xs transition-all active:scale-[0.98] w-full sm:w-auto"
-          >
-            <Scan className="w-4 h-4 text-forest-600 shrink-0" />
-            <span className="truncate">Barcode</span>
-          </button>
-
-          <button
-            onClick={() => setShowCsvModal(true)}
-            className="inline-flex items-center justify-center gap-1.5 sm:gap-2 px-3 sm:px-3.5 py-2.5 sm:py-2 rounded-xl text-xs sm:text-sm font-medium bg-white text-forest-800 border border-forest-600/30 hover:bg-forest-50 hover:border-forest-600 shadow-2xs transition-all active:scale-[0.98] w-full sm:w-auto"
-          >
-            <Upload className="w-4 h-4 text-forest-600 shrink-0" />
-            <span className="truncate">CSV Import</span>
-          </button>
-
+        <div className="flex flex-col sm:flex-row sm:items-center gap-2 sm:gap-2.5 w-full sm:w-auto">
+          {/* Primary Add Item Button (Highlighted & Prominent) */}
           <button
             onClick={() => setShowAddModal(true)}
-            className="inline-flex items-center justify-center gap-1.5 sm:gap-2 px-3 sm:px-4 py-2.5 sm:py-2 rounded-xl text-xs sm:text-sm font-semibold bg-forest-700 sm:bg-white text-wheat-50 sm:text-forest-800 border border-transparent sm:border-wheat-300 hover:bg-forest-600 sm:hover:bg-wheat-100/50 shadow-2xs transition-all active:scale-[0.98] w-full sm:w-auto"
+            className="inline-flex items-center justify-center gap-2 px-4 py-2.5 sm:py-2 rounded-xl text-xs sm:text-sm font-bold bg-forest-800 text-wheat-50 hover:bg-forest-700 shadow-md transition-all active:scale-[0.98] w-full sm:w-auto cursor-pointer order-1 sm:order-4 border border-forest-900"
           >
-            <Plus className="w-4 h-4 shrink-0" />
-            <span className="truncate">Add Item</span>
+            <Plus className="w-4 h-4 text-gold-400 shrink-0 stroke-[2.5]" />
+            <span>Add New Item</span>
           </button>
+
+          {/* Smart Scan Tools Toolbar */}
+          <div className="grid grid-cols-3 sm:flex sm:items-center gap-1.5 sm:gap-2.5 w-full sm:w-auto order-2 sm:order-1">
+            <button
+              onClick={() => setShowAiVisionModal(true)}
+              className="inline-flex items-center justify-center gap-1.5 px-2.5 sm:px-3.5 py-2 sm:py-2 rounded-xl text-xs sm:text-sm font-semibold bg-forest-50 text-forest-900 border border-forest-300 hover:bg-forest-100 shadow-2xs transition-all active:scale-[0.98] w-full sm:w-auto cursor-pointer"
+            >
+              <Sparkles className="w-3.5 h-3.5 sm:w-4 sm:h-4 text-amber-600 shrink-0" />
+              <span className="truncate">AI Scan</span>
+            </button>
+
+            <button
+              onClick={() => setShowScannerModal(true)}
+              className="inline-flex items-center justify-center gap-1.5 px-2.5 sm:px-3.5 py-2 sm:py-2 rounded-xl text-xs sm:text-sm font-medium bg-white text-forest-800 border border-wheat-300 hover:bg-wheat-50 shadow-2xs transition-all active:scale-[0.98] w-full sm:w-auto cursor-pointer"
+            >
+              <Scan className="w-3.5 h-3.5 sm:w-4 sm:h-4 text-forest-600 shrink-0" />
+              <span className="truncate">Barcode</span>
+            </button>
+
+            <button
+              onClick={() => setShowCsvModal(true)}
+              className="inline-flex items-center justify-center gap-1.5 px-2.5 sm:px-3.5 py-2 sm:py-2 rounded-xl text-xs sm:text-sm font-medium bg-white text-forest-800 border border-wheat-300 hover:bg-wheat-50 shadow-2xs transition-all active:scale-[0.98] w-full sm:w-auto cursor-pointer"
+            >
+              <Upload className="w-3.5 h-3.5 sm:w-4 sm:h-4 text-forest-600 shrink-0" />
+              <span className="truncate">CSV Import</span>
+            </button>
+          </div>
         </div>
       </div>
 
@@ -1239,6 +1243,17 @@ export default function InventoryPage() {
         item={rescueChefItem}
         onClose={() => setRescueChefItem(null)}
       />
+
+      {/* MOBILE STICKY FLOATING ACTION BUTTON (Always accessible on phone) */}
+      <div className="fixed bottom-6 right-4 z-40 sm:hidden flex flex-col items-end">
+        <button
+          onClick={() => setShowAddModal(true)}
+          className="flex items-center gap-2 px-4 py-3 bg-forest-800 hover:bg-forest-700 text-wheat-50 font-bold text-xs rounded-full shadow-2xl border-2 border-gold-400 active:scale-95 transition-all cursor-pointer"
+        >
+          <Plus className="w-4 h-4 text-gold-400 stroke-[3]" />
+          <span>+ Add Item</span>
+        </button>
+      </div>
     </Layout>
   );
 }
