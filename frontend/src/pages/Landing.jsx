@@ -241,8 +241,15 @@ export default function Landing() {
       {/* ------------------------------------------------------------- */}
       {/* FOOTER                                                        */}
       {/* ------------------------------------------------------------- */}
-      <footer className="mt-auto py-8 text-center text-xs text-forest-800/50 font-mono">
-        <p>Harvest Ledger — Intelligent Surplus Food Management &amp; Redistribution</p>
+      <footer className="mt-auto py-8 px-4 sm:px-6 lg:px-8 border-t border-wheat-200/60 bg-wheat-100/30">
+        <div className="max-w-4xl mx-auto px-4 sm:px-6 text-center space-y-1">
+          <p className="text-xs sm:text-sm text-forest-800/60 font-mono leading-relaxed">
+            Harvest Ledger &bull; Intelligent Surplus Food Management &amp; Redistribution
+          </p>
+          <p className="text-[11px] text-forest-800/40 font-mono">
+            Empowering Zero-Waste Communities &amp; Verified Non-Profit Partners
+          </p>
+        </div>
       </footer>
     </div>
   );

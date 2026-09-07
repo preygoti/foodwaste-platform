@@ -268,10 +268,19 @@ export default function Layout({ children }) {
       {/* ------------------------------------------------------------- */}
       {/* MAIN CONTENT AREA                                             */}
       {/* ------------------------------------------------------------- */}
-      <main className="flex-1 min-w-0">
-        <div className="max-w-6xl mx-auto px-4 sm:px-6 lg:px-8 py-6 sm:py-8 lg:py-10">
+      <main className="flex-1 min-w-0 flex flex-col justify-between">
+        <div className="max-w-6xl w-full mx-auto px-4 sm:px-6 lg:px-8 py-6 sm:py-8 lg:py-10 flex-1">
           {children}
         </div>
+
+        {/* Global Dashboard Footer with Responsive Padding */}
+        <footer className="w-full border-t border-wheat-200/80 bg-wheat-100/40 py-4 px-4 sm:px-6 lg:px-8 mt-auto text-center font-mono">
+          <div className="max-w-6xl mx-auto px-2">
+            <p className="text-[11px] sm:text-xs text-forest-800/50 leading-relaxed">
+              Harvest Ledger &bull; AI-Powered Food Waste Management &amp; Redistribution Platform
+            </p>
+          </div>
+        </footer>
       </main>
     </div>
   );
