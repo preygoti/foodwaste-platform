@@ -131,7 +131,7 @@ export default function BusinessListingsPage() {
 
   return (
     <Layout>
-      <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-4 mb-8">
+      <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-4 mb-6 sm:mb-8">
         <div>
           <span className="font-mono text-xs uppercase tracking-widest text-tomato-500 font-semibold block mb-1">
             Module 03 · Redistribution Marketplace
@@ -146,7 +146,7 @@ export default function BusinessListingsPage() {
 
         <button
           onClick={() => setShowVerifyQrModal(true)}
-          className="inline-flex items-center gap-2 px-4 py-2.5 bg-emerald-600 hover:bg-emerald-700 text-white rounded-xl text-xs sm:text-sm font-semibold shadow-xs transition-all shrink-0 cursor-pointer"
+          className="inline-flex items-center justify-center gap-2 px-4 py-2.5 bg-emerald-600 hover:bg-emerald-700 text-white rounded-xl text-xs sm:text-sm font-semibold shadow-xs transition-all shrink-0 cursor-pointer w-full sm:w-auto"
         >
           <Scan className="w-4 h-4 text-emerald-100" />
           <span>Verify Handshake QR</span>

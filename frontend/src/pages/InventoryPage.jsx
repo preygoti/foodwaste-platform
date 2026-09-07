@@ -377,37 +377,37 @@ export default function InventoryPage() {
         </div>
 
         {/* Action Button Group */}
-        <div className="flex flex-wrap items-center gap-2 sm:gap-2.5">
+        <div className="grid grid-cols-2 sm:flex sm:flex-wrap items-center gap-2 sm:gap-2.5 w-full sm:w-auto">
           <button
             onClick={() => setShowAiVisionModal(true)}
-            className="inline-flex items-center justify-center gap-2 px-3.5 py-2 rounded-lg text-xs sm:text-sm font-semibold bg-forest-800 text-wheat-50 hover:bg-forest-700 shadow-sm transition-all active:scale-[0.98]"
+            className="inline-flex items-center justify-center gap-1.5 sm:gap-2 px-3 sm:px-3.5 py-2.5 sm:py-2 rounded-xl text-xs sm:text-sm font-semibold bg-forest-800 text-wheat-50 hover:bg-forest-700 shadow-sm transition-all active:scale-[0.98] w-full sm:w-auto"
           >
-            <Sparkles className="w-4 h-4 text-gold-400" />
-            <span>AI Freshness Scan</span>
+            <Sparkles className="w-4 h-4 text-gold-400 shrink-0" />
+            <span className="truncate">AI Scan</span>
           </button>
 
           <button
             onClick={() => setShowScannerModal(true)}
-            className="inline-flex items-center justify-center gap-2 px-3.5 py-2 rounded-lg text-xs sm:text-sm font-medium bg-white text-forest-800 border border-forest-600/30 hover:bg-forest-50 hover:border-forest-600 shadow-2xs transition-all active:scale-[0.98]"
+            className="inline-flex items-center justify-center gap-1.5 sm:gap-2 px-3 sm:px-3.5 py-2.5 sm:py-2 rounded-xl text-xs sm:text-sm font-medium bg-white text-forest-800 border border-forest-600/30 hover:bg-forest-50 hover:border-forest-600 shadow-2xs transition-all active:scale-[0.98] w-full sm:w-auto"
           >
-            <Scan className="w-4 h-4 text-forest-600" />
-            <span>Scan Barcode</span>
+            <Scan className="w-4 h-4 text-forest-600 shrink-0" />
+            <span className="truncate">Barcode</span>
           </button>
 
           <button
             onClick={() => setShowCsvModal(true)}
-            className="inline-flex items-center justify-center gap-2 px-3.5 py-2 rounded-lg text-xs sm:text-sm font-medium bg-white text-forest-800 border border-forest-600/30 hover:bg-forest-50 hover:border-forest-600 shadow-2xs transition-all active:scale-[0.98]"
+            className="inline-flex items-center justify-center gap-1.5 sm:gap-2 px-3 sm:px-3.5 py-2.5 sm:py-2 rounded-xl text-xs sm:text-sm font-medium bg-white text-forest-800 border border-forest-600/30 hover:bg-forest-50 hover:border-forest-600 shadow-2xs transition-all active:scale-[0.98] w-full sm:w-auto"
           >
-            <Upload className="w-4 h-4 text-forest-600" />
-            <span>Upload CSV</span>
+            <Upload className="w-4 h-4 text-forest-600 shrink-0" />
+            <span className="truncate">CSV Import</span>
           </button>
 
           <button
             onClick={() => setShowAddModal(true)}
-            className="inline-flex items-center justify-center gap-2 px-4 py-2 rounded-lg text-xs sm:text-sm font-medium bg-white text-forest-800 border border-wheat-300 hover:bg-wheat-100/50 shadow-2xs transition-all active:scale-[0.98]"
+            className="inline-flex items-center justify-center gap-1.5 sm:gap-2 px-3 sm:px-4 py-2.5 sm:py-2 rounded-xl text-xs sm:text-sm font-semibold bg-forest-700 sm:bg-white text-wheat-50 sm:text-forest-800 border border-transparent sm:border-wheat-300 hover:bg-forest-600 sm:hover:bg-wheat-100/50 shadow-2xs transition-all active:scale-[0.98] w-full sm:w-auto"
           >
-            <Plus className="w-4 h-4" />
-            <span>Add Item</span>
+            <Plus className="w-4 h-4 shrink-0" />
+            <span className="truncate">Add Item</span>
           </button>
         </div>
       </div>

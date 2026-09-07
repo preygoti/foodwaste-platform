@@ -439,8 +439,8 @@ export default function CsvUploadModal({ isOpen, open, onClose, onSuccess }) {
                   ✓ Validated
                 </span>
               </div>
-              <div className="border border-wheat-200 rounded-lg max-h-48 overflow-y-auto">
-                <table className="w-full text-left text-xs border-collapse table-auto">
+              <div className="border border-wheat-200 rounded-lg max-h-48 overflow-y-auto overflow-x-auto">
+                <table className="w-full text-left text-xs border-collapse table-auto min-w-[360px]">
                   <thead className="bg-wheat-100 text-forest-800/70 sticky top-0">
                     <tr>
                       <th className="py-2 px-3 font-semibold">Item</th>
@@ -473,11 +473,11 @@ export default function CsvUploadModal({ isOpen, open, onClose, onSuccess }) {
         </div>
 
         {/* Footer */}
-        <div className="flex items-center justify-end gap-3 px-6 py-4 border-t border-wheat-200 bg-wheat-50">
+        <div className="flex flex-col sm:flex-row items-stretch sm:items-center justify-end gap-2 sm:gap-3 px-5 sm:px-6 py-4 border-t border-wheat-200 bg-wheat-50">
           <button
             type="button"
             onClick={handleClose}
-            className="px-4 py-2 text-sm font-medium text-forest-800 hover:bg-wheat-200/50 rounded-lg transition-colors"
+            className="w-full sm:w-auto px-4 py-2.5 sm:py-2 text-xs sm:text-sm font-medium text-forest-800 hover:bg-wheat-200/50 rounded-xl transition-colors text-center"
           >
             Cancel
           </button>
@@ -485,7 +485,7 @@ export default function CsvUploadModal({ isOpen, open, onClose, onSuccess }) {
             type="button"
             disabled={parsedData.length === 0 || isUploading}
             onClick={handleUpload}
-            className="inline-flex items-center gap-2 px-5 py-2 text-sm font-medium bg-forest-800 text-wheat-50 rounded-lg hover:bg-forest-600 disabled:opacity-50 disabled:cursor-not-allowed shadow-sm transition-all"
+            className="w-full sm:w-auto inline-flex items-center justify-center gap-2 px-5 py-2.5 sm:py-2 text-xs sm:text-sm font-semibold bg-forest-800 text-wheat-50 rounded-xl hover:bg-forest-700 disabled:opacity-50 disabled:cursor-not-allowed shadow-sm transition-all"
           >
             {isUploading ? (
               <>

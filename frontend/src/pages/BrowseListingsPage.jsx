@@ -302,10 +302,10 @@ export default function BrowseListingsPage() {
         </div>
 
         {/* View Mode Toggle Button Group */}
-        <div className="flex items-center gap-1.5 p-1 bg-white border border-wheat-200 rounded-xl shadow-2xs shrink-0 font-mono text-xs">
+        <div className="flex items-center gap-1.5 p-1 bg-white border border-wheat-200 rounded-xl shadow-2xs shrink-0 font-mono text-xs w-full sm:w-auto">
           <button
             onClick={() => setViewMode("grid")}
-            className={`inline-flex items-center gap-1.5 px-3 py-1.5 rounded-lg font-semibold transition-all ${
+            className={`flex-1 sm:flex-initial inline-flex items-center justify-center gap-1.5 px-3 py-2 sm:py-1.5 rounded-lg font-semibold transition-all ${
               viewMode === "grid"
                 ? "bg-forest-800 text-wheat-50 shadow-2xs"
                 : "text-forest-800/70 hover:text-forest-800 hover:bg-wheat-50"
@@ -316,7 +316,7 @@ export default function BrowseListingsPage() {
           </button>
           <button
             onClick={() => setViewMode("map")}
-            className={`inline-flex items-center gap-1.5 px-3 py-1.5 rounded-lg font-semibold transition-all ${
+            className={`flex-1 sm:flex-initial inline-flex items-center justify-center gap-1.5 px-3 py-2 sm:py-1.5 rounded-lg font-semibold transition-all ${
               viewMode === "map"
                 ? "bg-forest-800 text-wheat-50 shadow-2xs"
                 : "text-forest-800/70 hover:text-forest-800 hover:bg-wheat-50"

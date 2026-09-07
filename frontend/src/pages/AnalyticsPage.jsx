@@ -206,17 +206,17 @@ export default function AnalyticsPage() {
           </p>
         </div>
 
-        <div className="flex flex-wrap items-center gap-2.5">
+        <div className="flex flex-col sm:flex-row items-stretch sm:items-center gap-2 sm:gap-2.5 w-full sm:w-auto">
           <button
             onClick={() => setShowEsgModal(true)}
-            className="inline-flex items-center gap-2 px-4 py-2.5 bg-emerald-700 hover:bg-emerald-800 text-wheat-50 rounded-xl text-xs sm:text-sm font-semibold shadow-xs transition-all active:scale-[0.99]"
+            className="inline-flex items-center justify-center gap-2 px-4 py-2.5 bg-emerald-700 hover:bg-emerald-800 text-wheat-50 rounded-xl text-xs sm:text-sm font-semibold shadow-xs transition-all active:scale-[0.99] w-full sm:w-auto"
           >
             <Receipt className="w-4 h-4 text-emerald-200" />
             <span>Official ESG Tax Statement</span>
           </button>
           <button
             onClick={() => setShowCertModal(true)}
-            className="inline-flex items-center gap-2 px-4 py-2.5 bg-forest-800 text-wheat-50 rounded-xl text-xs sm:text-sm font-semibold hover:bg-forest-700 shadow-xs transition-all active:scale-[0.99]"
+            className="inline-flex items-center justify-center gap-2 px-4 py-2.5 bg-forest-800 text-wheat-50 rounded-xl text-xs sm:text-sm font-semibold hover:bg-forest-700 shadow-xs transition-all active:scale-[0.99] w-full sm:w-auto"
           >
             <Award className="w-4 h-4 text-amber-300" />
             <span>CSR Certificate</span>
@@ -439,8 +439,8 @@ export default function AnalyticsPage() {
           <Truck className="w-5 h-5 text-forest-600" />
         </div>
 
-        <div className="w-full">
-          <table className="w-full text-left text-xs sm:text-sm table-auto">
+        <div className="w-full overflow-x-auto">
+          <table className="w-full text-left text-xs sm:text-sm table-auto min-w-[560px]">
             <thead>
               <tr className="border-b border-wheat-200 text-forest-800/60 font-mono text-[11px] uppercase tracking-wider">
                 <th className="pb-3 pr-4 font-semibold">Listing ID</th>

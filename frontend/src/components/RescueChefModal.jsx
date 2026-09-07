@@ -252,11 +252,11 @@ Yield: ${recipe.yieldPerKg}`;
         </div>
 
         {/* Modal Footer */}
-        <div className="px-6 py-3.5 border-t border-wheat-200 bg-wheat-50 flex items-center justify-between text-xs text-forest-800/60">
+        <div className="px-5 sm:px-6 py-3.5 border-t border-wheat-200 bg-wheat-50 flex flex-col sm:flex-row items-center justify-between gap-3 text-xs text-forest-800/60 text-center sm:text-left">
           <span>💡 Zero-waste culinary algorithms prevent commercial kitchen spoilage.</span>
           <button
             onClick={onClose}
-            className="px-4 py-2 bg-forest-800 text-wheat-50 rounded-lg font-semibold hover:bg-forest-700 transition-colors"
+            className="w-full sm:w-auto px-4 py-2 bg-forest-800 text-wheat-50 rounded-lg font-semibold hover:bg-forest-700 transition-colors"
           >
             Close Guide
           </button>

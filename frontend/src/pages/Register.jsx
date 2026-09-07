@@ -124,10 +124,10 @@ export default function Register() {
   };
 
   return (
-    <div className="min-h-screen bg-wheat-50 flex flex-col justify-center items-center px-4 sm:px-6 py-12 text-forest-800">
+    <div className="min-h-[100dvh] bg-wheat-50 flex flex-col justify-center items-center px-4 sm:px-6 py-8 sm:py-12 text-forest-800 pt-safe pb-safe">
       <div className="w-full max-w-md space-y-6">
         <div className="text-center">
-          <Link to="/" className="font-display italic text-3xl text-forest-800 font-bold block mb-1">
+          <Link to="/" className="font-display italic text-3xl sm:text-4xl text-forest-800 font-bold block mb-1">
             Harvest&nbsp;Ledger
           </Link>
           <p className="text-xs font-mono uppercase tracking-widest text-forest-800/50">

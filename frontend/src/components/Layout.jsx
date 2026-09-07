@@ -72,34 +72,34 @@ export default function Layout({ children }) {
       {/* ------------------------------------------------------------- */}
       {/* MOBILE STICKY TOPBAR (< 1024px)                               */}
       {/* ------------------------------------------------------------- */}
-      <header className="lg:hidden sticky top-0 z-30 bg-forest-800 text-wheat-100 px-4 py-3 flex items-center justify-between border-b border-forest-600/60 shadow-md">
-        <div className="flex items-center gap-3">
+      <header className="lg:hidden sticky top-0 z-30 bg-forest-800 text-wheat-100 px-4 sm:px-6 py-3 flex items-center justify-between border-b border-forest-600/60 shadow-md">
+        <div className="flex items-center gap-2.5 sm:gap-3 min-w-0">
           <button
             type="button"
             onClick={() => setMobileMenuOpen(true)}
-            className="w-10 h-10 flex items-center justify-center rounded-lg text-wheat-100 hover:bg-forest-700/80 active:bg-forest-600 transition-colors"
+            className="w-10 h-10 min-w-[40px] flex items-center justify-center rounded-xl text-wheat-100 hover:bg-forest-700 active:bg-forest-600 transition-colors"
             aria-label="Open navigation menu"
             aria-expanded={mobileMenuOpen}
           >
-            <Menu className="w-6 h-6" />
+            <Menu className="w-5 h-5" />
           </button>
-          <div>
-            <span className="font-display italic text-lg tracking-tight font-semibold block leading-none">
+          <div className="min-w-0">
+            <span className="font-display italic text-base sm:text-lg tracking-tight font-semibold block leading-tight truncate">
               Harvest Ledger
             </span>
-            <span className="text-[10px] uppercase tracking-widest text-forest-100/60 font-mono">
+            <span className="text-[10px] uppercase tracking-wider text-forest-100/70 font-mono block truncate">
               {user?.role === "business" ? "Business Portal" : "NGO Food Bank"}
             </span>
           </div>
         </div>
 
-        <div className="flex items-center gap-2">
-          <span className="px-2.5 py-1 rounded-full text-[11px] font-mono capitalize bg-forest-700/80 text-wheat-100 border border-forest-600/50">
+        <div className="flex items-center gap-2 shrink-0">
+          <span className="px-2.5 py-1 rounded-full text-[10px] sm:text-[11px] font-mono capitalize bg-forest-700/90 text-wheat-100 border border-forest-600/50">
             {user?.role}
           </span>
           <button
             onClick={handleSignOut}
-            className="p-2 text-wheat-100/70 hover:text-tomato-400 rounded-lg hover:bg-forest-700/50 transition-colors"
+            className="w-9 h-9 flex items-center justify-center text-wheat-100/70 hover:text-tomato-400 rounded-xl hover:bg-forest-700/60 transition-colors"
             title="Sign out"
             aria-label="Sign out"
           >
@@ -113,22 +113,22 @@ export default function Layout({ children }) {
       {/* ------------------------------------------------------------- */}
       {mobileMenuOpen && (
         <div
-          className="lg:hidden fixed inset-0 bg-black/60 backdrop-blur-sm z-40 transition-opacity"
+          className="lg:hidden fixed inset-0 bg-black/60 backdrop-blur-sm z-40 transition-opacity animate-in fade-in duration-200"
           onClick={() => setMobileMenuOpen(false)}
           aria-hidden="true"
         />
       )}
 
       <aside
-        className={`lg:hidden fixed inset-y-0 left-0 z-50 w-72 max-w-[85vw] bg-forest-800 text-wheat-100 flex flex-col shadow-2xl transition-transform duration-300 ease-in-out ${
+        className={`lg:hidden fixed inset-y-0 left-0 z-50 w-72 max-w-[85vw] bg-forest-800 text-wheat-100 flex flex-col shadow-2xl transition-transform duration-300 ease-in-out pb-safe ${
           mobileMenuOpen ? "translate-x-0" : "-translate-x-full"
         }`}
         aria-label="Mobile Navigation"
       >
         {/* Drawer Header */}
-        <div className="px-5 py-5 border-b border-forest-600/60 flex items-center justify-between">
+        <div className="px-5 py-4 border-b border-forest-600/60 flex items-center justify-between">
           <div>
-            <p className="font-display italic text-xl leading-tight font-semibold">
+            <p className="font-display italic text-lg sm:text-xl leading-tight font-semibold">
               Harvest Ledger
             </p>
             <p className="text-[10px] uppercase tracking-widest text-forest-100/60 font-mono mt-0.5">
@@ -137,7 +137,7 @@ export default function Layout({ children }) {
           </div>
           <button
             onClick={() => setMobileMenuOpen(false)}
-            className="w-10 h-10 flex items-center justify-center rounded-lg text-wheat-100/70 hover:text-white hover:bg-forest-700/60 active:bg-forest-600 transition-colors"
+            className="w-9 h-9 flex items-center justify-center rounded-xl text-wheat-100/70 hover:text-white hover:bg-forest-700/60 active:bg-forest-600 transition-colors"
             aria-label="Close navigation menu"
           >
             <X className="w-5 h-5" />
