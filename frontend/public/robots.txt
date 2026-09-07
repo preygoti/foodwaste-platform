@@ -1,0 +1,9 @@
+User-agent: *
+Allow: /
+Allow: /browse
+Allow: /login
+Allow: /register
+Allow: /forgot-password
+Disallow: /dashboard/
+
+Sitemap: https://foodwaste-platform.vercel.app/sitemap.xml
