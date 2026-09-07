@@ -179,9 +179,9 @@ export default function InventoryPage() {
   const [listingSuccessMsg, setListingSuccessMsg] = useState("");
 
   const [showCsvModal, setShowCsvModal] = useState(false);
-  const [showBarcodeModal, setShowBarcodeModal] = useState(false);
-  const [showAiModal, setShowAiModal] = useState(false);
-  const [showChefModal, setShowChefModal] = useState(false);
+  const [showScannerModal, setShowScannerModal] = useState(false);
+  const [showAiVisionModal, setShowAiVisionModal] = useState(false);
+  const [rescueChefItem, setRescueChefItem] = useState(null);
 
   const load = async (silent = false) => {
     if (!silent) setLoading(true);
