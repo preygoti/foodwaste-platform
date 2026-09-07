@@ -327,11 +327,33 @@ export const api = {
   },
 
   // QR Code Proof of Rescue Handshake Verification
-  async verifyPickupHandshake(pickupId, handshakeToken = "") {
+  async verifyPickupHandshake(pickupId, handshakeToken = "", code = "") {
     const res = await safeFetch(`${API_URL}/pickups/${pickupId}/verify-handshake`, {
       method: "POST",
       headers: { "Content-Type": "application/json", ...authHeaders() },
-      body: JSON.stringify({ pickup_id: Number(pickupId), handshake_token: handshakeToken }),
+      body: JSON.stringify({
+        pickup_id: Number(pickupId),
+        handshake_token: handshakeToken,
+        code: code,
+      }),
+    });
+    clearApiCache("my_listings");
+    clearApiCache("pickups");
+    clearApiCache("browse_listings");
+    clearApiCache("analytics_business");
+    clearApiCache("dashboard");
+    return handle(res);
+  },
+
+  // Direct 6-Digit Verification PIN Verification
+  async verifyPickupByCode(code, pickupId = null) {
+    const res = await safeFetch(`${API_URL}/pickups/verify-code`, {
+      method: "POST",
+      headers: { "Content-Type": "application/json", ...authHeaders() },
+      body: JSON.stringify({
+        code: String(code).trim(),
+        pickup_id: pickupId ? Number(pickupId) : null,
+      }),
     });
     clearApiCache("my_listings");
     clearApiCache("pickups");

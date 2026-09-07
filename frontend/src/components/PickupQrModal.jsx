@@ -18,12 +18,15 @@ export default function PickupQrModal({ isOpen, onClose, pickup }) {
   if (!isOpen || !pickup) return null;
 
   // Generate cryptographic handoff payload for the QR code
+  const verificationPin = pickup.verification_code || String(pickup.id);
   const handshakeData = JSON.stringify({
     pickup_id: pickup.id,
     listing_id: pickup.listing_id,
+    code: verificationPin,
+    verification_code: verificationPin,
     ngo_id: pickup.ngo_id || user?.id,
     ngo_name: user?.org_name || pickup.ngo_name || "Verified NGO Partner",
-    token: `HL_RESCUE_${pickup.id}_${pickup.listing_id}`,
+    token: `HL_RESCUE_${pickup.id}_${pickup.listing_id}_${verificationPin}`,
   });
 
   // High-resolution SVG / PNG QR code API
@@ -31,10 +34,8 @@ export default function PickupQrModal({ isOpen, onClose, pickup }) {
     handshakeData
   )}&color=0f291e&bgcolor=ffffff&margin=10`;
 
-  const pinCode = `HL-${pickup.id}-${pickup.listing_id}`;
-
   const copyCode = () => {
-    navigator.clipboard.writeText(pinCode);
+    navigator.clipboard.writeText(verificationPin);
     setCopied(true);
     setTimeout(() => setCopied(false), 2000);
   };
@@ -105,31 +106,31 @@ export default function PickupQrModal({ isOpen, onClose, pickup }) {
             </div>
 
             {/* Offline PIN Box */}
-            <div className="bg-wheat-100/80 p-2 rounded-xl border border-wheat-300 flex items-center justify-between text-xs font-mono">
+            <div className="bg-wheat-100/90 p-2.5 rounded-xl border border-wheat-300 flex items-center justify-between text-xs font-mono">
               <div>
                 <span className="text-forest-800/60 uppercase text-[9px] block font-semibold">
-                  Verification Code:
+                  6-Digit Verification PIN:
                 </span>
-                <strong className="text-forest-950 text-sm tracking-wider font-bold">
-                  {pinCode}
+                <strong className="text-forest-950 text-base sm:text-lg tracking-widest font-extrabold">
+                  {verificationPin}
                 </strong>
               </div>
 
               <button
                 type="button"
                 onClick={copyCode}
-                className="inline-flex items-center gap-1 px-2.5 py-1 bg-white border border-wheat-300 rounded-lg text-forest-800 text-[11px] font-semibold hover:bg-forest-50 transition-all shadow-2xs"
-                title="Copy code"
+                className="inline-flex items-center gap-1 px-3 py-1.5 bg-white border border-wheat-300 rounded-lg text-forest-800 text-xs font-semibold hover:bg-forest-50 transition-all shadow-2xs cursor-pointer"
+                title="Copy 6-digit code"
               >
                 {copied ? (
                   <>
-                    <Check className="w-3 h-3 text-emerald-600" />
-                    <span className="text-emerald-700">Copied</span>
+                    <Check className="w-3.5 h-3.5 text-emerald-600" />
+                    <span className="text-emerald-700 font-bold">Copied</span>
                   </>
                 ) : (
                   <>
-                    <Copy className="w-3 h-3 text-forest-600" />
-                    <span>Copy</span>
+                    <Copy className="w-3.5 h-3.5 text-forest-600" />
+                    <span>Copy PIN</span>
                   </>
                 )}
               </button>

@@ -146,6 +146,7 @@ class ListingOut(BaseModel):
     pickup_window_end: Optional[datetime]
     status: str
     notes: str
+    verification_code: Optional[str] = None
     created_at: datetime
 
     class Config:
@@ -173,6 +174,7 @@ class PickupOut(BaseModel):
     listing_quantity: Optional[float] = None
     listing_unit: Optional[str] = None
     pickup_location: Optional[str] = None
+    verification_code: Optional[str] = None
     ngo_id: int
     ngo_name: Optional[str] = None
     status: str
@@ -260,8 +262,15 @@ class FreshnessInspectionResponse(BaseModel):
 
 # ---------- QR Code Handshake Verification ----------
 class QrHandshakeRequest(BaseModel):
-    pickup_id: int
+    pickup_id: Optional[int] = None
     handshake_token: Optional[str] = None
+    code: Optional[str] = None
+    verification_code: Optional[str] = None
+
+
+class QrPinVerificationRequest(BaseModel):
+    code: str
+    pickup_id: Optional[int] = None
 
 
 class QrHandshakeResponse(BaseModel):
@@ -275,4 +284,5 @@ class QrHandshakeResponse(BaseModel):
     verified_at: str
     co2_saved_kg: float
     meals_provided: float
+    verification_code: Optional[str] = None
 

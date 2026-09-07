@@ -449,6 +449,65 @@ class TestFoodWastePlatform(unittest.TestCase):
         self.assertEqual(res_duplicate.status_code, 400)
         self.assertIn("already exists", res_duplicate.json()["detail"])
 
+    def test_13_surplus_unique_6_digit_code_and_verification(self):
+        biz_headers = {"Authorization": f"Bearer {self.biz_token}"}
+        ngo_headers = {"Authorization": f"Bearer {self.ngo_token}"}
+
+        # 1. Business lists a surplus item -> MUST generate a unique fixed 6-digit verification_code
+        res_listing = client.post("/listings", headers=biz_headers, json={
+            "title": "Fresh Baked Croissants",
+            "category": "bakery",
+            "quantity": 12.0,
+            "unit": "packs",
+            "expiry_date": (date.today() + timedelta(days=2)).isoformat(),
+            "pickup_location": "789 Bakery St"
+        })
+        self.assertEqual(res_listing.status_code, 200)
+        listing = res_listing.json()
+        code = listing.get("verification_code")
+        self.assertIsNotNone(code)
+        self.assertEqual(len(code), 6)
+        self.assertTrue(code.isdigit())
+
+        # 2. NGO requests pickup -> receives the verification_code
+        res_p = client.post("/pickups", headers=ngo_headers, json={
+            "listing_id": listing["id"],
+            "meals_estimate": 30.0,
+            "scheduled_time": (date.today() + timedelta(days=1)).isoformat() + "T11:00:00"
+        })
+        self.assertEqual(res_p.status_code, 200)
+        pickup = res_p.json()
+        self.assertEqual(pickup["verification_code"], code)
+
+        # 3. Confirm pickup
+        res_conf = client.patch(f"/pickups/{pickup['id']}", headers=biz_headers, json={"status": "confirmed"})
+        self.assertEqual(res_conf.status_code, 200)
+
+        # 4. Attempt to verify using WRONG 6-digit code -> MUST be rejected (400)
+        wrong_code = "000000" if code != "000000" else "111111"
+        res_bad_verify = client.post("/pickups/verify-code", headers=biz_headers, json={
+            "code": wrong_code
+        })
+        self.assertEqual(res_bad_verify.status_code, 400)
+        self.assertIn("Invalid", res_bad_verify.json()["detail"])
+
+        # 5. Verify using the CORRECT 6-digit code -> MUST succeed (200)
+        res_good_verify = client.post("/pickups/verify-code", headers=biz_headers, json={
+            "code": code
+        })
+        self.assertEqual(res_good_verify.status_code, 200)
+        verify_data = res_good_verify.json()
+        self.assertEqual(verify_data["status"], "verified")
+        self.assertEqual(verify_data["verification_code"], code)
+        self.assertEqual(verify_data["pickup_id"], pickup["id"])
+
+        # 6. Verify cannot re-verify already completed donation
+        res_re_verify = client.post("/pickups/verify-code", headers=biz_headers, json={
+            "code": code
+        })
+        self.assertEqual(res_re_verify.status_code, 400)
+
+
 if __name__ == "__main__":
     unittest.main()
 

@@ -76,6 +76,7 @@ class Listing(Base):
     pickup_window_end = Column(DateTime, nullable=True)
     status = Column(Enum(ListingStatus), default=ListingStatus.available)
     notes = Column(Text, default="")
+    verification_code = Column(String, nullable=True, index=True)
     created_at = Column(DateTime, default=datetime.utcnow)
 
     business = relationship("User", back_populates="listings")

@@ -198,13 +198,20 @@ export default function BusinessListingsPage() {
                 className="bg-white border border-wheat-200 rounded-xl p-5 shadow-2xs flex flex-col justify-between hover:shadow-xs transition-shadow"
               >
                 <div>
-                  {/* Top Bar: Category & Status Badge */}
+                  {/* Top Bar: Category, PIN & Status Badge */}
                   <div className="flex items-start justify-between gap-2 mb-3">
-                    <span className="font-mono text-[11px] uppercase tracking-wide text-forest-800/60 px-2 py-0.5 rounded bg-wheat-100/70">
-                      {l.category}
-                    </span>
+                    <div className="flex items-center gap-1.5 flex-wrap">
+                      <span className="font-mono text-[11px] uppercase tracking-wide text-forest-800/60 px-2 py-0.5 rounded bg-wheat-100/70">
+                        {l.category}
+                      </span>
+                      {l.verification_code && (
+                        <span className="inline-flex items-center gap-1 font-mono text-[10px] text-emerald-800 bg-emerald-50 border border-emerald-200/80 px-2 py-0.5 rounded-md font-semibold" title="Unique 6-digit Handshake PIN">
+                          PIN: <strong className="tracking-wider font-bold">{l.verification_code}</strong>
+                        </span>
+                      )}
+                    </div>
                     <span
-                      className="inline-flex items-center gap-1 font-mono font-semibold px-2.5 py-0.5 text-[11px] rounded-full tracking-wide border shadow-2xs"
+                      className="inline-flex items-center gap-1 font-mono font-semibold px-2.5 py-0.5 text-[11px] rounded-full tracking-wide border shadow-2xs shrink-0"
                       style={{
                         color: statusCfg.color,
                         backgroundColor: statusCfg.bg,

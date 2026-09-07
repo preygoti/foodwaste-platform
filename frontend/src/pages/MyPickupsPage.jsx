@@ -203,6 +203,11 @@ export default function MyPickupsPage() {
                         {itemCategory} {itemQuantity ? `· ${itemQuantity} ${itemUnit || "units"}` : ""}
                       </span>
                     )}
+                    {p.verification_code && (
+                      <span className="inline-flex items-center gap-1 font-mono text-[11px] text-emerald-800 bg-emerald-50 border border-emerald-200/80 px-2 py-0.5 rounded-md font-semibold" title="Unique 6-digit Handshake PIN">
+                        PIN: <strong className="tracking-wider font-bold">{p.verification_code}</strong>
+                      </span>
+                    )}
                     <span
                       className="inline-flex items-center gap-1 font-mono font-semibold px-2.5 py-0.5 text-[11px] rounded-full tracking-wide border shadow-2xs"
                       style={{

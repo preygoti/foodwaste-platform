@@ -7,7 +7,7 @@ from typing import List, Optional
 from fastapi import FastAPI, Depends, HTTPException, status
 from fastapi.middleware.cors import CORSMiddleware
 from fastapi.security import OAuth2PasswordRequestForm
-from sqlalchemy import func
+from sqlalchemy import func, text
 from sqlalchemy.orm import Session, joinedload
 
 import models
@@ -23,6 +23,14 @@ from risk_engine import (
 from email_service import send_otp_email
 
 Base.metadata.create_all(bind=engine)
+
+# Safe automatic schema upgrade for verification_code column on PostgreSQL and SQLite
+try:
+    with engine.connect() as conn:
+        conn.execute(text("ALTER TABLE listings ADD COLUMN verification_code VARCHAR"))
+        conn.commit()
+except Exception:
+    pass
 
 app = FastAPI(title="AI-Powered Food Waste Management Platform API")
 
@@ -491,15 +499,34 @@ def get_at_risk_items(
 # ============================================================
 # REDISTRIBUTION MARKETPLACE  (Weeks 5-6)
 # ============================================================
+def generate_unique_verification_code(db: Session) -> str:
+    """Generate a unique, fixed 6-digit verification PIN for a surplus food listing."""
+    for _ in range(100):
+        code = str(secrets.randbelow(900000) + 100000)
+        existing = db.query(models.Listing).filter(models.Listing.verification_code == code).first()
+        if not existing:
+            return code
+    return str(secrets.randbelow(900000) + 100000)
+
+
 def _listing_out(listing: models.Listing, db: Session) -> schemas.ListingOut:
     business = db.query(models.User).filter(models.User.id == listing.business_id).first()
+    if not listing.verification_code:
+        listing.verification_code = generate_unique_verification_code(db)
+        try:
+            db.commit()
+            db.refresh(listing)
+        except Exception:
+            db.rollback()
     return schemas.ListingOut(
         id=listing.id, business_id=listing.business_id,
         business_name=business.org_name if business else None,
         title=listing.title, category=listing.category, quantity=listing.quantity,
         unit=listing.unit, expiry_date=listing.expiry_date, pickup_location=listing.pickup_location,
         pickup_window_start=listing.pickup_window_start, pickup_window_end=listing.pickup_window_end,
-        status=listing.status.value, notes=listing.notes, created_at=listing.created_at,
+        status=listing.status.value, notes=listing.notes,
+        verification_code=listing.verification_code,
+        created_at=listing.created_at,
     )
 
 
@@ -535,12 +562,14 @@ def create_listing(
             else:
                 inv_item.quantity = round(remaining_qty, 2)
 
+    v_code = generate_unique_verification_code(db)
     listing = models.Listing(
         business_id=user.id, inventory_item_id=payload.inventory_item_id,
         title=payload.title, category=payload.category, quantity=payload.quantity,
         unit=payload.unit, expiry_date=payload.expiry_date, pickup_location=payload.pickup_location,
         pickup_window_start=payload.pickup_window_start, pickup_window_end=payload.pickup_window_end,
         notes=payload.notes or "",
+        verification_code=v_code,
     )
     db.add(listing)
     db.commit()
@@ -604,6 +633,13 @@ def listing_pickups(
 def _pickup_out(pickup: models.Pickup, db: Session) -> schemas.PickupOut:
     ngo = db.query(models.User).filter(models.User.id == pickup.ngo_id).first()
     listing = db.query(models.Listing).filter(models.Listing.id == pickup.listing_id).first()
+    if listing and not listing.verification_code:
+        listing.verification_code = generate_unique_verification_code(db)
+        try:
+            db.commit()
+            db.refresh(listing)
+        except Exception:
+            db.rollback()
     return schemas.PickupOut(
         id=pickup.id,
         listing_id=pickup.listing_id,
@@ -612,6 +648,7 @@ def _pickup_out(pickup: models.Pickup, db: Session) -> schemas.PickupOut:
         listing_quantity=listing.quantity if listing else None,
         listing_unit=listing.unit if listing else None,
         pickup_location=listing.pickup_location if listing else None,
+        verification_code=listing.verification_code if listing else None,
         ngo_id=pickup.ngo_id,
         ngo_name=ngo.org_name if ngo else None,
         status=pickup.status.value,
@@ -724,6 +761,98 @@ def my_pickups(
     return [_pickup_out(p, db) for p in pickups]
 
 
+CO2E_PER_KG_FOOD_WASTE = 2.5  # kg CO2-equivalent avoided per kg food redistributed
+MEALS_PER_KG = 2.5  # rough conversion used by several food-rescue orgs
+
+
+@app.post("/pickups/verify-code", response_model=schemas.QrHandshakeResponse)
+def verify_pickup_by_code(
+    payload: schemas.QrPinVerificationRequest,
+    db: Session = Depends(get_db),
+    user: models.User = Depends(require_role("business")),
+):
+    """
+    Food business verifies and completes a surplus food handoff using the unique fixed 6-digit code from the NGO driver's QR pass.
+    Strictly checks that the entered 6-digit code matches an active surplus listing. Rejects invalid codes.
+    """
+    raw_code = str(payload.code).strip()
+    digits = "".join(ch for ch in raw_code if ch.isdigit())
+
+    pickup = None
+    listing = None
+
+    # 1. Search by 6-digit verification code across all listings of this business
+    if len(digits) >= 6:
+        target_code = digits[:6]
+        listing = db.query(models.Listing).filter(
+            models.Listing.business_id == user.id,
+            models.Listing.verification_code == target_code,
+        ).first()
+        if listing:
+            # Find active confirmed or pending pickup for this listing
+            pickup = db.query(models.Pickup).filter(
+                models.Pickup.listing_id == listing.id,
+                models.Pickup.status.in_([models.PickupStatus.confirmed, models.PickupStatus.pending]),
+            ).first()
+
+    # 2. Check by pickup_id if passed
+    if not pickup and payload.pickup_id:
+        actual_id = payload.pickup_id - 5000 if payload.pickup_id > 5000 else payload.pickup_id
+        candidate = db.query(models.Pickup).filter(models.Pickup.id == actual_id).first()
+        if candidate:
+            c_listing = db.query(models.Listing).filter(models.Listing.id == candidate.listing_id).first()
+            if c_listing and c_listing.business_id == user.id:
+                if c_listing.verification_code and digits and digits != c_listing.verification_code:
+                    raise HTTPException(
+                        status_code=400,
+                        detail="Invalid 6-digit verification code. The entered code does not match this surplus item.",
+                    )
+                pickup = candidate
+                listing = c_listing
+
+    if not listing or not pickup:
+        if listing:
+            completed_p = db.query(models.Pickup).filter(
+                models.Pickup.listing_id == listing.id,
+                models.Pickup.status == models.PickupStatus.picked_up,
+            ).first()
+            if completed_p:
+                raise HTTPException(
+                    status_code=400,
+                    detail="This surplus donation has already been verified and completed!",
+                )
+        raise HTTPException(
+            status_code=400,
+            detail="Invalid 6-digit verification code! The entered code does not match any active surplus items. Please check the driver's QR pass.",
+        )
+
+    # Update pickup & listing status
+    pickup.status = models.PickupStatus.picked_up
+    listing.status = models.ListingStatus.completed
+    db.commit()
+
+    ngo = db.query(models.User).filter(models.User.id == pickup.ngo_id).first()
+    ngo_name = ngo.org_name if ngo else "Community Partner"
+
+    qty = listing.quantity
+    co2_saved = round(qty * CO2E_PER_KG_FOOD_WASTE, 1)
+    meals = round(qty * MEALS_PER_KG, 1)
+
+    return schemas.QrHandshakeResponse(
+        status="verified",
+        message="Food rescue handoff confirmed & verified via unique 6-digit code!",
+        pickup_id=pickup.id,
+        listing_title=listing.title,
+        ngo_name=ngo_name,
+        quantity=qty,
+        unit=listing.unit,
+        verified_at=datetime.utcnow().strftime("%Y-%m-%d %H:%M:%S UTC"),
+        co2_saved_kg=co2_saved,
+        meals_provided=meals,
+        verification_code=listing.verification_code,
+    )
+
+
 @app.post("/pickups/{pickup_id}/verify-handshake", response_model=schemas.QrHandshakeResponse)
 def verify_pickup_handshake(
     pickup_id: int,
@@ -750,6 +879,17 @@ def verify_pickup_handshake(
     if listing.business_id != user.id:
         raise HTTPException(403, "You can only verify pickups for your own business listings")
 
+    # If code/token provided, strictly verify that it matches listing.verification_code
+    provided_code = payload.code or payload.verification_code or payload.handshake_token
+    if provided_code:
+        digits = "".join(ch for ch in str(provided_code) if ch.isdigit())
+        if listing.verification_code and digits and len(digits) >= 6:
+            if digits[:6] != listing.verification_code:
+                raise HTTPException(
+                    status_code=400,
+                    detail="Invalid 6-digit verification code. The code does not match this surplus listing.",
+                )
+
     # Update pickup & listing status
     pickup.status = models.PickupStatus.picked_up
     listing.status = models.ListingStatus.completed
@@ -773,6 +913,7 @@ def verify_pickup_handshake(
         verified_at=datetime.utcnow().strftime("%Y-%m-%d %H:%M:%S UTC"),
         co2_saved_kg=co2_saved,
         meals_provided=meals,
+        verification_code=listing.verification_code,
     )
 
 

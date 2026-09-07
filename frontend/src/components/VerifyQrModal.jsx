@@ -68,54 +68,47 @@ export default function VerifyQrModal({ isOpen, onClose, onVerified }) {
 
   if (!isOpen) return null;
 
-  function parsePickupId(input) {
-    if (!input) return null;
+  function extractVerificationDetails(input) {
+    if (!input) return { code: "", pickupId: null };
     const str = String(input).trim();
 
     // 1. JSON payload from QR
     if (str.startsWith("{") && str.endsWith("}")) {
       try {
         const parsed = JSON.parse(str);
-        if (parsed.pickup_id) return parseInt(parsed.pickup_id);
+        const code = parsed.verification_code || parsed.code || "";
+        const pickupId = parsed.pickup_id ? parseInt(parsed.pickup_id) : null;
+        return { code: String(code).trim(), pickupId };
       } catch (_) {}
     }
 
-    // 2. HL-RES-5002
+    // 2. Extract 6-digit numeric sequence if present
+    const sixDigitsMatch = str.match(/\b\d{6}\b/);
+    if (sixDigitsMatch) {
+      return { code: sixDigitsMatch[0], pickupId: null };
+    }
+
+    // 3. Extract any digits
+    const digitsOnly = str.replace(/\D/g, "");
+    if (digitsOnly.length >= 6) {
+      return { code: digitsOnly.slice(0, 6), pickupId: null };
+    }
+
+    // 4. Legacy HL-RES-5002 or HL-2
     if (/HL[-_]RES[-_](\d+)/i.test(str)) {
       const match = str.match(/HL[-_]RES[-_](\d+)/i);
       const num = parseInt(match[1]);
-      return num > 5000 ? num - 5000 : num;
+      return { code: str, pickupId: num > 5000 ? num - 5000 : num };
     }
 
-    // 3. HL-2-2 or HL_2_2 or HL-2
-    if (/HL[-_](\d+)/i.test(str)) {
-      const match = str.match(/HL[-_](\d+)/i);
-      const num = parseInt(match[1]);
-      return num > 5000 ? num - 5000 : num;
-    }
-
-    // 4. Any hyphen/underscore split numbers (e.g. "2-2")
-    const parts = str.split(/[-_/\s]+/).filter((p) => /^\d+$/.test(p));
-    if (parts.length > 0) {
-      const num = parseInt(parts[0]);
-      return num > 5000 ? num - 5000 : num;
-    }
-
-    // 5. First group of digits
-    const anyDigits = str.match(/\d+/);
-    if (anyDigits) {
-      const num = parseInt(anyDigits[0]);
-      return num > 5000 ? num - 5000 : num;
-    }
-
-    return null;
+    return { code: str, pickupId: null };
   }
 
   const handleQrScanSuccess = async (qrText) => {
-    const pickupId = parsePickupId(qrText);
+    const { code, pickupId } = extractVerificationDetails(qrText);
 
-    if (!pickupId) {
-      setError("Invalid QR Code payload. Please try again or enter pickup code manually.");
+    if (!code && !pickupId) {
+      setError("Invalid QR Code payload. Please scan a valid Surplus Rescue QR pass or enter the 6-digit PIN.");
       return;
     }
 
@@ -126,18 +119,18 @@ export default function VerifyQrModal({ isOpen, onClose, onVerified }) {
       } catch (e) {}
     }
 
-    submitVerification(pickupId, qrText);
+    submitVerification(code || qrText, pickupId);
   };
 
-  const submitVerification = async (pickupId, token = "") => {
+  const submitVerification = async (code, pickupId = null) => {
     setError("");
     setVerifying(true);
     try {
-      const res = await api.verifyPickupHandshake(pickupId, token);
+      const res = await api.verifyPickupByCode(code, pickupId);
       setSuccessData(res);
       if (onVerified) onVerified(res);
     } catch (err) {
-      setError(err.message || "Verification failed. Please check the pickup code.");
+      setError(err.message || "Invalid 6-digit verification code. Please check the Driver QR Pass.");
     } finally {
       setVerifying(false);
     }
@@ -145,13 +138,15 @@ export default function VerifyQrModal({ isOpen, onClose, onVerified }) {
 
   const handleManualSubmit = (e) => {
     e.preventDefault();
-    if (!manualCode.trim()) return;
-    const pickupId = parsePickupId(manualCode);
-    if (!pickupId) {
-      setError("Please enter a valid pickup code (e.g. HL-2-2 or 5002 or 2).");
+    const trimmed = manualCode.trim();
+    if (!trimmed) return;
+
+    const { code, pickupId } = extractVerificationDetails(trimmed);
+    if (!code && !pickupId) {
+      setError("Please enter a valid 6-digit verification code (e.g. 582914).");
       return;
     }
-    submitVerification(pickupId, `MANUAL_${manualCode.trim()}`);
+    submitVerification(code || trimmed, pickupId);
   };
 
   const handleDone = () => {
@@ -175,7 +170,7 @@ export default function VerifyQrModal({ isOpen, onClose, onVerified }) {
                 Verify Pickup Handshake
               </h3>
               <p className="text-[10px] sm:text-[11px] text-forest-800/60 font-mono">
-                Scan Driver's QR Pass to confirm food donation
+                Scan Driver's QR Pass or enter their 6-digit PIN
               </p>
             </div>
           </div>
@@ -213,6 +208,11 @@ export default function VerifyQrModal({ isOpen, onClose, onVerified }) {
                 <p className="text-xs text-forest-800/70 mt-1">
                   Surplus transferred to <strong>{successData.ngo_name}</strong>
                 </p>
+                {successData.verification_code && (
+                  <p className="text-[11px] font-mono text-emerald-800 mt-1">
+                    Verified PIN: <strong className="font-bold tracking-wider">{successData.verification_code}</strong>
+                  </p>
+                )}
               </div>
 
               <div className="grid grid-cols-2 gap-2 text-xs font-mono bg-wheat-50 p-3 rounded-xl border border-wheat-200">
@@ -233,7 +233,7 @@ export default function VerifyQrModal({ isOpen, onClose, onVerified }) {
               <button
                 type="button"
                 onClick={handleDone}
-                className="w-full py-3 bg-forest-800 text-wheat-50 rounded-xl text-xs sm:text-sm font-semibold hover:bg-forest-700 shadow-sm transition-all"
+                className="w-full py-3 bg-forest-800 text-wheat-50 rounded-xl text-xs sm:text-sm font-semibold hover:bg-forest-700 shadow-sm transition-all cursor-pointer"
               >
                 Close &amp; Update Ledger
               </button>
@@ -247,7 +247,7 @@ export default function VerifyQrModal({ isOpen, onClose, onVerified }) {
                   <div className="absolute inset-0 bg-forest-900/80 backdrop-blur-xs flex flex-col items-center justify-center text-wheat-50 space-y-2 z-10">
                     <RefreshCw className="w-8 h-8 animate-spin text-gold-400" />
                     <p className="text-xs font-mono font-semibold">
-                      Verifying cryptographic handshake...
+                      Verifying 6-digit handshake PIN...
                     </p>
                   </div>
                 )}
@@ -256,7 +256,7 @@ export default function VerifyQrModal({ isOpen, onClose, onVerified }) {
               <div className="relative flex py-1 items-center">
                 <div className="flex-grow border-t border-wheat-200"></div>
                 <span className="flex-shrink mx-3 text-[10px] font-mono uppercase text-forest-800/50">
-                  Or enter pickup code
+                  Or enter 6-digit verification code
                 </span>
                 <div className="flex-grow border-t border-wheat-200"></div>
               </div>
@@ -265,15 +265,16 @@ export default function VerifyQrModal({ isOpen, onClose, onVerified }) {
               <form onSubmit={handleManualSubmit} className="flex gap-2">
                 <input
                   type="text"
-                  placeholder="e.g. 5001 or HL-1"
+                  placeholder="Enter 6-digit PIN (e.g. 582914)"
                   value={manualCode}
                   onChange={(e) => setManualCode(e.target.value)}
-                  className="flex-1 text-xs border border-wheat-200 rounded-xl px-3 py-2 bg-wheat-50/40 focus:outline-none focus:ring-2 focus:ring-forest-400 font-mono"
+                  className="flex-1 text-xs border border-wheat-200 rounded-xl px-3 py-2 bg-wheat-50/40 focus:outline-none focus:ring-2 focus:ring-forest-400 font-mono tracking-wider"
+                  maxLength={12}
                 />
                 <button
                   type="submit"
                   disabled={verifying || !manualCode.trim()}
-                  className="px-4 py-2 bg-forest-800 text-wheat-50 rounded-xl text-xs font-semibold hover:bg-forest-700 disabled:opacity-50 transition-all shadow-sm"
+                  className="px-4 py-2 bg-forest-800 text-wheat-50 rounded-xl text-xs font-semibold hover:bg-forest-700 disabled:opacity-50 transition-all shadow-sm cursor-pointer"
                 >
                   Verify
                 </button>
