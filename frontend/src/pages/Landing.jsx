@@ -956,17 +956,10 @@ export default function Landing() {
             </div>
           </div>
 
-          <div className="flex flex-col sm:flex-row items-center justify-between gap-4 text-xs text-forest-800/50 font-mono">
+          <div className="text-center text-xs text-forest-800/50 font-mono">
             <p>
               &copy; {new Date().getFullYear()} Harvest Ledger &bull; Empowering Zero-Waste Communities Worldwide
             </p>
-            <div className="flex items-center gap-4 text-[11px]">
-              <span className="flex items-center gap-1">
-                <span className="w-2 h-2 rounded-full bg-emerald-500 animate-pulse" />
-                All Systems Operational
-              </span>
-              <span>100% Open Standards</span>
-            </div>
           </div>
         </div>
       </footer>
