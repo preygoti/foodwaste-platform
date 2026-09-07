@@ -43,7 +43,7 @@ const emptyForm = {
   unit: "kg",
   expiry_date: "",
   storage_location: "",
-  avg_daily_usage: "1",
+  avg_daily_usage: "",
 };
 
 /** Hook to provide a ticking timer (every second) for live countdowns */
@@ -956,7 +956,7 @@ export default function InventoryPage() {
                   placeholder="e.g. Fresh Milk, Sourdough Loaf"
                   value={form.name}
                   onChange={updateForm("name")}
-                  className="w-full border border-wheat-200 rounded-lg px-3 py-2 text-xs sm:text-sm focus:outline-none focus:ring-2 focus:ring-forest-400 bg-white"
+                  className="w-full border border-wheat-200 rounded-lg px-3 py-2 h-10 text-xs sm:text-sm text-forest-900 placeholder:text-forest-800/40 focus:outline-none focus:ring-2 focus:ring-forest-400 bg-white"
                 />
               </div>
 
@@ -968,7 +968,7 @@ export default function InventoryPage() {
                   <select
                     value={form.category}
                     onChange={updateForm("category")}
-                    className="w-full border border-wheat-200 rounded-lg px-3 py-2 text-xs sm:text-sm focus:outline-none focus:ring-2 focus:ring-forest-400 bg-white capitalize"
+                    className="w-full border border-wheat-200 rounded-lg px-3 py-2 h-10 text-xs sm:text-sm text-forest-900 focus:outline-none focus:ring-2 focus:ring-forest-400 bg-white capitalize"
                   >
                     {CATEGORIES.map((c) => (
                       <option key={c} value={c}>
@@ -1001,7 +1001,7 @@ export default function InventoryPage() {
                     placeholder="e.g. 10"
                     value={form.quantity}
                     onChange={updateForm("quantity")}
-                    className="w-full border border-wheat-200 rounded-lg px-3 py-2 text-xs sm:text-sm focus:outline-none focus:ring-2 focus:ring-forest-400 bg-white"
+                    className="w-full border border-wheat-200 rounded-lg px-3 py-2 h-10 text-xs sm:text-sm text-forest-900 placeholder:text-forest-800/40 focus:outline-none focus:ring-2 focus:ring-forest-400 bg-white"
                   />
                 </div>
 
@@ -1012,7 +1012,7 @@ export default function InventoryPage() {
                   <select
                     value={form.unit}
                     onChange={updateForm("unit")}
-                    className="w-full border border-wheat-200 rounded-lg px-3 py-2 text-xs sm:text-sm focus:outline-none focus:ring-2 focus:ring-forest-400 bg-white"
+                    className="w-full border border-wheat-200 rounded-lg px-3 py-2 h-10 text-xs sm:text-sm text-forest-900 focus:outline-none focus:ring-2 focus:ring-forest-400 bg-white"
                   >
                     <option value="kg">kg</option>
                     <option value="liters">liters</option>
@@ -1033,7 +1033,7 @@ export default function InventoryPage() {
                     required
                     value={form.expiry_date}
                     onChange={updateForm("expiry_date")}
-                    className="w-full border border-wheat-200 rounded-lg px-3 py-2 text-xs sm:text-sm focus:outline-none focus:ring-2 focus:ring-forest-400 bg-white font-mono"
+                    className="w-full border border-wheat-200 rounded-lg px-3 py-2 h-10 text-xs sm:text-sm text-forest-900 focus:outline-none focus:ring-2 focus:ring-forest-400 bg-white font-mono"
                   />
                 </div>
 
@@ -1045,10 +1045,10 @@ export default function InventoryPage() {
                     type="number"
                     step="any"
                     min="0.1"
-                    placeholder="e.g. 2.5"
+                    placeholder="e.g. 1"
                     value={form.avg_daily_usage}
                     onChange={updateForm("avg_daily_usage")}
-                    className="w-full border border-wheat-200 rounded-lg px-3 py-2 text-xs sm:text-sm focus:outline-none focus:ring-2 focus:ring-forest-400 bg-white"
+                    className="w-full border border-wheat-200 rounded-lg px-3 py-2 h-10 text-xs sm:text-sm text-forest-900 placeholder:text-forest-800/40 focus:outline-none focus:ring-2 focus:ring-forest-400 bg-white"
                   />
                 </div>
               </div>
