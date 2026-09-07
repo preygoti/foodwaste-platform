@@ -499,26 +499,25 @@ export default function BrowseListingsPage() {
       {/* CLAIM SURPLUS MODAL (100% Contained, Mobile-First Layout)     */}
       {/* ------------------------------------------------------------- */}
       {selectedListing && (
-        <div className="fixed inset-0 z-50 flex items-center justify-center p-3 sm:p-5 bg-black/60 backdrop-blur-md overflow-x-hidden overflow-y-auto animate-in fade-in duration-150">
+        <div className="fixed inset-0 z-50 flex items-center justify-center p-3 sm:p-4 bg-black/60 backdrop-blur-md overflow-x-hidden overflow-y-auto animate-in fade-in duration-150">
           <div 
-            className="relative bg-white border border-wheat-200 rounded-2xl shadow-2xl overflow-hidden my-auto flex flex-col box-border"
-            style={{ width: "min(100%, 480px)", maxWidth: "100%" }}
+            className="relative bg-white border border-wheat-200 rounded-2xl shadow-2xl overflow-hidden my-auto flex flex-col box-border w-full max-w-[420px]"
           >
             {/* Header */}
-            <div className="flex items-center justify-between px-4 sm:px-5 py-2.5 sm:py-3 border-b border-wheat-200 bg-gradient-to-r from-forest-900 via-forest-800 to-forest-800 text-wheat-50 shrink-0 overflow-hidden box-border">
+            <div className="flex items-center justify-between px-4 py-2.5 border-b border-wheat-200 bg-gradient-to-r from-forest-900 via-forest-800 to-forest-800 text-wheat-50 shrink-0 overflow-hidden box-border">
               <div className="min-w-0 pr-2 flex-1">
-                <span className="text-[10px] font-mono tracking-widest uppercase text-emerald-300 font-semibold block truncate">
+                <span className="text-[9px] font-mono tracking-widest uppercase text-emerald-300 font-semibold block">
                   Redistribution Marketplace · Module 03
                 </span>
-                <h2 className="font-display text-sm sm:text-base font-bold text-white flex items-center gap-1.5 truncate mt-0.5">
-                  <Utensils className="w-4 h-4 text-emerald-300 shrink-0" />
+                <h2 className="font-display text-sm font-bold text-white flex items-center gap-1.5 truncate mt-0.5">
+                  <Utensils className="w-3.5 h-3.5 text-emerald-300 shrink-0" />
                   <span className="truncate">Claim Surplus Food</span>
                 </h2>
               </div>
               <button
                 type="button"
                 onClick={() => setSelectedListing(null)}
-                className="p-1.5 text-wheat-300 hover:text-white rounded-lg hover:bg-white/10 transition-colors shrink-0"
+                className="p-1 text-wheat-300 hover:text-white rounded-lg hover:bg-white/10 transition-colors shrink-0"
                 title="Close"
                 aria-label="Close"
               >
@@ -527,13 +526,13 @@ export default function BrowseListingsPage() {
             </div>
 
             {/* Form Body */}
-            <form onSubmit={handleClaimSubmit} className="p-3.5 sm:p-4 space-y-2.5 sm:space-y-3 overflow-x-hidden overflow-y-auto box-border flex-1 max-h-[calc(100dvh-100px)]">
+            <form onSubmit={handleClaimSubmit} className="p-3 sm:p-3.5 space-y-2.5 overflow-x-hidden box-border flex-1">
               {/* Item Info Card */}
-              <div className="p-2.5 sm:p-3 rounded-xl bg-wheat-50 border border-wheat-200 text-xs text-forest-800 space-y-1.5 box-border overflow-hidden w-full">
+              <div className="p-2 sm:p-2.5 rounded-xl bg-wheat-50 border border-wheat-200 text-xs text-forest-800 space-y-1 box-border overflow-hidden w-full">
                 <div className="flex items-start justify-between gap-2">
                   <div className="min-w-0 flex-1">
-                    <p className="font-semibold text-sm text-forest-900 truncate">{selectedListing.title}</p>
-                    <p className="text-forest-800/70 capitalize mt-0.5 text-[11px] truncate">
+                    <p className="font-semibold text-xs sm:text-sm text-forest-900 truncate">{selectedListing.title}</p>
+                    <p className="text-forest-800/70 capitalize text-[10px] sm:text-[11px] truncate">
                       Category: <span className="font-medium text-forest-900">{selectedListing.category}</span> &bull; Stock: <strong className="text-forest-900">{selectedListing.quantity} {selectedListing.unit}</strong>
                     </p>
                   </div>
@@ -541,28 +540,28 @@ export default function BrowseListingsPage() {
                     <LiveCountdownBadge expiryDateStr={selectedListing.expiry_date} now={now} />
                   </div>
                 </div>
-                <div className="flex items-center gap-1 text-forest-800/70 border-t border-wheat-200/70 pt-1.5 text-[11px] min-w-0">
-                  <MapPin className="w-3.5 h-3.5 text-forest-600 shrink-0" />
+                <div className="flex items-center gap-1 text-forest-800/70 border-t border-wheat-200/70 pt-1 text-[10px] sm:text-[11px] min-w-0">
+                  <MapPin className="w-3 h-3 text-forest-600 shrink-0" />
                   <span className="truncate min-w-0">Pickup: <strong className="text-forest-900">{selectedListing.pickup_location}</strong></span>
                 </div>
               </div>
 
               {claimError && (
-                <div className="p-2.5 rounded-xl bg-tomato-500/10 border border-tomato-500/30 text-tomato-600 text-xs font-medium box-border">
+                <div className="p-2 rounded-xl bg-tomato-500/10 border border-tomato-500/30 text-tomato-600 text-xs font-medium box-border">
                   {claimError}
                 </div>
               )}
 
               {claimSuccess ? (
-                <div className="p-3.5 rounded-xl bg-forest-500/10 border border-forest-500/30 text-forest-700 text-sm font-medium flex items-center gap-2 box-border">
-                  <CheckCircle2 className="w-5 h-5 text-forest-600 shrink-0" />
+                <div className="p-3 rounded-xl bg-forest-500/10 border border-forest-500/30 text-forest-700 text-xs sm:text-sm font-medium flex items-center gap-2 box-border">
+                  <CheckCircle2 className="w-4 h-4 text-forest-600 shrink-0" />
                   <span>Pickup request submitted! Coordinating with donor...</span>
                 </div>
               ) : (
                 <>
                   {/* Field 1: Estimated Meal Portions */}
                   <div className="w-full flex flex-col items-center text-center box-border">
-                    <label className="block text-xs uppercase tracking-wide text-forest-800/70 font-semibold mb-0.5 text-center">
+                    <label className="block text-[11px] uppercase tracking-wide text-forest-800/70 font-semibold mb-0.5 text-center">
                       Estimated Meal Portions *
                     </label>
                     <input
@@ -573,67 +572,70 @@ export default function BrowseListingsPage() {
                       placeholder="e.g. 25"
                       value={mealsEstimate}
                       onChange={(e) => setMealsEstimate(e.target.value)}
-                      className="w-[175px] max-w-full mx-auto block box-border border border-wheat-200 rounded-xl px-3 py-1.5 text-sm text-center focus:outline-none focus:ring-2 focus:ring-forest-400 bg-white shadow-sm"
+                      className="w-[150px] max-w-full mx-auto block box-border border border-wheat-200 rounded-xl px-2.5 py-1 text-xs sm:text-sm text-center focus:outline-none focus:ring-2 focus:ring-forest-400 bg-white shadow-xs"
                     />
                     <p className="text-[10px] text-forest-800/50 mt-0.5 text-center">
-                      Based on ~2.5 community meals per unit.
+                      ~2.5 community meals per unit.
                     </p>
                   </div>
 
-                  {/* Field 2: Proposed Pickup Date */}
-                  <div className="w-full flex flex-col items-center text-center box-border">
-                    <label className="block text-xs uppercase tracking-wide text-forest-800/70 font-semibold mb-0.5 text-center">
-                      Proposed Pickup Date *
-                    </label>
-                    <input
-                      type="date"
-                      required
-                      value={pickupDate}
-                      onChange={(e) => setPickupDate(e.target.value)}
-                      className="w-[175px] max-w-full mx-auto block box-border bg-white border border-wheat-200 rounded-xl px-3 py-1.5 text-sm text-forest-900 focus:outline-none focus:ring-2 focus:ring-forest-400 font-mono text-center shadow-sm"
-                    />
-                  </div>
+                  {/* Side-by-Side Row: Date & Time */}
+                  <div className="grid grid-cols-2 gap-2.5 w-full box-border pt-0.5">
+                    {/* Field 2: Proposed Pickup Date */}
+                    <div className="flex flex-col items-center text-center box-border min-w-0">
+                      <label className="block text-[11px] uppercase tracking-wide text-forest-800/70 font-semibold mb-0.5 text-center truncate w-full">
+                        Pickup Date *
+                      </label>
+                      <input
+                        type="date"
+                        required
+                        value={pickupDate}
+                        onChange={(e) => setPickupDate(e.target.value)}
+                        className="w-full block box-border bg-white border border-wheat-200 rounded-xl px-2 py-1 text-xs text-forest-900 focus:outline-none focus:ring-2 focus:ring-forest-400 font-mono text-center shadow-xs"
+                      />
+                    </div>
 
-                  {/* Field 3: Proposed Pickup Time Window */}
-                  <div className="w-full flex flex-col items-center text-center box-border">
-                    <label className="block text-xs uppercase tracking-wide text-forest-800/70 font-semibold mb-0.5 text-center">
-                      Proposed Pickup Time *
-                    </label>
-                    <select
-                      required
-                      value={pickupTime}
-                      onChange={(e) => setPickupTime(e.target.value)}
-                      className="w-[205px] max-w-full mx-auto block box-border bg-white border border-wheat-200 rounded-xl px-3 py-1.5 text-sm text-forest-900 focus:outline-none focus:ring-2 focus:ring-forest-400 font-mono text-center cursor-pointer shadow-sm"
-                    >
-                      <option value="08:00">08:00 AM (Morning)</option>
-                      <option value="09:00">09:00 AM (Morning)</option>
-                      <option value="10:00">10:00 AM (Recommended)</option>
-                      <option value="11:00">11:00 AM (Late Morning)</option>
-                      <option value="12:00">12:00 PM (Noon / Lunch)</option>
-                      <option value="13:00">01:00 PM (Afternoon)</option>
-                      <option value="14:00">02:00 PM (Afternoon)</option>
-                      <option value="15:00">03:00 PM (Mid-Afternoon)</option>
-                      <option value="16:00">04:00 PM (Late Afternoon)</option>
-                      <option value="17:00">05:00 PM (Evening)</option>
-                      <option value="18:00">06:00 PM (Evening)</option>
-                      <option value="19:00">07:00 PM (Late Evening)</option>
-                      <option value="20:00">08:00 PM (Night)</option>
-                    </select>
+                    {/* Field 3: Proposed Pickup Time Window */}
+                    <div className="flex flex-col items-center text-center box-border min-w-0">
+                      <label className="block text-[11px] uppercase tracking-wide text-forest-800/70 font-semibold mb-0.5 text-center truncate w-full">
+                        Pickup Time *
+                      </label>
+                      <select
+                        required
+                        value={pickupTime}
+                        onChange={(e) => setPickupTime(e.target.value)}
+                        className="w-full block box-border bg-white border border-wheat-200 rounded-xl px-2 py-1 text-xs text-forest-900 focus:outline-none focus:ring-2 focus:ring-forest-400 font-mono text-center cursor-pointer shadow-xs"
+                      >
+                        <option value="08:00">08:00 AM</option>
+                        <option value="09:00">09:00 AM</option>
+                        <option value="10:00">10:00 AM (Rec.)</option>
+                        <option value="11:00">11:00 AM</option>
+                        <option value="12:00">12:00 PM</option>
+                        <option value="13:00">01:00 PM</option>
+                        <option value="14:00">02:00 PM</option>
+                        <option value="15:00">03:00 PM</option>
+                        <option value="16:00">04:00 PM</option>
+                        <option value="17:00">05:00 PM</option>
+                        <option value="18:00">06:00 PM</option>
+                        <option value="19:00">07:00 PM</option>
+                        <option value="20:00">08:00 PM</option>
+                      </select>
+                    </div>
                   </div>
 
                   {/* Action Buttons */}
-                  <div className="flex flex-col-reverse sm:flex-row items-center justify-center gap-2 sm:gap-2.5 pt-2.5 sm:pt-3 border-t border-wheat-200 w-full box-border">
+                  <div className="flex items-center justify-center gap-2 pt-2 border-t border-wheat-200 w-full box-border">
                     <button
                       type="button"
                       onClick={() => setSelectedListing(null)}
-                      className="w-full sm:w-auto px-5 py-2 text-xs sm:text-sm font-semibold text-forest-800/70 hover:text-forest-800 rounded-xl bg-wheat-100 hover:bg-wheat-200 transition-colors text-center box-border"
+                      className="px-4 py-1.5 text-xs font-semibold text-forest-800/70 hover:text-forest-800 rounded-xl bg-wheat-100 hover:bg-wheat-200 transition-colors text-center box-border"
                     >
                       Cancel
                     </button>
                     <button
                       type="submit"
                       disabled={claiming}
-                      className="w-full sm:w-auto inline-flex items-center justify-center gap-1.5 px-6 py-2 rounded-xl text-xs sm:text-sm font-bold bg-forest-800 text-wheat-50 hover:bg-forest-700 disabled:opacity-50 shadow-sm transition-all text-center box-border"
+                      className="inline-flex items-center justify-center gap-1 px-5 py-1.5 rounded-xl text-xs font-bold bg-forest-800 text-wheat-50 hover:bg-forest-700 disabled:opacity-50 shadow-sm transition-all text-center box-border"
                     >
                       {claiming ? "Submitting..." : "Confirm Claim"}
                     </button>
