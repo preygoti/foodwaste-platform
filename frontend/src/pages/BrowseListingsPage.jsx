@@ -564,8 +564,8 @@ export default function BrowseListingsPage() {
               ) : (
                 <>
                   {/* Field 1: Estimated Meal Portions */}
-                  <div className="w-full box-border">
-                    <label className="block text-xs uppercase tracking-wide text-forest-800/70 font-semibold mb-1">
+                  <div className="w-full flex flex-col items-center text-center box-border">
+                    <label className="block text-xs uppercase tracking-wide text-forest-800/70 font-semibold mb-1 text-center">
                       Estimated Meal Portions *
                     </label>
                     <input
@@ -576,16 +576,16 @@ export default function BrowseListingsPage() {
                       placeholder="e.g. 25"
                       value={mealsEstimate}
                       onChange={(e) => setMealsEstimate(e.target.value)}
-                      className="w-full max-w-[240px] block box-border border border-wheat-200 rounded-xl px-3.5 py-2.5 text-sm focus:outline-none focus:ring-2 focus:ring-forest-400 bg-white"
+                      className="w-full max-w-[240px] mx-auto block box-border border border-wheat-200 rounded-xl px-3.5 py-2.5 text-sm text-center focus:outline-none focus:ring-2 focus:ring-forest-400 bg-white shadow-sm"
                     />
-                    <p className="text-[11px] text-forest-800/50 mt-1">
+                    <p className="text-[11px] text-forest-800/50 mt-1 text-center">
                       Based on ~2.5 community meals per unit.
                     </p>
                   </div>
 
                   {/* Field 2: Proposed Pickup Date */}
-                  <div className="w-full box-border">
-                    <label className="block text-xs uppercase tracking-wide text-forest-800/70 font-semibold mb-1">
+                  <div className="w-full flex flex-col items-center text-center box-border">
+                    <label className="block text-xs uppercase tracking-wide text-forest-800/70 font-semibold mb-1 text-center">
                       Proposed Pickup Date *
                     </label>
                     <input
@@ -593,20 +593,20 @@ export default function BrowseListingsPage() {
                       required
                       value={pickupDate}
                       onChange={(e) => setPickupDate(e.target.value)}
-                      className="w-full max-w-[240px] block box-border bg-white border border-wheat-200 rounded-xl px-3.5 py-2.5 text-sm text-forest-900 focus:outline-none focus:ring-2 focus:ring-forest-400 font-mono text-center"
+                      className="w-full max-w-[240px] mx-auto block box-border bg-white border border-wheat-200 rounded-xl px-3.5 py-2.5 text-sm text-forest-900 focus:outline-none focus:ring-2 focus:ring-forest-400 font-mono text-center shadow-sm"
                     />
                   </div>
 
                   {/* Field 3: Proposed Pickup Time Window */}
-                  <div className="w-full box-border">
-                    <label className="block text-xs uppercase tracking-wide text-forest-800/70 font-semibold mb-1">
+                  <div className="w-full flex flex-col items-center text-center box-border">
+                    <label className="block text-xs uppercase tracking-wide text-forest-800/70 font-semibold mb-1 text-center">
                       Proposed Pickup Time *
                     </label>
                     <select
                       required
                       value={pickupTime}
                       onChange={(e) => setPickupTime(e.target.value)}
-                      className="w-full max-w-[240px] block box-border bg-white border border-wheat-200 rounded-xl px-3.5 py-2.5 text-sm text-forest-900 focus:outline-none focus:ring-2 focus:ring-forest-400 font-mono text-center cursor-pointer"
+                      className="w-full max-w-[240px] mx-auto block box-border bg-white border border-wheat-200 rounded-xl px-3.5 py-2.5 text-sm text-forest-900 focus:outline-none focus:ring-2 focus:ring-forest-400 font-mono text-center cursor-pointer shadow-sm"
                     >
                       <option value="08:00">08:00 AM (Morning)</option>
                       <option value="09:00">09:00 AM (Morning)</option>
@@ -625,18 +625,18 @@ export default function BrowseListingsPage() {
                   </div>
 
                   {/* Action Buttons */}
-                  <div className="flex flex-col-reverse sm:flex-row items-stretch sm:items-center justify-end gap-2.5 sm:gap-3 pt-4 border-t border-wheat-200 w-full box-border">
+                  <div className="flex flex-col-reverse sm:flex-row items-center justify-center gap-2.5 sm:gap-3 pt-4 border-t border-wheat-200 w-full box-border">
                     <button
                       type="button"
                       onClick={() => setSelectedListing(null)}
-                      className="w-full sm:w-auto px-5 py-2.5 text-sm font-semibold text-forest-800/70 hover:text-forest-800 rounded-xl bg-wheat-100 hover:bg-wheat-200 transition-colors text-center box-border"
+                      className="w-full sm:w-auto px-6 py-2.5 text-sm font-semibold text-forest-800/70 hover:text-forest-800 rounded-xl bg-wheat-100 hover:bg-wheat-200 transition-colors text-center box-border"
                     >
                       Cancel
                     </button>
                     <button
                       type="submit"
                       disabled={claiming}
-                      className="w-full sm:w-auto inline-flex items-center justify-center gap-2 px-6 py-2.5 rounded-xl text-sm font-bold bg-forest-800 text-wheat-50 hover:bg-forest-700 disabled:opacity-50 shadow-sm transition-all text-center box-border"
+                      className="w-full sm:w-auto inline-flex items-center justify-center gap-2 px-7 py-2.5 rounded-xl text-sm font-bold bg-forest-800 text-wheat-50 hover:bg-forest-700 disabled:opacity-50 shadow-sm transition-all text-center box-border"
                     >
                       {claiming ? "Submitting..." : "Confirm Claim"}
                     </button>
