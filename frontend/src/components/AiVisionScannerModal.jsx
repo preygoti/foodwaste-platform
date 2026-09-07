@@ -7,22 +7,59 @@ import {
   CheckCircle2,
   AlertCircle,
   RefreshCw,
-  ShieldCheck,
   Calendar,
-  Layers,
   ThermometerSnowflake,
-  HelpCircle,
-  Clock,
+  Layers,
+  ChevronRight,
+  Edit3,
+  Sliders,
+  Tag,
+  Zap,
 } from "lucide-react";
 import { api } from "../api";
 
+const CATEGORIES = [
+  { id: "", label: "✨ Auto-Detect", color: "bg-forest-800 text-wheat-50" },
+  { id: "produce", label: "🍎 Produce", color: "bg-emerald-700 text-emerald-50" },
+  { id: "bakery", label: "🍞 Bakery", color: "bg-amber-700 text-amber-50" },
+  { id: "dairy", label: "🥛 Dairy", color: "bg-sky-700 text-sky-50" },
+  { id: "prepared", label: "🍛 Cooked Meals", color: "bg-orange-700 text-orange-50" },
+  { id: "grains", label: "🍚 Grains & Pantry", color: "bg-stone-700 text-stone-50" },
+  { id: "meat", label: "🥩 Meat & Protein", color: "bg-rose-700 text-rose-50" },
+];
+
+const QUICK_TAGS = [
+  { name: "Bananas", category: "produce", icon: "🍌" },
+  { name: "Apples", category: "produce", icon: "🍎" },
+  { name: "Tomatoes", category: "produce", icon: "🍅" },
+  { name: "Spinach", category: "produce", icon: "🥬" },
+  { name: "Broccoli", category: "produce", icon: "🥦" },
+  { name: "Whole Milk", category: "dairy", icon: "🥛" },
+  { name: "Paneer / Cheese", category: "dairy", icon: "🧀" },
+  { name: "Sourdough Bread", category: "bakery", icon: "🍞" },
+  { name: "Biryani / Rice", category: "prepared", icon: "🍛" },
+  { name: "Curry / Dal", category: "prepared", icon: "🍲" },
+  { name: "Chicken Breast", category: "meat", icon: "🍗" },
+  { name: "Potatoes / Onions", category: "produce", icon: "🥔" },
+];
+
 export default function AiVisionScannerModal({ isOpen, onClose, onAutofill }) {
   const [mode, setMode] = useState("camera"); // "camera" | "upload"
+  const [selectedCategory, setSelectedCategory] = useState("");
+  const [itemHint, setItemHint] = useState("");
   const [imagePreview, setImagePreview] = useState(null);
   const [analyzing, setAnalyzing] = useState(false);
   const [result, setResult] = useState(null);
   const [error, setError] = useState("");
-  const [itemHint, setItemHint] = useState("");
+
+  // Editable fields in result screen
+  const [editedName, setEditedName] = useState("");
+  const [editedCategory, setEditedCategory] = useState("produce");
+  const [editedQty, setEditedQty] = useState("10");
+  const [editedUnit, setEditedUnit] = useState("kg");
+  const [editedExpiry, setEditedExpiry] = useState("");
+  const [editedStorage, setEditedStorage] = useState("");
+
   const videoRef = useRef(null);
   const streamRef = useRef(null);
 
@@ -91,13 +128,36 @@ export default function AiVisionScannerModal({ isOpen, onClose, onAutofill }) {
     setAnalyzing(true);
     setResult(null);
 
+    const effectiveHint = [itemHint, selectedCategory].filter(Boolean).join(" ");
+
     try {
-      const data = await api.inspectFreshness(base64Img, itemHint);
+      const data = await api.inspectFreshness(base64Img, effectiveHint);
       setResult(data);
+      // Initialize editable state
+      setEditedName(data.detected_name || "Fresh Food Item");
+      setEditedCategory(data.detected_category || "produce");
+      setEditedQty(String(data.estimated_quantity || 10));
+      setEditedUnit(data.unit || "kg");
+      setEditedExpiry(data.estimated_expiry_date || "");
+      setEditedStorage(data.suggested_storage || "");
     } catch (err) {
       setError(err.message || "Failed to analyze food image with AI vision.");
     } finally {
       setAnalyzing(false);
+    }
+  };
+
+  const handleApplyAlternative = (alt) => {
+    if (!alt) return;
+    setEditedName(alt.name || editedName);
+    setEditedCategory(alt.category || editedCategory);
+    if (alt.unit) setEditedUnit(alt.unit);
+    if (alt.estimated_quantity) setEditedQty(String(alt.estimated_quantity));
+    if (alt.suggested_storage) setEditedStorage(alt.suggested_storage);
+    if (alt.estimated_days_to_expiry) {
+      const targetDate = new Date();
+      targetDate.setDate(targetDate.getDate() + Number(alt.estimated_days_to_expiry));
+      setEditedExpiry(targetDate.toISOString().split("T")[0]);
     }
   };
 
@@ -108,47 +168,50 @@ export default function AiVisionScannerModal({ isOpen, onClose, onAutofill }) {
   };
 
   const handleApplyAutofill = () => {
-    if (!result || !onAutofill) return;
+    if (!onAutofill) return;
     onAutofill({
-      name: result.detected_name,
-      category: result.detected_category,
-      quantity: String(result.estimated_quantity),
-      unit: result.unit,
-      expiry_date: result.estimated_expiry_date,
-      storage_location: result.suggested_storage,
+      name: editedName,
+      category: editedCategory,
+      quantity: editedQty,
+      unit: editedUnit,
+      expiry_date: editedExpiry,
+      storage_location: editedStorage,
       avg_daily_usage: "2",
     });
     onClose();
   };
 
   return (
-    <div className="fixed inset-0 z-50 flex items-center justify-center p-3 sm:p-4 bg-black/60 backdrop-blur-md overflow-y-auto animate-in fade-in duration-200">
-      <div className="bg-white border border-wheat-200 rounded-xl sm:rounded-2xl w-full max-w-lg shadow-xl overflow-hidden animate-in fade-in zoom-in-95 duration-200 flex flex-col max-h-[92vh] my-auto">
+    <div className="fixed inset-0 z-50 flex items-center justify-center p-3 sm:p-4 bg-black/70 backdrop-blur-md overflow-y-auto animate-in fade-in duration-200">
+      <div className="bg-white border border-wheat-200 rounded-2xl w-full max-w-xl shadow-2xl overflow-hidden animate-in fade-in zoom-in-95 duration-200 flex flex-col max-h-[94vh] my-auto">
         {/* Header */}
-        <div className="p-4 sm:p-5 border-b border-wheat-100 flex items-center justify-between bg-wheat-50/50 shrink-0">
+        <div className="p-4 sm:p-5 border-b border-wheat-100 flex items-center justify-between bg-gradient-to-r from-forest-900 to-forest-800 text-wheat-50 shrink-0">
           <div className="flex items-center gap-2.5">
-            <div className="w-9 h-9 rounded-xl bg-forest-800 text-gold-400 flex items-center justify-center shadow-2xs shrink-0">
+            <div className="w-10 h-10 rounded-xl bg-gold-400 text-forest-900 flex items-center justify-center shadow-sm shrink-0">
               <Sparkles className="w-5 h-5" />
             </div>
             <div>
-              <h3 className="font-display font-semibold text-forest-800 text-base sm:text-lg">
-                AI Freshness &amp; Spoilage Inspector
+              <h3 className="font-display font-bold text-wheat-50 text-base sm:text-lg flex items-center gap-2">
+                <span>AI Vision Food Scanner</span>
+                <span className="text-[10px] uppercase font-mono px-2 py-0.5 rounded-full bg-gold-400/20 text-gold-300 border border-gold-400/30">
+                  Multimodal v2.0
+                </span>
               </h3>
-              <p className="text-[10px] sm:text-[11px] text-forest-800/60 font-mono">
-                Computer Vision Food Quality Grading &amp; Shelf-Life Predictor
+              <p className="text-[10px] sm:text-[11px] text-wheat-200/80 font-mono">
+                Computer Vision Food Classification, Freshness Grading &amp; Shelf-Life Predictor
               </p>
             </div>
           </div>
           <button
             onClick={onClose}
-            className="text-forest-800/40 hover:text-forest-800 p-1.5 rounded-lg transition-colors"
+            className="text-wheat-300 hover:text-white p-1.5 rounded-lg transition-colors bg-white/10 hover:bg-white/20"
           >
             <X className="w-5 h-5" />
           </button>
         </div>
 
         {/* Content Area */}
-        <div className="p-4 sm:p-5 overflow-y-auto space-y-4">
+        <div className="p-4 sm:p-5 overflow-y-auto space-y-4 text-forest-900">
           {error && (
             <div className="p-3 rounded-xl bg-tomato-500/10 border border-tomato-500/30 text-tomato-600 text-xs flex items-center gap-2">
               <AlertCircle className="w-4 h-4 shrink-0" />
@@ -156,19 +219,71 @@ export default function AiVisionScannerModal({ isOpen, onClose, onAutofill }) {
             </div>
           )}
 
-          {/* Quick Item Hint Input (Optional) */}
+          {/* Configuration & Category Bar (Only before image capture) */}
           {!imagePreview && (
-            <div>
-              <label className="block text-xs font-mono uppercase tracking-wider text-forest-800/70 mb-1">
-                Optional Food Type Hint (e.g. "Tomatoes", "Bananas", "Milk", "Curry")
-              </label>
-              <input
-                type="text"
-                placeholder="Leave blank for auto-detection or type hint..."
-                value={itemHint}
-                onChange={(e) => setItemHint(e.target.value)}
-                className="w-full text-xs sm:text-sm border border-wheat-200 rounded-xl px-3 py-2 bg-wheat-50/30 focus:outline-none focus:ring-2 focus:ring-forest-400"
-              />
+            <div className="space-y-2.5">
+              {/* Category Pills */}
+              <div>
+                <label className="block text-[11px] font-mono uppercase tracking-wider text-forest-800/70 mb-1.5 flex items-center gap-1.5">
+                  <Layers className="w-3.5 h-3.5 text-forest-600" />
+                  <span>Category Target (Optional AI Focus)</span>
+                </label>
+                <div className="flex items-center gap-1.5 overflow-x-auto pb-1 no-scrollbar">
+                  {CATEGORIES.map((cat) => (
+                    <button
+                      key={cat.id}
+                      type="button"
+                      onClick={() => setSelectedCategory(cat.id)}
+                      className={`text-xs px-2.5 py-1.5 rounded-lg font-mono whitespace-nowrap transition-all border ${
+                        selectedCategory === cat.id
+                          ? "bg-forest-800 text-wheat-50 border-forest-800 shadow-2xs scale-[1.02]"
+                          : "bg-wheat-50/60 text-forest-800/80 border-wheat-200 hover:bg-wheat-100"
+                      }`}
+                    >
+                      {cat.label}
+                    </button>
+                  ))}
+                </div>
+              </div>
+
+              {/* Quick Suggestion Chips */}
+              <div>
+                <label className="block text-[11px] font-mono uppercase tracking-wider text-forest-800/70 mb-1.5 flex items-center gap-1.5">
+                  <Tag className="w-3.5 h-3.5 text-forest-600" />
+                  <span>Quick Food Suggestions</span>
+                </label>
+                <div className="flex items-center gap-1.5 overflow-x-auto pb-1 no-scrollbar">
+                  {QUICK_TAGS.map((t) => (
+                    <button
+                      key={t.name}
+                      type="button"
+                      onClick={() => {
+                        setItemHint(t.name);
+                        setSelectedCategory(t.category);
+                      }}
+                      className={`text-[11px] px-2.5 py-1 rounded-full border transition-all flex items-center gap-1 ${
+                        itemHint === t.name
+                          ? "bg-gold-400 text-forest-900 border-gold-500 font-bold shadow-2xs"
+                          : "bg-white text-forest-800/80 border-wheat-200 hover:border-forest-400 hover:bg-wheat-50"
+                      }`}
+                    >
+                      <span>{t.icon}</span>
+                      <span>{t.name}</span>
+                    </button>
+                  ))}
+                </div>
+              </div>
+
+              {/* Custom Search / Hint Box */}
+              <div>
+                <input
+                  type="text"
+                  placeholder="Or type specific food name / batch hint (e.g. Samosas, Mangoes, Milk)..."
+                  value={itemHint}
+                  onChange={(e) => setItemHint(e.target.value)}
+                  className="w-full text-xs sm:text-sm border border-wheat-200 rounded-xl px-3.5 py-2 bg-wheat-50/40 focus:outline-none focus:ring-2 focus:ring-forest-400 font-sans"
+                />
+              </div>
             </div>
           )}
 
@@ -187,7 +302,7 @@ export default function AiVisionScannerModal({ isOpen, onClose, onAutofill }) {
                   }`}
                 >
                   <Camera className="w-3.5 h-3.5" />
-                  <span>Live Camera</span>
+                  <span>Live Camera Scan</span>
                 </button>
                 <button
                   type="button"
@@ -199,13 +314,13 @@ export default function AiVisionScannerModal({ isOpen, onClose, onAutofill }) {
                   }`}
                 >
                   <Upload className="w-3.5 h-3.5" />
-                  <span>Upload Photo</span>
+                  <span>Upload Image File</span>
                 </button>
               </div>
 
-              {/* Camera Preview */}
+              {/* Camera Preview with Scanner Laser & HUD Reticle */}
               {mode === "camera" && (
-                <div className="relative aspect-video rounded-xl overflow-hidden bg-black flex items-center justify-center border border-wheat-200">
+                <div className="relative aspect-video rounded-xl overflow-hidden bg-black flex items-center justify-center border-2 border-forest-800 shadow-inner">
                   <video
                     ref={videoRef}
                     autoPlay
@@ -213,33 +328,59 @@ export default function AiVisionScannerModal({ isOpen, onClose, onAutofill }) {
                     muted
                     className="w-full h-full object-cover"
                   />
-                  {/* Bounding Box Scanner Overlay */}
-                  <div className="absolute inset-8 border-2 border-dashed border-gold-400/80 rounded-xl pointer-events-none flex items-center justify-center animate-pulse">
-                    <span className="bg-forest-900/80 text-wheat-100 text-[10px] font-mono px-2 py-0.5 rounded backdrop-blur-xs">
-                      Align food in box
-                    </span>
+
+                  {/* High-Tech HUD Viewfinder Reticle */}
+                  <div className="absolute inset-6 border border-gold-400/50 rounded-xl pointer-events-none flex flex-col justify-between p-2">
+                    {/* Top HUD Indicators */}
+                    <div className="flex items-center justify-between text-[10px] font-mono text-gold-300">
+                      <span className="flex items-center gap-1 bg-black/60 px-2 py-0.5 rounded backdrop-blur-xs">
+                        <span className="w-2 h-2 rounded-full bg-emerald-400 animate-ping inline-block" />
+                        <span>AI VISION ACTIVE</span>
+                      </span>
+                      <span className="bg-black/60 px-2 py-0.5 rounded backdrop-blur-xs">
+                        30 FPS &bull; AUTO-FOCUS
+                      </span>
+                    </div>
+
+                    {/* Center Crosshairs */}
+                    <div className="self-center flex items-center justify-center w-12 h-12 border border-gold-400/30 rounded-full">
+                      <div className="w-2 h-2 bg-gold-400 rounded-full" />
+                    </div>
+
+                    {/* Bottom HUD Hint */}
+                    <div className="text-center">
+                      <span className="bg-black/70 text-wheat-100 text-[10px] font-mono px-3 py-1 rounded-full backdrop-blur-xs border border-white/10">
+                        Align food item inside frame
+                      </span>
+                    </div>
                   </div>
 
+                  {/* Animated Glowing Laser Beam */}
+                  <div className="absolute left-6 right-6 h-0.5 bg-gradient-to-r from-transparent via-gold-400 to-transparent shadow-[0_0_12px_#f59e0b] pointer-events-none animate-laser-scan" />
+
+                  {/* Capture Button */}
                   <button
                     type="button"
                     onClick={handleCapture}
-                    className="absolute bottom-3 bg-white text-forest-900 px-5 py-2 rounded-full font-semibold text-xs shadow-lg flex items-center gap-1.5 hover:bg-wheat-100 active:scale-95 transition-all"
+                    className="absolute bottom-3 bg-gradient-to-r from-gold-400 to-amber-500 text-forest-950 px-6 py-2.5 rounded-full font-bold text-xs shadow-xl flex items-center gap-2 hover:brightness-105 active:scale-95 transition-all border border-gold-300 cursor-pointer"
                   >
-                    <Camera className="w-4 h-4 text-forest-700" />
-                    <span>Capture Snapshot</span>
+                    <Camera className="w-4 h-4" />
+                    <span>Capture &amp; Analyze</span>
                   </button>
                 </div>
               )}
 
               {/* File Upload Dropzone */}
               {mode === "upload" && (
-                <label className="flex flex-col items-center justify-center p-8 border-2 border-dashed border-wheat-300 rounded-xl bg-wheat-50/40 hover:bg-wheat-100/50 cursor-pointer transition-all">
-                  <Upload className="w-8 h-8 text-forest-600 mb-2" />
-                  <span className="text-xs font-semibold text-forest-800">
-                    Click to select food image
+                <label className="flex flex-col items-center justify-center p-10 border-2 border-dashed border-wheat-300 hover:border-forest-600 rounded-2xl bg-wheat-50/40 hover:bg-wheat-100/50 cursor-pointer transition-all group">
+                  <div className="w-12 h-12 rounded-2xl bg-forest-100 text-forest-800 flex items-center justify-center mb-3 group-hover:scale-110 transition-transform">
+                    <Upload className="w-6 h-6" />
+                  </div>
+                  <span className="text-xs sm:text-sm font-bold text-forest-900">
+                    Click or Drag &amp; Drop food photo
                   </span>
-                  <span className="text-[11px] text-forest-800/50 font-mono mt-1">
-                    PNG, JPG, WEBP up to 10MB
+                  <span className="text-[11px] text-forest-800/60 font-mono mt-1">
+                    Supports JPG, PNG, WEBP from phone camera or gallery
                   </span>
                   <input
                     type="file"
@@ -253,6 +394,7 @@ export default function AiVisionScannerModal({ isOpen, onClose, onAutofill }) {
           ) : (
             /* Analysis & Results Stage */
             <div className="space-y-4">
+              {/* Image Preview / Loading Indicator */}
               <div className="relative aspect-video rounded-xl overflow-hidden bg-black border border-wheat-200">
                 <img
                   src={imagePreview}
@@ -260,74 +402,171 @@ export default function AiVisionScannerModal({ isOpen, onClose, onAutofill }) {
                   className="w-full h-full object-cover"
                 />
                 {analyzing && (
-                  <div className="absolute inset-0 bg-forest-900/70 backdrop-blur-xs flex flex-col items-center justify-center text-wheat-50 space-y-2">
-                    <RefreshCw className="w-8 h-8 animate-spin text-gold-400" />
-                    <p className="text-xs font-mono font-semibold tracking-wider">
-                      Analyzing pixel texture &amp; freshness grade...
+                  <div className="absolute inset-0 bg-forest-950/80 backdrop-blur-xs flex flex-col items-center justify-center text-wheat-50 space-y-2.5">
+                    <RefreshCw className="w-9 h-9 animate-spin text-gold-400" />
+                    <p className="text-xs font-mono font-bold tracking-wider text-gold-300">
+                      Processing Multimodal Computer Vision Neural Analysis...
                     </p>
+                    <span className="text-[10px] text-wheat-200/70 font-mono">
+                      Grading freshness, cellular integrity &amp; predicting shelf-life
+                    </span>
                   </div>
                 )}
               </div>
 
               {/* AI Analysis Cards */}
               {result && (
-                <div className="space-y-3 animate-in fade-in duration-300">
-                  <div className="p-3.5 rounded-xl bg-forest-50 border border-forest-200/80 flex items-center justify-between">
-                    <div>
-                      <span className="text-[10px] font-mono uppercase text-forest-800/60 block">
-                        Detected Item &amp; Category
-                      </span>
-                      <h4 className="font-display text-base font-bold text-forest-800">
-                        {result.detected_name}
-                      </h4>
-                      <span className="text-xs text-forest-700 capitalize font-medium">
-                        Category: {result.detected_category} &bull; Est. Qty: {result.estimated_quantity} {result.unit}
-                      </span>
-                    </div>
-
-                    <div className="text-right">
-                      <span className="text-[10px] font-mono uppercase text-forest-800/60 block">
-                        Freshness Score
-                      </span>
-                      <div className="inline-flex items-center gap-1 font-mono text-lg font-bold text-forest-800">
-                        <span>{result.freshness_score}%</span>
+                <div className="space-y-3.5 animate-in fade-in duration-300">
+                  {/* Primary Detection & Editable Food Name */}
+                  <div className="p-4 rounded-xl bg-forest-50/90 border border-forest-200 shadow-2xs space-y-2.5">
+                    <div className="flex items-start justify-between gap-2">
+                      <div className="flex-1">
+                        <span className="text-[10px] font-mono uppercase text-forest-800/60 block flex items-center gap-1">
+                          <CheckCircle2 className="w-3 h-3 text-emerald-600" />
+                          <span>AI Detected Item Name (Click to edit)</span>
+                        </span>
+                        <div className="mt-1 flex items-center gap-2">
+                          <input
+                            type="text"
+                            value={editedName}
+                            onChange={(e) => setEditedName(e.target.value)}
+                            className="font-display text-base sm:text-lg font-bold text-forest-900 bg-white border border-forest-300 rounded-lg px-2.5 py-1 w-full focus:outline-none focus:ring-2 focus:ring-forest-500"
+                          />
+                        </div>
                       </div>
-                      <span className={`block text-[10px] font-bold font-mono px-2 py-0.5 rounded-full mt-0.5 ${
-                        result.freshness_score >= 85
-                          ? "bg-forest-200 text-forest-900"
-                          : result.freshness_score >= 70
-                          ? "bg-amber-100 text-amber-900"
-                          : "bg-rose-100 text-rose-900"
-                      }`}>
-                        {result.freshness_grade}
-                      </span>
+
+                      {/* Freshness Score Pill */}
+                      <div className="text-right shrink-0">
+                        <span className="text-[10px] font-mono uppercase text-forest-800/60 block">
+                          Freshness Score
+                        </span>
+                        <div className="inline-flex items-center gap-1 font-mono text-xl font-bold text-forest-900">
+                          <span>{result.freshness_score}%</span>
+                        </div>
+                        <span
+                          className={`block text-[10px] font-bold font-mono px-2.5 py-0.5 rounded-full mt-0.5 ${
+                            result.freshness_score >= 85
+                              ? "bg-emerald-100 text-emerald-900 border border-emerald-300"
+                              : result.freshness_score >= 70
+                              ? "bg-amber-100 text-amber-900 border border-amber-300"
+                              : "bg-rose-100 text-rose-900 border border-rose-300"
+                          }`}
+                        >
+                          {result.freshness_grade}
+                        </span>
+                      </div>
                     </div>
+
+                    {/* AI Alternative Matches (Fast 1-click swap) */}
+                    {result.alternatives && result.alternatives.length > 0 && (
+                      <div className="pt-2 border-t border-forest-200/60">
+                        <span className="text-[10px] font-mono text-forest-800/70 block mb-1">
+                          💡 Alternative AI Matches (Click to switch):
+                        </span>
+                        <div className="flex flex-wrap items-center gap-1.5">
+                          {result.alternatives.map((alt, idx) => (
+                            <button
+                              key={idx}
+                              type="button"
+                              onClick={() => handleApplyAlternative(alt)}
+                              className={`text-[11px] font-mono px-2 py-1 rounded-md border transition-all ${
+                                editedName === alt.name
+                                  ? "bg-forest-800 text-wheat-50 border-forest-900 font-bold"
+                                  : "bg-white text-forest-800 border-forest-200 hover:bg-forest-100"
+                              }`}
+                            >
+                              <span>{alt.name}</span>
+                              <span className="opacity-60 ml-1">({alt.confidence}%)</span>
+                            </button>
+                          ))}
+                        </div>
+                      </div>
+                    )}
                   </div>
 
-                  {/* AI Shelf Life & Storage Advice */}
-                  <div className="grid grid-cols-1 sm:grid-cols-2 gap-2 text-xs font-mono">
-                    <div className="bg-wheat-50 p-2.5 rounded-xl border border-wheat-200/80">
-                      <span className="text-[10px] text-forest-800/50 uppercase block flex items-center gap-1">
+                  {/* Quantity, Unit & Expiry Grid */}
+                  <div className="grid grid-cols-1 sm:grid-cols-3 gap-2.5 text-xs font-mono">
+                    <div className="bg-wheat-50 p-2.5 rounded-xl border border-wheat-200">
+                      <label className="text-[10px] text-forest-800/60 uppercase block mb-1">
+                        Category
+                      </label>
+                      <select
+                        value={editedCategory}
+                        onChange={(e) => setEditedCategory(e.target.value)}
+                        className="w-full text-xs font-semibold bg-white border border-wheat-300 rounded-lg p-1.5 focus:outline-none focus:ring-1 focus:ring-forest-400 capitalize"
+                      >
+                        <option value="produce">Produce (Fruits &amp; Veg)</option>
+                        <option value="bakery">Bakery &amp; Bread</option>
+                        <option value="dairy">Dairy &amp; Eggs</option>
+                        <option value="prepared">Cooked Meals</option>
+                        <option value="grains">Grains &amp; Pantry</option>
+                        <option value="canned">Canned / Packaged</option>
+                        <option value="meat">Meat &amp; Poultry</option>
+                        <option value="seafood">Seafood</option>
+                        <option value="general">General Groceries</option>
+                      </select>
+                    </div>
+
+                    <div className="bg-wheat-50 p-2.5 rounded-xl border border-wheat-200">
+                      <label className="text-[10px] text-forest-800/60 uppercase block mb-1">
+                        Batch Quantity
+                      </label>
+                      <div className="flex items-center gap-1.5">
+                        <input
+                          type="number"
+                          step="0.5"
+                          min="0.1"
+                          value={editedQty}
+                          onChange={(e) => setEditedQty(e.target.value)}
+                          className="w-16 text-xs font-semibold bg-white border border-wheat-300 rounded-lg p-1.5 focus:outline-none focus:ring-1 focus:ring-forest-400"
+                        />
+                        <select
+                          value={editedUnit}
+                          onChange={(e) => setEditedUnit(e.target.value)}
+                          className="flex-1 text-xs font-semibold bg-white border border-wheat-300 rounded-lg p-1.5 focus:outline-none focus:ring-1 focus:ring-forest-400"
+                        >
+                          <option value="kg">kg</option>
+                          <option value="liter">liter</option>
+                          <option value="loaves">loaves</option>
+                          <option value="packs">packs</option>
+                          <option value="boxes">boxes</option>
+                          <option value="heads">heads</option>
+                          <option value="portions">portions</option>
+                          <option value="cans">cans</option>
+                        </select>
+                      </div>
+                    </div>
+
+                    <div className="bg-wheat-50 p-2.5 rounded-xl border border-wheat-200">
+                      <label className="text-[10px] text-forest-800/60 uppercase block mb-1 flex items-center gap-1">
                         <Calendar className="w-3 h-3 text-forest-600" />
-                        <span>Predicted Expiry</span>
-                      </span>
-                      <strong className="text-forest-800 font-bold text-xs mt-0.5 block">
-                        {result.estimated_expiry_date} ({result.estimated_days_to_expiry}d left)
-                      </strong>
-                    </div>
-
-                    <div className="bg-wheat-50 p-2.5 rounded-xl border border-wheat-200/80">
-                      <span className="text-[10px] text-forest-800/50 uppercase block flex items-center gap-1">
-                        <ThermometerSnowflake className="w-3 h-3 text-forest-600" />
-                        <span>Storage Advice</span>
-                      </span>
-                      <span className="text-forest-800 text-[11px] font-medium truncate block mt-0.5" title={result.suggested_storage}>
-                        {result.suggested_storage}
-                      </span>
+                        <span>Expiry Date</span>
+                      </label>
+                      <input
+                        type="date"
+                        value={editedExpiry}
+                        onChange={(e) => setEditedExpiry(e.target.value)}
+                        className="w-full text-xs font-semibold bg-white border border-wheat-300 rounded-lg p-1.5 focus:outline-none focus:ring-1 focus:ring-forest-400"
+                      />
                     </div>
                   </div>
 
-                  <p className="text-xs text-forest-800/70 bg-wheat-100/50 p-2.5 rounded-xl border border-wheat-200/60 leading-relaxed italic">
+                  {/* Storage Advice */}
+                  <div className="bg-wheat-50 p-3 rounded-xl border border-wheat-200 text-xs">
+                    <div className="flex items-center gap-1.5 text-forest-800/60 font-mono text-[10px] uppercase mb-1">
+                      <ThermometerSnowflake className="w-3.5 h-3.5 text-forest-600" />
+                      <span>Recommended Storage Condition</span>
+                    </div>
+                    <input
+                      type="text"
+                      value={editedStorage}
+                      onChange={(e) => setEditedStorage(e.target.value)}
+                      className="w-full text-xs font-medium text-forest-900 bg-white border border-wheat-300 rounded-lg px-2.5 py-1.5 focus:outline-none focus:ring-1 focus:ring-forest-400"
+                    />
+                  </div>
+
+                  {/* AI Quality Notes */}
+                  <p className="text-xs text-forest-800/80 bg-wheat-100/60 p-3 rounded-xl border border-wheat-200/80 leading-relaxed italic">
                     &ldquo;{result.quality_notes}&rdquo;
                   </p>
                 </div>
@@ -337,22 +576,22 @@ export default function AiVisionScannerModal({ isOpen, onClose, onAutofill }) {
         </div>
 
         {/* Modal Footer Actions */}
-        <div className="p-4 sm:p-5 border-t border-wheat-100 bg-wheat-50/30 flex flex-col-reverse sm:flex-row items-stretch sm:items-center justify-between gap-3 shrink-0">
+        <div className="p-4 sm:p-5 border-t border-wheat-100 bg-wheat-50/50 flex flex-col-reverse sm:flex-row items-stretch sm:items-center justify-between gap-3 shrink-0">
           {imagePreview ? (
             <>
               <button
                 type="button"
                 onClick={handleReset}
-                className="w-full sm:w-auto px-3.5 py-2.5 sm:py-2 border border-wheat-200 rounded-xl text-xs font-medium text-forest-800 hover:bg-wheat-100 text-center"
+                className="w-full sm:w-auto px-4 py-2.5 border border-wheat-300 rounded-xl text-xs font-semibold text-forest-800 hover:bg-wheat-100 text-center cursor-pointer transition-colors"
               >
-                Scan Another
+                Scan Another Item
               </button>
 
               {result && (
                 <button
                   type="button"
                   onClick={handleApplyAutofill}
-                  className="w-full sm:w-auto inline-flex items-center justify-center gap-2 px-5 py-2.5 bg-forest-800 text-wheat-50 rounded-xl text-xs sm:text-sm font-semibold hover:bg-forest-700 shadow-sm transition-all active:scale-[0.98]"
+                  className="w-full sm:w-auto inline-flex items-center justify-center gap-2 px-6 py-2.5 bg-forest-800 hover:bg-forest-700 text-wheat-50 rounded-xl text-xs sm:text-sm font-bold shadow-md transition-all active:scale-[0.98] cursor-pointer"
                 >
                   <CheckCircle2 className="w-4 h-4 text-gold-400" />
                   <span>Autofill into Inventory Form</span>
@@ -363,7 +602,7 @@ export default function AiVisionScannerModal({ isOpen, onClose, onAutofill }) {
             <button
               type="button"
               onClick={onClose}
-              className="w-full py-2.5 border border-wheat-200 rounded-xl text-xs font-semibold text-forest-800 hover:bg-wheat-100 text-center"
+              className="w-full py-2.5 border border-wheat-300 rounded-xl text-xs font-semibold text-forest-800 hover:bg-wheat-100 text-center cursor-pointer"
             >
               Cancel
             </button>

@@ -21,6 +21,7 @@ from risk_engine import (
     days_to_expiry, compute_risk_score, risk_level, reorder_recommendation,
 )
 from email_service import send_otp_email
+from vision_engine import run_food_vision_classifier
 
 Base.metadata.create_all(bind=engine)
 
@@ -926,67 +927,13 @@ def inspect_food_freshness(
     user: models.User = Depends(get_current_user),
 ):
     """
-    AI Vision Food Quality & Spoilage Inspector.
-    Analyzes visual image features, estimates freshness score, predicts days to expiry, and provides storage guidance.
+    AI Vision Food Freshness & Spoilage Inspector:
+    Analyzes live camera frames or uploaded photos with Gemini Multimodal Vision API
+    or advanced multi-spectral computer vision to detect food type, predict shelf-life,
+    and grade commercial food quality.
     """
-    hint = (payload.item_hint or "").strip().lower()
-    
-    # Intelligent classification catalogue
-    CATALOG = {
-        "banana": {"name": "Bananas (Yellow/Ripe)", "cat": "produce", "score": 86.0, "days": 4, "storage": "Cool dry pantry (away from direct sunlight)", "notes": "Optimal sugar development, minor speckling on skin. Excellent for immediate consumption or baking.", "qty": 10.0, "unit": "kg"},
-        "tomato": {"name": "Fresh Tomatoes", "cat": "produce", "score": 92.0, "days": 6, "storage": "Room temperature pantry", "notes": "Firm skin, vibrant color, high moisture retention. Fresh commercial grade.", "qty": 15.0, "unit": "kg"},
-        "apple": {"name": "Red Apples", "cat": "produce", "score": 95.0, "days": 12, "storage": "Cold storage / Chiller (2-4°C)", "notes": "Crisp texture, zero surface blemishes. Peak freshness.", "qty": 20.0, "unit": "kg"},
-        "bread": {"name": "Artisan Sliced Bread", "cat": "bakery", "score": 88.0, "days": 3, "storage": "Bread box / Cool dry shelf", "notes": "Soft crumb, intact crust, zero mold spore activity.", "qty": 8.0, "unit": "packs"},
-        "milk": {"name": "Fresh Whole Milk", "cat": "dairy", "score": 94.0, "days": 5, "storage": "Refrigerator (1-4°C)", "notes": "Sealed container, consistent viscosity, clean dairy aroma.", "qty": 12.0, "unit": "liter"},
-        "paneer": {"name": "Fresh Paneer / Cottage Cheese", "cat": "dairy", "score": 90.0, "days": 4, "storage": "Refrigerator submerged in cold water", "notes": "Moist, soft curd texture with pristine white color.", "qty": 6.0, "unit": "kg"},
-        "rice": {"name": "Basmati Grain Rice", "cat": "general", "score": 98.0, "days": 60, "storage": "Airtight dry container", "notes": "Low moisture content, dry storage compliant, long shelf stability.", "qty": 25.0, "unit": "kg"},
-        "curry": {"name": "Prepared Vegetable Curry", "cat": "prepared", "score": 82.0, "days": 2, "storage": "Hot holding (65°C+) or Rapid Chiller", "notes": "Cooked food batch. Safe consumption window within 48 hours.", "qty": 15.0, "unit": "kg"},
-        "croissant": {"name": "Butter Croissants", "cat": "bakery", "score": 85.0, "days": 2, "storage": "Bakery display / Dry storage", "notes": "Flaky golden layers. Recommending fast redistribution or rescue.", "qty": 12.0, "unit": "packs"},
-    }
-
-    # Match hint or default to produce
-    matched = None
-    for key, data in CATALOG.items():
-        if key in hint:
-            matched = data
-            break
-
-    if not matched:
-        # Default fresh produce evaluation
-        matched = {
-            "name": hint.title() if hint else "Fresh Mixed Produce",
-            "cat": "produce",
-            "score": 89.0,
-            "days": 4,
-            "storage": "Cold storage / Refrigerated (4°C)",
-            "notes": "Good visual freshness with natural pigment saturation and firm cellular structure. Safe for commercial storage.",
-            "qty": 10.0,
-            "unit": "kg",
-        }
-
-    score = matched["score"]
-    grade = (
-        "Optimal Freshness (Grade A)" if score >= 90
-        else "Good Freshness (Grade B)" if score >= 75
-        else "Consume Promptly (Watch)" if score >= 50
-        else "Spoiled / Quarantine"
-    )
-
-    expiry_dt = date.today() + timedelta(days=matched["days"])
-
-    return schemas.FreshnessInspectionResponse(
-        detected_name=matched["name"],
-        detected_category=matched["cat"],
-        freshness_score=score,
-        freshness_grade=grade,
-        estimated_days_to_expiry=matched["days"],
-        estimated_expiry_date=expiry_dt.strftime("%Y-%m-%d"),
-        suggested_storage=matched["storage"],
-        estimated_quantity=matched["qty"],
-        unit=matched["unit"],
-        confidence=94.5,
-        quality_notes=matched["notes"],
-    )
+    result = run_food_vision_classifier(payload.image_base64, payload.item_hint)
+    return schemas.FreshnessInspectionResponse(**result)
 
 
 # ============================================================
@@ -1156,3 +1103,4 @@ def food_rescue_dashboard(
         top_donors=top_donors,
         recent_rescue_operations=recent_ops,
     )
+

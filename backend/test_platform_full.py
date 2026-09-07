@@ -507,6 +507,54 @@ class TestFoodWastePlatform(unittest.TestCase):
         })
         self.assertEqual(res_re_verify.status_code, 400)
 
+    def test_13_ai_vision_freshness_inspector(self):
+        # 1. Register & login
+        uid = str(uuid.uuid4())[:8]
+        res_reg = client.post("/auth/register", json={
+            "email": f"vision_{uid}@test.org",
+            "password": "password123",
+            "org_name": "AI Vision Testing Kitchen",
+            "role": "business",
+            "address": "456 Silicon Ave"
+        })
+        token = res_reg.json()["access_token"]
+        auth_headers = {"Authorization": f"Bearer {token}"}
+
+        # 2. Test hint-based classification (e.g., Bananas)
+        res_hint = client.post("/ai/inspect-freshness", headers=auth_headers, json={
+            "item_hint": "banana"
+        })
+        self.assertEqual(res_hint.status_code, 200)
+        data = res_hint.json()
+        self.assertIn("Bananas", data["detected_name"])
+        self.assertEqual(data["detected_category"], "produce")
+        self.assertGreater(data["freshness_score"], 80.0)
+        self.assertGreater(data["estimated_days_to_expiry"], 0)
+        self.assertIsNotNone(data["estimated_expiry_date"])
+        self.assertIsNotNone(data["suggested_storage"])
+        self.assertIsInstance(data["alternatives"], list)
+
+        # 3. Test Base64 image spectral analysis (Red Image -> Apple / Tomato)
+        import io, base64
+        from PIL import Image
+        img = Image.new("RGB", (128, 128), color=(220, 30, 30))
+        buf = io.BytesIO()
+        img.save(buf, format="JPEG")
+        b64_img = base64.b64encode(buf.getvalue()).decode("utf-8")
+
+        res_img = client.post("/ai/inspect-freshness", headers=auth_headers, json={
+            "image_base64": b64_img
+        })
+        self.assertEqual(res_img.status_code, 200)
+        img_data = res_img.json()
+        self.assertIn("Apple", img_data["detected_name"])
+        self.assertGreater(img_data["confidence"], 80.0)
+        self.assertTrue(len(img_data["alternatives"]) > 0)
+
+        # 4. Unauthenticated request must return 401
+        res_unauth = client.post("/ai/inspect-freshness", json={"item_hint": "apple"})
+        self.assertEqual(res_unauth.status_code, 401)
+
 
 if __name__ == "__main__":
     unittest.main()

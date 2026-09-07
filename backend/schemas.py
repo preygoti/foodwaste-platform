@@ -1,5 +1,5 @@
 from datetime import date, datetime
-from typing import Optional, List
+from typing import Optional, List, Dict, Any
 from pydantic import BaseModel, EmailStr
 
 
@@ -258,6 +258,7 @@ class FreshnessInspectionResponse(BaseModel):
     unit: str
     confidence: float
     quality_notes: str
+    alternatives: Optional[List[Dict[str, Any]]] = None
 
 
 # ---------- QR Code Handshake Verification ----------
