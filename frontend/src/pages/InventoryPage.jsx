@@ -36,12 +36,20 @@ import { api } from "../api";
 
 const CATEGORIES = ["produce", "dairy", "bakery", "prepared", "canned", "frozen", "general"];
 
+const getTodayStr = () => {
+  const d = new Date();
+  const year = d.getFullYear();
+  const month = String(d.getMonth() + 1).padStart(2, "0");
+  const day = String(d.getDate()).padStart(2, "0");
+  return `${year}-${month}-${day}`;
+};
+
 const emptyForm = {
   name: "",
   category: "",
   quantity: "",
   unit: "",
-  expiry_date: "",
+  expiry_date: getTodayStr(),
   storage_location: "",
   avg_daily_usage: "",
 };
@@ -1036,7 +1044,7 @@ export default function InventoryPage() {
                 </div>
               </div>
 
-              <div className="grid grid-cols-2 gap-2.5 sm:gap-3">
+              <div className="grid grid-cols-1 sm:grid-cols-2 gap-3">
                 <div>
                   <label className="block text-[11px] sm:text-xs uppercase tracking-wider text-forest-800/70 font-semibold mb-1">
                     Expiry Date *
@@ -1046,9 +1054,7 @@ export default function InventoryPage() {
                     required
                     value={form.expiry_date}
                     onChange={updateForm("expiry_date")}
-                    className={`w-full border border-wheat-200 rounded-lg px-2.5 sm:px-3 py-2 h-10 text-xs sm:text-sm focus:outline-none focus:ring-2 focus:ring-forest-400 bg-white font-mono box-border ${
-                      !form.expiry_date ? "text-forest-800/40" : "text-forest-900"
-                    }`}
+                    className="w-full border border-wheat-200 rounded-lg px-3 py-2 h-10 text-xs sm:text-sm text-forest-900 focus:outline-none focus:ring-2 focus:ring-forest-400 bg-white font-mono box-border"
                   />
                 </div>
 
