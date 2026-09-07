@@ -488,57 +488,69 @@ export default function BrowseListingsPage() {
 
       {/* ------------------------------------------------------------- */}
       {/* ------------------------------------------------------------- */}
-      {/* CLAIM SURPLUS MODAL                                           */}
+      {/* CLAIM SURPLUS MODAL (Zero-Scroll iPhone-Optimized)            */}
       {/* ------------------------------------------------------------- */}
       {selectedListing && (
-        <div className="fixed inset-0 z-50 flex items-center justify-center p-3 sm:p-4 bg-black/60 backdrop-blur-sm overflow-y-auto animate-in fade-in duration-150">
-          <div className="relative w-full max-w-md bg-white border border-wheat-200 rounded-2xl shadow-2xl overflow-hidden my-auto max-h-[92vh] flex flex-col animate-in fade-in zoom-in-95 duration-150">
-            <div className="flex items-center justify-between px-5 sm:px-6 py-4 border-b border-wheat-200 bg-wheat-50 shrink-0">
-              <div className="flex items-center gap-2">
-                <span className="p-1.5 rounded-md bg-forest-800 text-wheat-50">
+        <div className="fixed inset-0 z-50 flex items-center justify-center p-3 sm:p-4 bg-black/60 backdrop-blur-sm overflow-x-hidden overflow-y-auto animate-in fade-in duration-150">
+          <div className="relative w-full max-w-sm sm:max-w-md bg-white border border-wheat-200 rounded-2xl shadow-2xl overflow-hidden my-auto flex flex-col overflow-x-hidden animate-in fade-in zoom-in-95 duration-150">
+            {/* Header */}
+            <div className="flex items-center justify-between px-4 sm:px-5 py-3 sm:py-3.5 border-b border-wheat-200 bg-wheat-50 shrink-0">
+              <div className="flex items-center gap-2 min-w-0">
+                <span className="p-1.5 rounded-lg bg-forest-800 text-wheat-50 shrink-0">
                   <Utensils className="w-4 h-4" />
                 </span>
-                <h2 className="font-display text-lg sm:text-xl text-forest-800 font-semibold">Claim Surplus Food</h2>
+                <h2 className="font-display text-base sm:text-lg text-forest-800 font-bold truncate">
+                  Claim Surplus Food
+                </h2>
               </div>
               <button
                 onClick={() => setSelectedListing(null)}
-                className="p-1.5 text-forest-800/50 hover:text-forest-800 rounded-lg hover:bg-wheat-200/50 transition-colors"
+                className="p-1 text-forest-800/50 hover:text-forest-800 rounded-lg hover:bg-wheat-200/50 transition-colors shrink-0"
                 title="Close"
               >
                 <X className="w-5 h-5" />
               </button>
             </div>
 
-            <form onSubmit={handleClaimSubmit} className="p-4 sm:p-6 space-y-4 overflow-y-auto flex-1">
-              <div className="p-3.5 bg-forest-50 border border-forest-100 rounded-xl space-y-1">
-                <p className="text-sm font-semibold text-forest-800">{selectedListing.title}</p>
-                <div className="flex items-center justify-between pt-1">
-                  <span className="text-xs text-forest-800/70 font-mono">
-                    {selectedListing.quantity} {selectedListing.unit}
-                  </span>
-                  <LiveCountdownBadge expiryDateStr={selectedListing.expiry_date} now={now} />
+            {/* Body Form */}
+            <form onSubmit={handleClaimSubmit} className="p-3.5 sm:p-4 space-y-2.5 sm:space-y-3 overflow-x-hidden">
+              {/* Item Info Banner */}
+              <div className="p-2.5 bg-forest-50 border border-forest-100 rounded-xl space-y-1 min-w-0">
+                <div className="flex items-center justify-between gap-2 min-w-0">
+                  <p className="text-xs sm:text-sm font-bold text-forest-800 truncate min-w-0">
+                    {selectedListing.title}
+                  </p>
+                  <div className="shrink-0 scale-90 sm:scale-100 origin-right">
+                    <LiveCountdownBadge expiryDateStr={selectedListing.expiry_date} now={now} />
+                  </div>
                 </div>
-                <p className="text-xs text-forest-800/60 flex items-center gap-1 pt-1">
-                  <MapPin className="w-3.5 h-3.5 text-forest-600 shrink-0" />
-                  <span className="truncate">{selectedListing.pickup_location}</span>
+                <div className="flex items-center justify-between text-[11px] text-forest-800/70 font-mono pt-0.5">
+                  <span>
+                    Available: <strong className="text-forest-900">{selectedListing.quantity} {selectedListing.unit}</strong>
+                  </span>
+                </div>
+                <p className="text-[11px] text-forest-800/60 flex items-center gap-1 min-w-0 pt-0.5">
+                  <MapPin className="w-3 h-3 text-forest-600 shrink-0" />
+                  <span className="truncate min-w-0">{selectedListing.pickup_location}</span>
                 </p>
               </div>
 
               {claimError && (
-                <div className="p-3 rounded-xl bg-tomato-500/10 border border-tomato-500/30 text-tomato-600 text-xs font-medium">
+                <div className="p-2.5 rounded-xl bg-tomato-500/10 border border-tomato-500/30 text-tomato-600 text-xs font-medium">
                   {claimError}
                 </div>
               )}
 
               {claimSuccess ? (
-                <div className="p-4 rounded-xl bg-forest-500/10 border border-forest-500/30 text-forest-700 text-sm font-medium flex items-center gap-2">
-                  <CheckCircle2 className="w-5 h-5 text-forest-600 shrink-0" />
+                <div className="p-3.5 rounded-xl bg-forest-500/10 border border-forest-500/30 text-forest-700 text-xs font-medium flex items-center gap-2">
+                  <CheckCircle2 className="w-4 h-4 text-forest-600 shrink-0" />
                   <span>Pickup request submitted! Coordinating with donor...</span>
                 </div>
               ) : (
                 <>
-                  <div>
-                    <label className="block text-xs uppercase tracking-wide text-forest-800/70 font-semibold mb-1.5">
+                  {/* Meal Portions */}
+                  <div className="min-w-0">
+                    <label className="block text-[11px] sm:text-xs uppercase tracking-wide text-forest-800/70 font-semibold mb-1">
                       Estimated Meal Portions *
                     </label>
                     <input
@@ -548,17 +560,14 @@ export default function BrowseListingsPage() {
                       placeholder="e.g. 50"
                       value={mealsEstimate}
                       onChange={(e) => setMealsEstimate(e.target.value)}
-                      className="w-full border border-wheat-200 rounded-xl px-3.5 py-2.5 text-xs sm:text-sm text-forest-800 focus:outline-none focus:ring-2 focus:ring-forest-400 bg-white"
+                      className="w-full min-w-0 max-w-full box-border border border-wheat-200 rounded-xl px-3 py-2 text-xs sm:text-sm text-forest-800 focus:outline-none focus:ring-2 focus:ring-forest-400 bg-white"
                     />
-                    <p className="text-[11px] text-forest-800/50 mt-1">
-                      Based on standard portion multiplier (~2.5 meals/kg)
-                    </p>
                   </div>
 
-                  {/* Responsive Split Date & Time Inputs */}
-                  <div className="grid grid-cols-1 sm:grid-cols-2 gap-3">
-                    <div>
-                      <label className="block text-xs uppercase tracking-wide text-forest-800/70 font-semibold mb-1.5">
+                  {/* Split Date & Time Inputs */}
+                  <div className="grid grid-cols-2 gap-2 sm:gap-3 min-w-0">
+                    <div className="min-w-0">
+                      <label className="block text-[11px] sm:text-xs uppercase tracking-wide text-forest-800/70 font-semibold mb-1">
                         Pickup Date *
                       </label>
                       <input
@@ -569,12 +578,12 @@ export default function BrowseListingsPage() {
                           const timePart = scheduledTime.includes("T") ? scheduledTime.split("T")[1] : "10:00";
                           setScheduledTime(`${e.target.value}T${timePart}`);
                         }}
-                        className="w-full border border-wheat-200 rounded-xl px-3.5 py-2.5 text-xs sm:text-sm text-forest-800 focus:outline-none focus:ring-2 focus:ring-forest-400 bg-white font-mono"
+                        className="w-full min-w-0 max-w-full box-border border border-wheat-200 rounded-xl px-2.5 sm:px-3 py-2 text-xs sm:text-sm text-forest-800 focus:outline-none focus:ring-2 focus:ring-forest-400 bg-white font-mono"
                       />
                     </div>
 
-                    <div>
-                      <label className="block text-xs uppercase tracking-wide text-forest-800/70 font-semibold mb-1.5">
+                    <div className="min-w-0">
+                      <label className="block text-[11px] sm:text-xs uppercase tracking-wide text-forest-800/70 font-semibold mb-1">
                         Pickup Time *
                       </label>
                       <input
@@ -585,23 +594,24 @@ export default function BrowseListingsPage() {
                           const datePart = scheduledTime.includes("T") ? scheduledTime.split("T")[0] : new Date().toISOString().slice(0, 10);
                           setScheduledTime(`${datePart}T${e.target.value}`);
                         }}
-                        className="w-full border border-wheat-200 rounded-xl px-3.5 py-2.5 text-xs sm:text-sm text-forest-800 focus:outline-none focus:ring-2 focus:ring-forest-400 bg-white font-mono"
+                        className="w-full min-w-0 max-w-full box-border border border-wheat-200 rounded-xl px-2.5 sm:px-3 py-2 text-xs sm:text-sm text-forest-800 focus:outline-none focus:ring-2 focus:ring-forest-400 bg-white font-mono"
                       />
                     </div>
                   </div>
 
-                  <div className="flex flex-col-reverse sm:flex-row items-stretch sm:items-center justify-end gap-2.5 sm:gap-3 pt-4 border-t border-wheat-200">
+                  {/* Actions Bar */}
+                  <div className="flex items-center justify-end gap-2 pt-2.5 border-t border-wheat-200 shrink-0">
                     <button
                       type="button"
                       onClick={() => setSelectedListing(null)}
-                      className="w-full sm:w-auto px-4 py-2.5 text-xs sm:text-sm font-medium text-forest-800/70 hover:text-forest-800 rounded-xl hover:bg-wheat-100/60 transition-colors text-center"
+                      className="flex-1 sm:flex-initial px-3.5 py-2 text-xs sm:text-sm font-medium text-forest-800/70 hover:text-forest-800 rounded-xl hover:bg-wheat-100 transition-colors text-center"
                     >
                       Cancel
                     </button>
                     <button
                       type="submit"
                       disabled={claiming}
-                      className="w-full sm:w-auto inline-flex items-center justify-center gap-2 px-6 py-2.5 rounded-xl text-xs sm:text-sm font-semibold bg-forest-800 text-wheat-50 hover:bg-forest-700 disabled:opacity-50 shadow-sm transition-all"
+                      className="flex-1 sm:flex-initial inline-flex items-center justify-center gap-1.5 px-4 sm:px-5 py-2 rounded-xl text-xs sm:text-sm font-semibold bg-forest-800 text-wheat-50 hover:bg-forest-700 disabled:opacity-50 shadow-sm transition-all text-center"
                     >
                       {claiming ? "Submitting..." : "Confirm Claim"}
                     </button>

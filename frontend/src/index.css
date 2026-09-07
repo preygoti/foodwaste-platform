@@ -28,11 +28,19 @@ html, body {
   min-height: 100dvh;
 }
 
-/* Prevent iOS Safari auto-zoom on input focus */
+/* Prevent iOS Safari auto-zoom on input focus and ensure bounded box-sizing */
 @media (max-width: 768px) {
   input, select, textarea {
     font-size: 16px !important;
   }
+}
+
+input[type="date"],
+input[type="time"],
+input[type="datetime-local"] {
+  min-width: 0 !important;
+  max-width: 100% !important;
+  box-sizing: border-box !important;
 }
 
 /* Hide scrollbars across the entire application on both mobile and desktop */
