@@ -511,75 +511,115 @@ FOOD_ONTOLOGY = {
 # ==============================================================================
 def extract_visual_features_from_pil(image: Any) -> Dict[str, Any]:
     """
-    Extracts high-resolution HSV color space metrics, saturation levels,
-    and spatial texture entropy from a PIL image.
+    Extracts high-resolution HSV color space metrics, cluster distributions,
+    and spatial texture entropy focused on the center foreground food subject.
     """
     if not PIL_AVAILABLE or not image:
-        return {"dominant_color": "general", "avg_h": 0.0, "avg_s": 0.0, "avg_v": 0.0, "texture_score": 10.0, "is_valid_image": False}
+        return {"dominant_color": "general", "dominant_category": "general", "avg_h": 0.0, "avg_s": 0.0, "avg_v": 0.0, "texture_score": 10.0, "is_valid_image": False}
 
     img = image.convert("RGB").resize((128, 128))
-    pixels = list(img.getdata())
-    total_pixels = len(pixels)
-
-    if total_pixels == 0:
-        return {"dominant_color": "general", "avg_h": 0.0, "avg_s": 0.0, "avg_v": 0.0, "texture_score": 10.0, "is_valid_image": False}
-
-    h_sum, s_sum, v_sum = 0.0, 0.0, 0.0
-    texture_diff_sum = 0.0
     width, height = img.size
 
-    for y in range(height):
-        for x in range(width):
-            idx = y * width + x
-            r, g, b = pixels[idx]
+    # Focus analysis on center 65% of the frame (inner food subject, avoiding table borders)
+    x_start, x_end = int(width * 0.18), int(width * 0.82)
+    y_start, y_end = int(height * 0.18), int(height * 0.82)
+
+    center_hsv = []
+    texture_diff_sum = 0.0
+    center_pixels_count = 0
+
+    h_sum, s_sum, v_sum = 0.0, 0.0, 0.0
+
+    white_cream_count = 0
+    vivid_orange_count = 0
+    vivid_yellow_count = 0
+    vivid_red_count = 0
+    vivid_green_count = 0
+    golden_brown_count = 0
+    curry_gravy_count = 0
+
+    for y in range(y_start, y_end):
+        for x in range(x_start, x_end):
+            r, g, b = img.getpixel((x, y))
             rf, gf, bf = r / 255.0, g / 255.0, b / 255.0
             h, s, v = colorsys.rgb_to_hsv(rf, gf, bf)
-            h_sum += h * 360.0
+            h_deg = h * 360.0
+
+            h_sum += h_deg
             s_sum += s
             v_sum += v
+            center_pixels_count += 1
 
-            # Measure horizontal & vertical neighbor spatial variance
-            if x < width - 1 and y < height - 1:
-                r_r, g_r, b_r = pixels[idx + 1]
-                r_d, g_d, b_d = pixels[idx + width]
+            # Measure horizontal & vertical neighbor spatial texture variation
+            if x < x_end - 1 and y < y_end - 1:
+                r_r, g_r, b_r = img.getpixel((x + 1, y))
+                r_d, g_d, b_d = img.getpixel((x, y + 1))
                 diff = (abs(r - r_r) + abs(g - g_r) + abs(b - b_r) + abs(r - r_d) + abs(g - g_d) + abs(b - b_d)) / 6.0
                 texture_diff_sum += diff
 
-    avg_h = h_sum / total_pixels
-    avg_s = s_sum / total_pixels
-    avg_v = v_sum / total_pixels
-    texture_score = round(texture_diff_sum / total_pixels, 2)
+            # Classify pixel cluster
+            if s < 0.35 and v > 0.48:
+                white_cream_count += 1
+            elif 15.0 <= h_deg <= 42.0 and s >= 0.72 and v >= 0.70:
+                vivid_orange_count += 1
+            elif 42.0 < h_deg <= 68.0 and s >= 0.60 and v >= 0.55:
+                vivid_yellow_count += 1
+            elif (h_deg <= 16.0 or h_deg >= 340.0) and s >= 0.45 and v >= 0.35:
+                vivid_red_count += 1
+            elif 75.0 <= h_deg <= 165.0 and s >= 0.25 and v >= 0.22:
+                vivid_green_count += 1
+            elif 18.0 <= h_deg <= 55.0 and 0.25 <= s <= 0.75 and v <= 0.85:
+                golden_brown_count += 1
+                curry_gravy_count += 1
 
-    # Classify Dominant Visual Category based on HSV and Texture physics
-    if avg_s < 0.32 and avg_v > 0.60:
-        if texture_score >= 8.0:
+    if center_pixels_count == 0:
+        return {"dominant_color": "general", "dominant_category": "general", "avg_h": 0.0, "avg_s": 0.0, "avg_v": 0.0, "texture_score": 10.0, "is_valid_image": False}
+
+    avg_h = h_sum / center_pixels_count
+    avg_s = s_sum / center_pixels_count
+    avg_v = v_sum / center_pixels_count
+    texture_score = round(texture_diff_sum / center_pixels_count, 2)
+
+    white_share = white_cream_count / center_pixels_count
+    orange_share = vivid_orange_count / center_pixels_count
+    yellow_share = vivid_yellow_count / center_pixels_count
+    red_share = vivid_red_count / center_pixels_count
+    green_share = vivid_green_count / center_pixels_count
+    bread_share = golden_brown_count / center_pixels_count
+    curry_share = curry_gravy_count / center_pixels_count
+
+    # Determine Dominant Food Subject Category based on foreground clusters
+    if white_share >= 0.22:
+        if texture_score >= 6.5:
             dom_category = "rice_grains"
             dom_color = "grain_white"
-        elif texture_score >= 5.0:
+        elif texture_score >= 3.8:
             dom_category = "paneer_dairy"
             dom_color = "cream"
         else:
             dom_category = "milk_dairy"
             dom_color = "white"
-    elif avg_s >= 0.65 and 45.0 <= avg_h <= 68.0 and texture_score < 8.0:
-        dom_category = "banana_citrus"
-        dom_color = "yellow"
-    elif 16.0 <= avg_h < 42.0 and avg_s >= 0.72 and texture_score < 6.0:
+    elif orange_share >= 0.28:
         dom_category = "orange_produce"
         dom_color = "orange"
-    elif (avg_h <= 18.0 or avg_h >= 340.0) and avg_s >= 0.45:
+    elif yellow_share >= 0.28:
+        dom_category = "banana_citrus"
+        dom_color = "yellow"
+    elif red_share >= 0.28:
         dom_category = "red_produce"
         dom_color = "red"
-    elif 75.0 <= avg_h <= 165.0 and avg_s >= 0.28:
+    elif green_share >= 0.24:
         dom_category = "green_produce"
         dom_color = "dark_green" if avg_v < 0.55 else "bright_green"
-    elif 18.0 <= avg_h <= 55.0 and 0.25 <= avg_s <= 0.75:
-        if texture_score >= 7.0:
-            dom_category = "bread_bakery"
-            dom_color = "golden_brown"
-        else:
-            dom_category = "curry_meal"
-            dom_color = "yellow_orange"
+    elif bread_share >= 0.25 and texture_score >= 6.0:
+        dom_category = "bread_bakery"
+        dom_color = "golden_brown"
+    elif curry_share >= 0.25:
+        dom_category = "curry_meal"
+        dom_color = "yellow_orange"
+    elif white_share >= 0.12:
+        dom_category = "rice_grains"
+        dom_color = "grain_white"
     else:
         dom_category = "general"
         dom_color = "general"
@@ -797,24 +837,24 @@ def run_food_vision_classifier(image_base64: Optional[str] = None, hint: str = "
                 score += 15.0
 
         # 3. Dominant Visual Category alignment
-        if dom_category == "rice_grains" and key in {"rice", "raw_rice", "dal"}:
-            score += 45.0
-        elif dom_category == "milk_dairy" and key in {"milk", "yogurt"}:
-            score += 45.0
-        elif dom_category == "paneer_dairy" and key in {"paneer", "cheese", "egg"}:
-            score += 45.0
+        if dom_category == "rice_grains" and key in {"rice", "raw_rice"}:
+            score += 65.0
+        elif dom_category == "milk_dairy" and key == "milk":
+            score += 65.0
+        elif dom_category == "paneer_dairy" and key in {"paneer", "milk"}:
+            score += 65.0
         elif dom_category == "banana_citrus" and key in {"banana", "lemon"}:
-            score += 45.0
-        elif dom_category == "orange_produce" and key in {"orange", "carrot", "mango"}:
-            score += 45.0
-        elif dom_category == "red_produce" and key in {"apple", "tomato", "strawberry", "bell_pepper"}:
-            score += 45.0
-        elif dom_category == "green_produce" and key in {"spinach", "broccoli", "cucumber", "lettuce", "green_apple"}:
-            score += 45.0
-        elif dom_category == "bread_bakery" and key in {"bread", "croissant", "biscuit", "pizza"}:
-            score += 45.0
-        elif dom_category == "curry_meal" and key in {"curry", "biryani", "soup", "pasta"}:
-            score += 45.0
+            score += 65.0
+        elif dom_category == "orange_produce" and key in {"carrot", "orange"}:
+            score += 65.0
+        elif dom_category == "red_produce" and key in {"apple", "tomato"}:
+            score += 65.0
+        elif dom_category == "green_produce" and key in {"spinach", "broccoli", "cucumber"}:
+            score += 65.0
+        elif dom_category == "bread_bakery" and key in {"bread", "croissant"}:
+            score += 65.0
+        elif dom_category == "curry_meal" and key in {"curry", "biryani"}:
+            score += 65.0
 
         # 4. Color Profile Match
         color_profiles = item.get("color_profile", [])
@@ -824,7 +864,7 @@ def run_food_vision_classifier(image_base64: Optional[str] = None, hint: str = "
         # 5. Natural Staple Prioritization
         staples = {"rice", "banana", "apple", "tomato", "spinach", "milk", "bread", "paneer", "chicken", "potato", "orange", "curry", "biryani", "cheese", "egg", "broccoli", "carrot"}
         if key in staples:
-            score += 12.0
+            score += 15.0
         else:
             score += 4.0
 
