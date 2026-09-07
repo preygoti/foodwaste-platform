@@ -378,39 +378,39 @@ export default function InventoryPage() {
 
         {/* Action Button Group */}
         <div className="flex flex-col sm:flex-row sm:items-center gap-2 sm:gap-2.5 w-full sm:w-auto">
-          {/* Primary Add Item Button (Unified highlighted design on laptop & mobile) */}
+          {/* Add Item Button */}
           <button
             onClick={() => setShowAddModal(true)}
-            className="inline-flex items-center justify-center gap-2 px-4 py-2.5 sm:py-2 rounded-xl text-xs sm:text-sm font-bold bg-forest-800 text-wheat-50 hover:bg-forest-700 shadow-sm transition-all active:scale-[0.98] w-full sm:w-auto cursor-pointer border border-forest-900 order-1 sm:order-none"
+            className="inline-flex items-center justify-center gap-2 px-4 py-2 rounded-xl text-xs sm:text-sm font-semibold bg-white text-forest-800 border border-wheat-300 hover:bg-wheat-50 shadow-2xs transition-all active:scale-[0.98] w-full sm:w-auto cursor-pointer whitespace-nowrap order-1 sm:order-none"
           >
-            <Plus className="w-4 h-4 text-gold-400 shrink-0 stroke-[2.5]" />
-            <span>Add New Item</span>
+            <Plus className="w-4 h-4 text-forest-700 shrink-0" />
+            <span>Add Item</span>
           </button>
 
           {/* Smart Scan Tools Toolbar */}
-          <div className="grid grid-cols-3 sm:flex sm:items-center gap-1.5 sm:gap-2 w-full sm:w-auto order-2 sm:order-none">
+          <div className="grid grid-cols-3 sm:flex sm:items-center gap-1.5 sm:gap-2.5 w-full sm:w-auto order-2 sm:order-none">
             <button
               onClick={() => setShowAiVisionModal(true)}
-              className="inline-flex items-center justify-center gap-1.5 px-3 py-2 sm:py-2 rounded-xl text-xs sm:text-sm font-semibold bg-forest-50 text-forest-900 border border-forest-300 hover:bg-forest-100 shadow-2xs transition-all active:scale-[0.98] w-full sm:w-auto cursor-pointer"
+              className="inline-flex items-center justify-center gap-1.5 px-3.5 py-2 rounded-xl text-xs sm:text-sm font-semibold bg-white text-forest-800 border border-wheat-300 hover:bg-wheat-50 shadow-2xs transition-all active:scale-[0.98] w-full sm:w-auto cursor-pointer whitespace-nowrap"
             >
               <Sparkles className="w-4 h-4 text-amber-600 shrink-0" />
-              <span className="truncate">AI Scan</span>
+              <span>AI Scan</span>
             </button>
 
             <button
               onClick={() => setShowScannerModal(true)}
-              className="inline-flex items-center justify-center gap-1.5 px-3 py-2 sm:py-2 rounded-xl text-xs sm:text-sm font-medium bg-white text-forest-800 border border-wheat-300 hover:bg-wheat-50 shadow-2xs transition-all active:scale-[0.98] w-full sm:w-auto cursor-pointer"
+              className="inline-flex items-center justify-center gap-1.5 px-3.5 py-2 rounded-xl text-xs sm:text-sm font-medium bg-white text-forest-800 border border-wheat-300 hover:bg-wheat-50 shadow-2xs transition-all active:scale-[0.98] w-full sm:w-auto cursor-pointer whitespace-nowrap"
             >
               <Scan className="w-4 h-4 text-forest-600 shrink-0" />
-              <span className="truncate">Barcode</span>
+              <span>Barcode</span>
             </button>
 
             <button
               onClick={() => setShowCsvModal(true)}
-              className="inline-flex items-center justify-center gap-1.5 px-3 py-2 sm:py-2 rounded-xl text-xs sm:text-sm font-medium bg-white text-forest-800 border border-wheat-300 hover:bg-wheat-50 shadow-2xs transition-all active:scale-[0.98] w-full sm:w-auto cursor-pointer"
+              className="inline-flex items-center justify-center gap-1.5 px-3.5 py-2 rounded-xl text-xs sm:text-sm font-medium bg-white text-forest-800 border border-wheat-300 hover:bg-wheat-50 shadow-2xs transition-all active:scale-[0.98] w-full sm:w-auto cursor-pointer whitespace-nowrap"
             >
               <Upload className="w-4 h-4 text-forest-600 shrink-0" />
-              <span className="truncate">CSV Import</span>
+              <span>CSV Import</span>
             </button>
           </div>
         </div>
