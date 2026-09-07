@@ -18,9 +18,14 @@ import {
   Maximize2,
   Compass,
   ExternalLink,
+  Search,
+  ChevronDown,
+  Building2,
+  Target,
 } from "lucide-react";
 import {
   CITY_COORDINATES,
+  POPULAR_MAP_CITIES,
   DEFAULT_FALLBACK_COORDINATES,
   resolveInitialListingCoordinates,
   geocodeWithNominatim,
@@ -31,20 +36,20 @@ import {
 // Reliable Map Tile Providers (100% Free, No API Keys Required)
 const MAP_TILE_PROVIDERS = {
   osm: {
-    name: "Standard OpenStreetMap",
+    name: "Standard OSM",
     url: "https://tile.openstreetmap.org/{z}/{x}/{y}.png",
     attribution: '&copy; <a href="https://www.openstreetmap.org/copyright">OpenStreetMap</a> contributors',
     maxZoom: 19,
   },
   voyager: {
-    name: "Clean Voyager",
+    name: "Clean Light",
     url: "https://{s}.basemaps.cartocdn.com/rastertiles/voyager/{z}/{x}/{y}{r}.png",
     attribution: '&copy; <a href="https://carto.com/">CARTO</a>',
     subdomains: "abcd",
     maxZoom: 19,
   },
   topo: {
-    name: "Terrain / Topo",
+    name: "Terrain",
     url: "https://{s}.tile.opentopomap.org/{z}/{x}/{y}.png",
     attribution: '&copy; <a href="https://opentopomap.org">OpenTopoMap</a>',
     subdomains: "abc",
@@ -77,12 +82,17 @@ export default function RescueMap({ listings = [], onClaimListing, selectedRadiu
   const [activeListing, setActiveListing] = useState(null);
   const [routeStops, setRouteStops] = useState([]);
   const [showRouteDrawer, setShowRouteDrawer] = useState(false);
-  const [tileStyle, setTileStyle] = useState("osm"); // "osm" | "voyager" | "topo"
+  const [tileStyle, setTileStyle] = useState("voyager"); // Default to clean Voyager
   const [userLocation, setUserLocation] = useState(DEFAULT_FALLBACK_COORDINATES);
-  const [gpsStatus, setGpsStatus] = useState("detecting"); // "detecting" | "live" | "fallback"
+  const [locationLabel, setLocationLabel] = useState("Surat Hub (Default)");
+  const [gpsStatus, setGpsStatus] = useState("detecting"); // "detecting" | "live" | "custom" | "fallback"
   const [geocodedCoordsMap, setGeocodedCoordsMap] = useState({});
+  const [searchLocationQuery, setSearchLocationQuery] = useState("");
+  const [isSearchingLocation, setIsSearchingLocation] = useState(false);
+  const [locationSearchError, setLocationSearchError] = useState("");
+  const [isClickToSetBaseMode, setIsClickToSetBaseMode] = useState(false);
 
-  // 1. Detect Real Live User GPS Location on Mount
+  // 1. Initial Live GPS Detection on Mount
   useEffect(() => {
     let isMounted = true;
 
@@ -92,19 +102,21 @@ export default function RescueMap({ listings = [], onClaimListing, selectedRadiu
           if (!isMounted) return;
           const coords = [pos.coords.latitude, pos.coords.longitude];
           setUserLocation(coords);
+          setLocationLabel("Your Live GPS Location");
           setGpsStatus("live");
           if (mapInstanceRef.current) {
             mapInstanceRef.current.setView(coords, 13);
           }
         },
         (err) => {
-          console.warn("Live GPS unavailable or permission denied, using local smart center:", err.message);
+          console.warn("Live GPS unavailable, using smart city default:", err.message);
           if (!isMounted) return;
           setGpsStatus("fallback");
-          // If listings exist, center on the first listing's estimated coordinates
+          // If listings exist, center near the first listing
           if (listings.length > 0) {
             const firstCoords = resolveInitialListingCoordinates(listings[0], DEFAULT_FALLBACK_COORDINATES, 0);
             setUserLocation(firstCoords);
+            setLocationLabel(listings[0].pickup_location || "Near Listing Hub");
             if (mapInstanceRef.current) {
               mapInstanceRef.current.setView(firstCoords, 13);
             }
@@ -119,7 +131,7 @@ export default function RescueMap({ listings = [], onClaimListing, selectedRadiu
     return () => {
       isMounted = false;
     };
-  }, [listings.length]);
+  }, []);
 
   // 2. Asynchronously Geocode custom addresses with OpenStreetMap Nominatim API
   useEffect(() => {
@@ -160,7 +172,6 @@ export default function RescueMap({ listings = [], onClaimListing, selectedRadiu
   // 3. Map Listings with accurate coordinates and calculated distances
   const mappedListings = useMemo(() => {
     return listings.map((l, idx) => {
-      // Use geocoded coords if resolved, otherwise smart initial coordinates
       const coords = geocodedCoordsMap[l.id] || resolveInitialListingCoordinates(l, userLocation, idx);
       const distKm = calculateDistanceKm(userLocation[0], userLocation[1], coords[0], coords[1]);
 
@@ -189,12 +200,15 @@ export default function RescueMap({ listings = [], onClaimListing, selectedRadiu
     const map = L.map(mapContainerRef.current, {
       center: userLocation,
       zoom: 13,
-      zoomControl: true,
+      zoomControl: false, // Custom position control
       attributionControl: false,
     });
 
+    // Add zoom controls to bottom-right
+    L.control.zoom({ position: "bottomright" }).addTo(map);
+
     // Add Tile Layer
-    const provider = MAP_TILE_PROVIDERS[tileStyle] || MAP_TILE_PROVIDERS.osm;
+    const provider = MAP_TILE_PROVIDERS[tileStyle] || MAP_TILE_PROVIDERS.voyager;
     const tileLayer = L.tileLayer(provider.url, {
       maxZoom: provider.maxZoom,
       subdomains: provider.subdomains || "abc",
@@ -204,14 +218,21 @@ export default function RescueMap({ listings = [], onClaimListing, selectedRadiu
     tileLayerRef.current = tileLayer;
     mapInstanceRef.current = map;
 
-    // Create Marker and Overlay Layer Groups
+    // Create Marker Layer Group
     const markersGroup = L.layerGroup().addTo(map);
     markersGroupRef.current = markersGroup;
 
-    // Handle robust container sizing and prevent gray tiles
-    const invalidateTimer1 = setTimeout(() => map.invalidateSize(), 100);
-    const invalidateTimer2 = setTimeout(() => map.invalidateSize(), 350);
-    const invalidateTimer3 = setTimeout(() => map.invalidateSize(), 650);
+    // Click handler on map to set custom base pin
+    map.on("click", (e) => {
+      const clickedCoords = [e.latlng.lat, e.latlng.lng];
+      setUserLocation(clickedCoords);
+      setLocationLabel(`Custom Location (${e.latlng.lat.toFixed(3)}, ${e.latlng.lng.toFixed(3)})`);
+      setGpsStatus("custom");
+    });
+
+    // Invalidate size on load
+    setTimeout(() => map.invalidateSize(), 150);
+    setTimeout(() => map.invalidateSize(), 500);
 
     const resizeObserver = new ResizeObserver(() => {
       if (mapInstanceRef.current) {
@@ -221,9 +242,6 @@ export default function RescueMap({ listings = [], onClaimListing, selectedRadiu
     resizeObserver.observe(mapContainerRef.current);
 
     return () => {
-      clearTimeout(invalidateTimer1);
-      clearTimeout(invalidateTimer2);
-      clearTimeout(invalidateTimer3);
       resizeObserver.disconnect();
       map.remove();
       mapInstanceRef.current = null;
@@ -236,7 +254,7 @@ export default function RescueMap({ listings = [], onClaimListing, selectedRadiu
     if (!map || !tileLayerRef.current) return;
 
     map.removeLayer(tileLayerRef.current);
-    const provider = MAP_TILE_PROVIDERS[tileStyle] || MAP_TILE_PROVIDERS.osm;
+    const provider = MAP_TILE_PROVIDERS[tileStyle] || MAP_TILE_PROVIDERS.voyager;
     const newLayer = L.tileLayer(provider.url, {
       maxZoom: provider.maxZoom,
       subdomains: provider.subdomains || "abc",
@@ -264,12 +282,12 @@ export default function RescueMap({ listings = [], onClaimListing, selectedRadiu
     // User Base Pin DivIcon
     const isLiveGps = gpsStatus === "live";
     const userPinHtml = `
-      <div style="position: relative; width: 40px; height: 40px; display: flex; align-items: center; justify-content: center; cursor: pointer;">
+      <div style="position: relative; width: 42px; height: 42px; display: flex; align-items: center; justify-content: center; cursor: pointer;">
         <div style="position: absolute; inset: -4px; border-radius: 50%; background: ${
-          isLiveGps ? "rgba(34, 197, 94, 0.35)" : "rgba(31, 58, 46, 0.25)"
-        }; animation: ping 2s cubic-bezier(0, 0, 0.2, 1) infinite;"></div>
-        <div style="position: relative; background: #1a3325; color: #ffffff; width: 34px; height: 34px; border-radius: 50%; display: flex; align-items: center; justify-content: center; box-shadow: 0 4px 12px rgba(0,0,0,0.35); border: 2.5px solid ${
-          isLiveGps ? "#22c55e" : "#ffffff"
+          isLiveGps ? "rgba(34, 197, 94, 0.4)" : "rgba(31, 58, 46, 0.3)"
+        }; animation: ping 2.5s cubic-bezier(0, 0, 0.2, 1) infinite;"></div>
+        <div style="position: relative; background: #1a3325; color: #ffffff; width: 34px; height: 34px; border-radius: 50%; display: flex; align-items: center; justify-content: center; box-shadow: 0 4px 14px rgba(0,0,0,0.4); border: 2.5px solid ${
+          isLiveGps ? "#22c55e" : "#fbf0d9"
         };">
           <svg width="17" height="17" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><path d="M20 10c0 6-8 12-8 12s-8-6-8-12a8 8 0 0 1 16 0Z"/><circle cx="12" cy="10" r="3"/></svg>
         </div>
@@ -279,15 +297,15 @@ export default function RescueMap({ listings = [], onClaimListing, selectedRadiu
     const userIcon = L.divIcon({
       className: "custom-user-hub-pin",
       html: userPinHtml,
-      iconSize: [40, 40],
-      iconAnchor: [20, 20],
+      iconSize: [42, 42],
+      iconAnchor: [21, 21],
     });
 
     const userMarker = L.marker(userLocation, { icon: userIcon })
       .addTo(map)
       .bindTooltip(
         `<div style="font-family: inherit; font-size: 11px; font-weight: bold; color: #1a3325;">
-          ${isLiveGps ? "🎯 Your Live GPS Location" : "📍 Relief Distribution Base"}
+          ${isLiveGps ? "🎯 Live GPS Base" : "📍 " + locationLabel}
         </div>`,
         { permanent: false, direction: "top", offset: [0, -18] }
       );
@@ -300,15 +318,15 @@ export default function RescueMap({ listings = [], onClaimListing, selectedRadiu
         radius: selectedRadius * 1000,
         color: "#22c55e",
         weight: 1.5,
-        opacity: 0.8,
+        opacity: 0.85,
         dashArray: "6, 6",
         fillColor: "#15803d",
-        fillOpacity: 0.05,
+        fillOpacity: 0.06,
       }).addTo(map);
 
       radarCircleRef.current = circle;
     }
-  }, [userLocation, gpsStatus, selectedRadius]);
+  }, [userLocation, gpsStatus, selectedRadius, locationLabel]);
 
   // 8. Render Food Surplus Listing Markers
   useEffect(() => {
@@ -324,13 +342,13 @@ export default function RescueMap({ listings = [], onClaimListing, selectedRadiu
 
       const bgColor = isCritical ? "#dc2626" : isWarning ? "#d97706" : "#16a34a";
       const pulseHtml = isCritical
-        ? `<div style="position: absolute; inset: -4px; border-radius: 50%; background: rgba(220, 38, 38, 0.4); animation: pulse 1.5s cubic-bezier(0.4, 0, 0.6, 1) infinite;"></div>`
+        ? `<div style="position: absolute; inset: -4px; border-radius: 50%; background: rgba(220, 38, 38, 0.45); animation: pulse 1.5s cubic-bezier(0.4, 0, 0.6, 1) infinite;"></div>`
         : "";
 
       const iconHtml = `
-        <div style="position: relative; width: 34px; height: 34px; cursor: pointer;">
+        <div style="position: relative; width: 36px; height: 36px; cursor: pointer; transition: transform 0.15s ease;" class="hover:scale-110">
           ${pulseHtml}
-          <div style="position: relative; background: ${bgColor}; color: white; width: 34px; height: 34px; border-radius: 50%; display: flex; flex-direction: column; align-items: center; justify-content: center; box-shadow: 0 4px 10px rgba(0,0,0,0.3); border: 2.5px solid #ffffff; font-weight: bold; font-size: 11px; line-height: 1;">
+          <div style="position: relative; background: ${bgColor}; color: white; width: 36px; height: 36px; border-radius: 50%; display: flex; flex-direction: column; align-items: center; justify-content: center; box-shadow: 0 4px 12px rgba(0,0,0,0.35); border: 2.5px solid #ffffff; font-weight: bold; font-size: 11px; line-height: 1;">
             <span>${item.quantity > 99 ? "99+" : Math.round(item.quantity)}</span>
             <span style="font-size: 7px; opacity: 0.9; text-transform: uppercase;">${item.unit || "kg"}</span>
           </div>
@@ -340,19 +358,18 @@ export default function RescueMap({ listings = [], onClaimListing, selectedRadiu
       const markerIcon = L.divIcon({
         className: `rescue-pin-${item.id}`,
         html: iconHtml,
-        iconSize: [34, 34],
-        iconAnchor: [17, 17],
+        iconSize: [36, 36],
+        iconAnchor: [18, 18],
       });
 
       const marker = L.marker(item.coords, { icon: markerIcon }).addTo(markersGroup);
 
-      // Interactive Tooltip
       marker.bindTooltip(
-        `<div style="font-family: inherit; font-size: 11px;">
+        `<div style="font-family: inherit; font-size: 11px; line-height: 1.3;">
           <strong style="color: #1a3325; display: block;">${item.title}</strong>
           <span style="color: #666;">${item.business_name || "Food Donor"} &bull; ${item.distFormatted || "Nearby"}</span>
         </div>`,
-        { direction: "top", offset: [0, -16] }
+        { direction: "top", offset: [0, -18] }
       );
 
       marker.on("click", () => {
@@ -372,7 +389,6 @@ export default function RescueMap({ listings = [], onClaimListing, selectedRadiu
     }
 
     if (routeStops.length > 0) {
-      // Prioritize stops by expiry urgency (critical stops first)
       const sortedStops = [...routeStops].sort((a, b) => {
         const order = { critical: 1, warning: 2, fresh: 3 };
         return (order[a.urgency] || 3) - (order[b.urgency] || 3);
@@ -403,33 +419,76 @@ export default function RescueMap({ listings = [], onClaimListing, selectedRadiu
       map.setView(userLocation, 13);
     } else {
       const bounds = L.latLngBounds(points);
-      map.fitBounds(bounds, { padding: [50, 50], maxZoom: 15 });
+      map.fitBounds(bounds, { padding: [40, 40], maxZoom: 15 });
     }
   }, [userLocation, filteredListings]);
 
   // 11. Recenter to User's GPS Location
   const handleLocateMe = useCallback(() => {
+    setLocationSearchError("");
     if ("geolocation" in navigator) {
       navigator.geolocation.getCurrentPosition(
         (pos) => {
           const coords = [pos.coords.latitude, pos.coords.longitude];
           setUserLocation(coords);
+          setLocationLabel("Your Live GPS Location");
           setGpsStatus("live");
           if (mapInstanceRef.current) {
             mapInstanceRef.current.flyTo(coords, 14, { duration: 1.2 });
           }
         },
-        () => {
+        (err) => {
+          setLocationSearchError("GPS access denied. Pick a city from the list.");
           if (mapInstanceRef.current) {
             mapInstanceRef.current.flyTo(userLocation, 14, { duration: 1.2 });
           }
         },
-        { enableHighAccuracy: true }
+        { enableHighAccuracy: true, timeout: 6000 }
       );
     } else if (mapInstanceRef.current) {
       mapInstanceRef.current.flyTo(userLocation, 14, { duration: 1.2 });
     }
   }, [userLocation]);
+
+  // 12. Quick Select City
+  const handleSelectCity = (city) => {
+    setLocationSearchError("");
+    setUserLocation(city.coords);
+    setLocationLabel(city.name);
+    setGpsStatus("custom");
+    if (mapInstanceRef.current) {
+      mapInstanceRef.current.flyTo(city.coords, 13, { duration: 1.2 });
+    }
+  };
+
+  // 13. Search Custom Location
+  const handleSearchLocation = async (e) => {
+    e?.preventDefault?.();
+    const query = searchLocationQuery.trim();
+    if (!query) return;
+
+    setLocationSearchError("");
+    setIsSearchingLocation(true);
+
+    try {
+      const coords = await geocodeWithNominatim(query);
+      if (coords) {
+        setUserLocation(coords);
+        setLocationLabel(query);
+        setGpsStatus("custom");
+        setSearchLocationQuery("");
+        if (mapInstanceRef.current) {
+          mapInstanceRef.current.flyTo(coords, 13, { duration: 1.2 });
+        }
+      } else {
+        setLocationSearchError(`Could not find coordinates for "${query}". Try adding city name.`);
+      }
+    } catch {
+      setLocationSearchError("Network timeout during geocode search.");
+    } finally {
+      setIsSearchingLocation(false);
+    }
+  };
 
   const toggleRouteStop = (item) => {
     setRouteStops((prev) => {
@@ -482,295 +541,338 @@ export default function RescueMap({ listings = [], onClaimListing, selectedRadiu
   }, [routeStops, userLocation]);
 
   return (
-    <div className="relative w-full h-[580px] sm:h-[640px] rounded-2xl overflow-hidden border border-wheat-200 shadow-sm bg-wheat-100">
-      {/* Map Canvas */}
-      <div ref={mapContainerRef} className="w-full h-full z-0" />
-
-      {/* Top Left: Radar Status & Legend */}
-      <div className="absolute top-3 left-3 z-[1000] bg-white/95 backdrop-blur-md border border-wheat-200 p-2.5 sm:p-3 rounded-xl shadow-sm text-xs font-mono space-y-1.5 pointer-events-auto">
-        <div className="font-semibold text-forest-800 text-[11px] uppercase tracking-wider mb-1 flex items-center justify-between gap-2">
-          <div className="flex items-center gap-1.5">
-            <Layers className="w-3.5 h-3.5 text-forest-600" />
-            <span>Live Radar ({filteredListings.length} Active)</span>
-          </div>
-          <span className={`w-2 h-2 rounded-full ${gpsStatus === "live" ? "bg-emerald-500 animate-pulse" : "bg-amber-400"}`} title={gpsStatus === "live" ? "GPS Live" : "Smart Estimated Hub"} />
-        </div>
-        <div className="flex items-center gap-2 text-[11px]">
-          <span className="w-2.5 h-2.5 rounded-full bg-rose-600 animate-pulse"></span>
-          <span className="text-forest-800">Critical Expiry (&lt;24h)</span>
-        </div>
-        <div className="flex items-center gap-2 text-[11px]">
-          <span className="w-2.5 h-2.5 rounded-full bg-amber-500"></span>
-          <span className="text-forest-800">Watch (&lt;72h)</span>
-        </div>
-        <div className="flex items-center gap-2 text-[11px]">
-          <span className="w-2.5 h-2.5 rounded-full bg-forest-600"></span>
-          <span className="text-forest-800">Fresh Stock</span>
-        </div>
-      </div>
-
-      {/* Top Right: Map Controls & Tile Switcher */}
-      <div className="absolute top-3 right-3 z-[1000] flex flex-col gap-2 pointer-events-auto">
-        <button
-          onClick={handleLocateMe}
-          title="Re-center onto My Live GPS Location"
-          className="bg-white/95 backdrop-blur-md hover:bg-white text-forest-800 p-2.5 rounded-xl border border-wheat-200 shadow-sm transition-all flex items-center gap-1.5 text-xs font-semibold"
-        >
-          <LocateFixed className="w-4 h-4 text-emerald-600" />
-          <span className="hidden sm:inline">My GPS</span>
-        </button>
-
-        <button
-          onClick={handleFitAll}
-          title="Fit all donation pins in view"
-          className="bg-white/95 backdrop-blur-md hover:bg-white text-forest-800 p-2.5 rounded-xl border border-wheat-200 shadow-sm transition-all flex items-center gap-1.5 text-xs font-semibold"
-        >
-          <Maximize2 className="w-4 h-4 text-forest-600" />
-          <span className="hidden sm:inline">Fit All</span>
-        </button>
-
-        <div className="bg-white/95 backdrop-blur-md rounded-xl border border-wheat-200 shadow-sm p-1 flex gap-1">
-          {Object.entries(MAP_TILE_PROVIDERS).map(([key, prov]) => (
-            <button
-              key={key}
-              onClick={() => setTileStyle(key)}
-              className={`px-2 py-1 text-[10px] font-mono rounded-lg transition-all ${
-                tileStyle === key
-                  ? "bg-forest-800 text-wheat-50 font-bold"
-                  : "text-forest-800/70 hover:text-forest-800"
-              }`}
-            >
-              {key === "osm" ? "OSM" : key === "voyager" ? "Clean" : "Topo"}
-            </button>
-          ))}
-        </div>
-      </div>
-
-      {/* Route Planner Floating Trigger */}
-      {routeStops.length > 0 && !showRouteDrawer && (
-        <button
-          onClick={() => setShowRouteDrawer(true)}
-          className="absolute bottom-4 left-4 z-[1000] bg-forest-800 text-wheat-50 px-4 py-2.5 rounded-xl text-xs font-semibold shadow-md flex items-center gap-2 hover:bg-forest-700 transition-all animate-bounce"
-        >
-          <Route className="w-4 h-4 text-gold-400" />
-          <span>Active Route ({routeStops.length} stops &bull; {routeStats.totalDistKm} km)</span>
-        </button>
-      )}
-
-      {/* Selected Listing Popover Card */}
-      {activeListing && (
-        <div className="absolute bottom-4 right-4 max-w-sm w-full z-[1000] bg-white border border-wheat-200 rounded-2xl p-4 shadow-lg animate-in fade-in slide-in-from-bottom-2 duration-200">
-          <div className="flex items-start justify-between gap-2">
+    <div className="space-y-2.5">
+      {/* 📍 Interactive Location Control Bar */}
+      <div className="bg-white border border-wheat-200 rounded-xl p-2.5 sm:p-3 shadow-2xs space-y-2 text-xs">
+        <div className="flex flex-col lg:flex-row items-stretch lg:items-center justify-between gap-2.5">
+          {/* Active Center Hub Indicator */}
+          <div className="flex items-center gap-2 text-forest-800">
+            <div className={`p-1.5 rounded-lg ${gpsStatus === "live" ? "bg-emerald-100 text-emerald-700" : "bg-forest-100 text-forest-800"}`}>
+              <Target className="w-4 h-4" />
+            </div>
             <div>
-              <div className="flex items-center gap-1.5 mb-1 flex-wrap">
-                <span className={`inline-flex items-center gap-1 text-[10px] font-mono font-bold uppercase px-2 py-0.5 rounded-full ${
-                  activeListing.urgency === "critical"
-                    ? "bg-rose-100 text-rose-800 border border-rose-200"
-                    : activeListing.urgency === "warning"
-                    ? "bg-amber-100 text-amber-800 border border-amber-200"
-                    : "bg-forest-50 text-forest-800 border border-forest-100"
+              <div className="flex items-center gap-1.5 font-semibold text-xs sm:text-sm">
+                <span>Center Location:</span>
+                <span className="text-forest-700 underline decoration-dotted">{locationLabel}</span>
+                <span className={`text-[10px] font-mono px-1.5 py-0.5 rounded-full ${
+                  gpsStatus === "live" ? "bg-emerald-100 text-emerald-800 font-bold" : "bg-wheat-200 text-forest-800"
                 }`}>
-                  {activeListing.urgency === "critical" ? (
-                    <>
-                      <Flame className="w-3 h-3 text-rose-600" />
-                      <span>Urgent (&lt;24h)</span>
-                    </>
-                  ) : (
-                    <>
-                      <Clock className="w-3 h-3" />
-                      <span>Expires {activeListing.expiry_date}</span>
-                    </>
-                  )}
+                  {gpsStatus === "live" ? "GPS Active" : "Custom Hub"}
                 </span>
-                {activeListing.distFormatted && (
-                  <span className="text-[10px] font-mono font-semibold px-2 py-0.5 rounded-full bg-emerald-50 text-emerald-800 border border-emerald-200">
-                    📍 {activeListing.distFormatted}
-                  </span>
-                )}
               </div>
-
-              <h4 className="font-display font-semibold text-forest-800 text-base">
-                {activeListing.title}
-              </h4>
-              <p className="text-xs text-forest-800/60 flex items-center gap-1 mt-0.5">
-                <MapPin className="w-3.5 h-3.5 text-forest-600 shrink-0" />
-                <span className="truncate">{activeListing.pickup_location || "Storefront Location"}</span>
+              <p className="text-[11px] text-forest-800/60">
+                Click anywhere on map to move your radar center & recalculate nearby food distances.
               </p>
             </div>
+          </div>
+
+          {/* Quick Action Buttons */}
+          <div className="flex items-center gap-1.5 flex-wrap shrink-0">
+            <button
+              onClick={handleLocateMe}
+              className="inline-flex items-center gap-1.5 px-3 py-1.5 bg-emerald-50 text-emerald-800 hover:bg-emerald-100 border border-emerald-200 rounded-lg font-semibold text-xs transition-colors shadow-2xs"
+              title="Detect live GPS location"
+            >
+              <LocateFixed className="w-3.5 h-3.5 text-emerald-600" />
+              <span>Use Live GPS</span>
+            </button>
 
             <button
-              onClick={() => setActiveListing(null)}
-              className="text-forest-800/40 hover:text-forest-800 p-1 rounded-lg"
+              onClick={handleFitAll}
+              className="inline-flex items-center gap-1.5 px-3 py-1.5 bg-wheat-100 hover:bg-wheat-200 text-forest-800 rounded-lg font-semibold text-xs transition-colors border border-wheat-300/60 shadow-2xs"
+              title="Show all food pins on screen"
             >
-              <X className="w-4 h-4" />
+              <Maximize2 className="w-3.5 h-3.5 text-forest-600" />
+              <span>Fit All ({filteredListings.length})</span>
             </button>
-          </div>
-
-          <div className="flex items-center justify-between py-2.5 my-2.5 border-y border-wheat-100 text-xs font-mono">
-            <div>
-              <span className="text-forest-800/50 block text-[10px]">AVAILABLE SURPLUS</span>
-              <strong className="text-forest-800 text-sm font-bold">
-                {activeListing.quantity} {activeListing.unit}
-              </strong>
-            </div>
-            <div className="text-right">
-              <span className="text-forest-800/50 block text-[10px]">DONOR</span>
-              <span className="text-forest-800 font-semibold">{activeListing.business_name || "Food Partner"}</span>
-            </div>
-          </div>
-
-          <div className="space-y-2">
-            <div className="flex items-center gap-2">
-              <button
-                onClick={() => toggleRouteStop(activeListing)}
-                className={`flex-1 inline-flex items-center justify-center gap-1.5 py-2 px-3 rounded-xl text-xs font-semibold border transition-all ${
-                  routeStops.some((s) => s.id === activeListing.id)
-                    ? "bg-forest-50 border-forest-600 text-forest-800 font-bold"
-                    : "bg-white border-wheat-200 text-forest-800 hover:bg-wheat-50"
-                }`}
-              >
-                <Route className="w-3.5 h-3.5 text-forest-600" />
-                <span>{routeStops.some((s) => s.id === activeListing.id) ? "In Route Plan ✓" : "+ Add to Route"}</span>
-              </button>
-
-              <button
-                onClick={() => {
-                  onClaimListing && onClaimListing(activeListing);
-                  setActiveListing(null);
-                }}
-                className="flex-1 inline-flex items-center justify-center gap-1.5 py-2 px-3 bg-forest-800 text-wheat-50 rounded-xl text-xs font-semibold hover:bg-forest-700 shadow-sm transition-all"
-              >
-                <Share2 className="w-3.5 h-3.5 text-gold-400" />
-                <span>Claim Surplus</span>
-              </button>
-            </div>
-
-            {/* Google Maps Turn-by-Turn Direction Link */}
-            <a
-              href={`https://www.google.com/maps/dir/?api=1&destination=${activeListing.coords[0]},${activeListing.coords[1]}`}
-              target="_blank"
-              rel="noopener noreferrer"
-              className="w-full inline-flex items-center justify-center gap-1.5 py-1.5 text-[11px] text-forest-700 hover:text-forest-900 font-mono font-medium hover:underline"
-            >
-              <Navigation className="w-3 h-3 text-emerald-600" />
-              <span>Open in Google Maps GPS Navigation</span>
-              <ExternalLink className="w-3 h-3 opacity-60" />
-            </a>
           </div>
         </div>
-      )}
 
-      {/* Multi-Stop Route Drawer */}
-      {showRouteDrawer && (
-        <div className="absolute top-0 right-0 bottom-0 w-full sm:w-96 z-[1000] bg-white border-l border-wheat-200 shadow-xl flex flex-col animate-in slide-in-from-right duration-200">
-          <div className="p-4 border-b border-wheat-100 flex items-center justify-between">
-            <div className="flex items-center gap-2">
-              <div className="w-8 h-8 rounded-lg bg-forest-800 text-wheat-50 flex items-center justify-center">
-                <Route className="w-4 h-4 text-gold-400" />
-              </div>
-              <div>
-                <h3 className="font-display font-semibold text-forest-800 text-sm">
-                  Smart Multi-Stop Route
-                </h3>
-                <p className="text-[11px] text-forest-800/60 font-mono">
-                  {routeStops.length} collection stop{routeStops.length === 1 ? "" : "s"}
-                </p>
-              </div>
-            </div>
-            <button
-              onClick={() => setShowRouteDrawer(false)}
-              className="text-forest-800/50 hover:text-forest-800 p-1.5 rounded-lg"
-            >
-              <X className="w-4 h-4" />
-            </button>
-          </div>
+        {/* City Quick Pills & Address Search */}
+        <div className="flex flex-col sm:flex-row items-stretch sm:items-center gap-2 pt-2 border-t border-wheat-100">
+          <span className="text-forest-800/60 font-mono text-[11px] uppercase tracking-wider shrink-0 flex items-center gap-1">
+            <Building2 className="w-3 h-3" /> Quick Cities:
+          </span>
 
-          {/* Route Metrics Summary */}
-          <div className="p-3.5 bg-wheat-50/50 border-b border-wheat-100 grid grid-cols-3 gap-2 text-center text-xs font-mono">
-            <div className="bg-white p-2 rounded-xl border border-wheat-200/80">
-              <span className="text-[10px] text-forest-800/50 uppercase block">Distance</span>
-              <strong className="text-forest-800 font-bold text-sm">{routeStats.totalDistKm} km</strong>
-            </div>
-            <div className="bg-white p-2 rounded-xl border border-wheat-200/80">
-              <span className="text-[10px] text-forest-800/50 uppercase block">Est. Time</span>
-              <strong className="text-forest-800 font-bold text-sm">{routeStats.estMins} mins</strong>
-            </div>
-            <div className="bg-white p-2 rounded-xl border border-wheat-200/80">
-              <span className="text-[10px] text-forest-800/50 uppercase block">Total Meals</span>
-              <strong className="text-forest-800 font-bold text-sm">~{routeStats.totalMeals}</strong>
-            </div>
-          </div>
-
-          {/* Stop-by-Stop Itinerary */}
-          <div className="flex-1 overflow-y-auto p-4 space-y-3">
-            {/* Origin Hub */}
-            <div className="flex items-start gap-3 text-xs">
-              <div className="w-6 h-6 rounded-full bg-forest-800 text-wheat-50 flex items-center justify-center font-mono font-bold text-[10px] shrink-0 mt-0.5">
-                0
-              </div>
-              <div className="flex-1">
-                <span className="font-semibold text-forest-800 block">
-                  {gpsStatus === "live" ? "Your Live GPS Location (Start)" : "Distribution Base (Start)"}
-                </span>
-                <span className="text-forest-800/50 text-[11px]">Vehicles dispatch location</span>
-              </div>
-            </div>
-
-            {routeStops.map((stop, i) => (
-              <div key={stop.id} className="relative flex items-start gap-3 text-xs bg-wheat-50/30 p-2.5 rounded-xl border border-wheat-200/60">
-                <div className={`w-6 h-6 rounded-full text-white flex items-center justify-center font-mono font-bold text-[10px] shrink-0 mt-0.5 ${
-                  stop.urgency === "critical" ? "bg-rose-600" : stop.urgency === "warning" ? "bg-amber-600" : "bg-forest-600"
-                }`}>
-                  {i + 1}
-                </div>
-                <div className="flex-1 min-w-0">
-                  <div className="flex items-center justify-between gap-1">
-                    <h5 className="font-semibold text-forest-800 truncate">{stop.title}</h5>
-                    <span className="font-mono text-[10px] font-bold text-forest-700 bg-wheat-100 px-1.5 py-0.2 rounded">
-                      {stop.quantity} {stop.unit}
-                    </span>
-                  </div>
-                  <p className="text-forest-800/50 text-[11px] truncate mt-0.5">{stop.pickup_location}</p>
-                  {stop.distFormatted && (
-                    <span className="text-[10px] font-mono text-emerald-700 block mt-0.5">
-                      📍 {stop.distFormatted}
-                    </span>
-                  )}
-                </div>
-                <button
-                  onClick={() => toggleRouteStop(stop)}
-                  className="text-tomato-500 hover:text-tomato-700 p-1"
-                  title="Remove from route"
-                >
-                  <X className="w-3.5 h-3.5" />
-                </button>
-              </div>
+          <div className="flex items-center gap-1.5 overflow-x-auto pb-1 sm:pb-0 flex-1 no-scrollbar">
+            {POPULAR_MAP_CITIES.map((city) => (
+              <button
+                key={city.name}
+                onClick={() => handleSelectCity(city)}
+                className={`px-2.5 py-1 rounded-lg text-xs font-semibold whitespace-nowrap transition-all border ${
+                  locationLabel.toLowerCase().includes(city.name.toLowerCase())
+                    ? "bg-forest-800 text-wheat-50 border-forest-800 shadow-2xs"
+                    : "bg-white text-forest-800/80 border-wheat-200 hover:bg-wheat-50"
+                }`}
+              >
+                {city.name}
+              </button>
             ))}
           </div>
 
-          {/* Action Footer */}
-          <div className="p-4 border-t border-wheat-100 bg-white space-y-2">
-            {googleMapsRouteUrl && (
+          {/* Search Location Input */}
+          <form onSubmit={handleSearchLocation} className="flex items-center gap-1.5 shrink-0 w-full sm:w-auto">
+            <div className="relative flex-1 sm:w-48">
+              <input
+                type="text"
+                placeholder="Type any city/area..."
+                value={searchLocationQuery}
+                onChange={(e) => setSearchLocationQuery(e.target.value)}
+                className="w-full pl-7 pr-2.5 py-1 text-xs border border-wheat-200 rounded-lg focus:outline-none focus:ring-1 focus:ring-forest-400 bg-white"
+              />
+              <Search className="w-3.5 h-3.5 text-forest-800/40 absolute left-2 top-1/2 -translate-y-1/2" />
+            </div>
+            <button
+              type="submit"
+              disabled={isSearchingLocation}
+              className="px-2.5 py-1 bg-forest-800 text-wheat-50 rounded-lg text-xs font-semibold hover:bg-forest-700 disabled:opacity-50"
+            >
+              {isSearchingLocation ? "..." : "Go"}
+            </button>
+          </form>
+        </div>
+
+        {locationSearchError && (
+          <div className="text-[11px] text-rose-600 bg-rose-50 px-2.5 py-1 rounded-md border border-rose-200 flex items-center gap-1.5">
+            <AlertTriangle className="w-3.5 h-3.5 shrink-0" />
+            <span>{locationSearchError}</span>
+          </div>
+        )}
+      </div>
+
+      {/* 🗺️ Main Map Canvas Container */}
+      <div className="relative w-full h-[540px] sm:h-[620px] rounded-2xl overflow-hidden border border-wheat-200 shadow-sm bg-wheat-100">
+        <div ref={mapContainerRef} className="w-full h-full z-0" />
+
+        {/* Top Left: Legend */}
+        <div className="absolute top-3 left-3 z-[1000] bg-white/95 backdrop-blur-md border border-wheat-200 p-2.5 rounded-xl shadow-sm text-xs font-mono space-y-1 pointer-events-auto">
+          <div className="font-semibold text-forest-800 text-[11px] uppercase tracking-wider mb-1 flex items-center justify-between gap-2">
+            <div className="flex items-center gap-1.5">
+              <Layers className="w-3.5 h-3.5 text-forest-600" />
+              <span>Radar ({filteredListings.length} Active)</span>
+            </div>
+            <span className={`w-2 h-2 rounded-full ${gpsStatus === "live" ? "bg-emerald-500 animate-pulse" : "bg-forest-600"}`} />
+          </div>
+          <div className="flex items-center gap-2 text-[11px]">
+            <span className="w-2.5 h-2.5 rounded-full bg-rose-600 animate-pulse"></span>
+            <span className="text-forest-800">Critical (&lt;24h)</span>
+          </div>
+          <div className="flex items-center gap-2 text-[11px]">
+            <span className="w-2.5 h-2.5 rounded-full bg-amber-500"></span>
+            <span className="text-forest-800">Watch (&lt;72h)</span>
+          </div>
+          <div className="flex items-center gap-2 text-[11px]">
+            <span className="w-2.5 h-2.5 rounded-full bg-forest-600"></span>
+            <span className="text-forest-800">Fresh Stock</span>
+          </div>
+        </div>
+
+        {/* Top Right: Tile Style Switcher */}
+        <div className="absolute top-3 right-3 z-[1000] flex flex-col gap-1.5 pointer-events-auto">
+          <div className="bg-white/95 backdrop-blur-md rounded-xl border border-wheat-200 shadow-sm p-1 flex gap-1">
+            {Object.entries(MAP_TILE_PROVIDERS).map(([key, prov]) => (
+              <button
+                key={key}
+                onClick={() => setTileStyle(key)}
+                className={`px-2 py-1 text-[10px] font-mono rounded-lg transition-all ${
+                  tileStyle === key
+                    ? "bg-forest-800 text-wheat-50 font-bold"
+                    : "text-forest-800/70 hover:text-forest-800"
+                }`}
+              >
+                {key === "osm" ? "OSM" : key === "voyager" ? "Clean" : "Topo"}
+              </button>
+            ))}
+          </div>
+        </div>
+
+        {/* Route Planner Floating Trigger */}
+        {routeStops.length > 0 && !showRouteDrawer && (
+          <button
+            onClick={() => setShowRouteDrawer(true)}
+            className="absolute bottom-4 left-4 z-[1000] bg-forest-800 text-wheat-50 px-4 py-2.5 rounded-xl text-xs font-semibold shadow-md flex items-center gap-2 hover:bg-forest-700 transition-all animate-bounce"
+          >
+            <Route className="w-4 h-4 text-gold-400" />
+            <span>Active Route ({routeStops.length} stops &bull; {routeStats.totalDistKm} km)</span>
+          </button>
+        )}
+
+        {/* Selected Listing Popover Card */}
+        {activeListing && (
+          <div className="absolute bottom-4 right-4 max-w-sm w-[90%] sm:w-80 z-[1000] bg-white border border-wheat-200 rounded-2xl p-4 shadow-lg animate-in fade-in slide-in-from-bottom-2 duration-200">
+            <div className="flex items-start justify-between gap-2">
+              <div>
+                <div className="flex items-center gap-1.5 mb-1 flex-wrap">
+                  <span className={`inline-flex items-center gap-1 text-[10px] font-mono font-bold uppercase px-2 py-0.5 rounded-full ${
+                    activeListing.urgency === "critical"
+                      ? "bg-rose-100 text-rose-800 border border-rose-200"
+                      : activeListing.urgency === "warning"
+                      ? "bg-amber-100 text-amber-800 border border-amber-200"
+                      : "bg-forest-50 text-forest-800 border border-forest-100"
+                  }`}>
+                    {activeListing.urgency === "critical" ? (
+                      <>
+                        <Flame className="w-3 h-3 text-rose-600" />
+                        <span>Urgent (&lt;24h)</span>
+                      </>
+                    ) : (
+                      <>
+                        <Clock className="w-3 h-3" />
+                        <span>Expires {activeListing.expiry_date}</span>
+                      </>
+                    )}
+                  </span>
+                  {activeListing.distFormatted && (
+                    <span className="text-[10px] font-mono font-semibold px-2 py-0.5 rounded-full bg-emerald-50 text-emerald-800 border border-emerald-200">
+                      📍 {activeListing.distFormatted}
+                    </span>
+                  )}
+                </div>
+
+                <h4 className="font-display font-semibold text-forest-800 text-base">
+                  {activeListing.title}
+                </h4>
+                <p className="text-xs text-forest-800/60 flex items-center gap-1 mt-0.5">
+                  <MapPin className="w-3.5 h-3.5 text-forest-600 shrink-0" />
+                  <span className="truncate">{activeListing.pickup_location || "Storefront Location"}</span>
+                </p>
+              </div>
+
+              <button
+                onClick={() => setActiveListing(null)}
+                className="p-1 text-forest-800/40 hover:text-forest-800 rounded-lg hover:bg-wheat-100 transition-colors"
+              >
+                <X className="w-4 h-4" />
+              </button>
+            </div>
+
+            <div className="mt-3 pt-3 border-t border-wheat-100 flex items-center justify-between text-xs font-mono">
+              <span className="text-forest-800 font-bold text-sm">
+                {activeListing.quantity} {activeListing.unit}
+              </span>
+              <span className="text-forest-800/60 capitalize">
+                Category: {activeListing.category}
+              </span>
+            </div>
+
+            <div className="mt-3 grid grid-cols-2 gap-2">
+              <a
+                href={`https://www.google.com/maps/dir/?api=1&destination=${activeListing.coords[0]},${activeListing.coords[1]}`}
+                target="_blank"
+                rel="noreferrer"
+                className="inline-flex items-center justify-center gap-1.5 px-3 py-2 rounded-xl text-xs font-semibold bg-wheat-100 hover:bg-wheat-200 text-forest-800 transition-all border border-wheat-300/60"
+              >
+                <ExternalLink className="w-3.5 h-3.5" />
+                <span>Directions</span>
+              </a>
+
+              <button
+                onClick={() => {
+                  toggleRouteStop(activeListing);
+                }}
+                className={`inline-flex items-center justify-center gap-1.5 px-3 py-2 rounded-xl text-xs font-semibold transition-all border ${
+                  routeStops.some((s) => s.id === activeListing.id)
+                    ? "bg-rose-50 text-rose-700 border-rose-200 hover:bg-rose-100"
+                    : "bg-forest-800 text-wheat-50 border-forest-800 hover:bg-forest-700"
+                }`}
+              >
+                <Route className="w-3.5 h-3.5" />
+                <span>
+                  {routeStops.some((s) => s.id === activeListing.id) ? "Remove Stop" : "Add to Route"}
+                </span>
+              </button>
+            </div>
+          </div>
+        )}
+
+        {/* Route Drawer Overlay */}
+        {showRouteDrawer && (
+          <div className="absolute inset-y-0 right-0 w-full sm:w-88 z-[1001] bg-white border-l border-wheat-200 shadow-2xl flex flex-col animate-in slide-in-from-right duration-200">
+            <div className="p-4 border-b border-wheat-200 flex items-center justify-between bg-forest-900 text-wheat-50">
+              <div className="flex items-center gap-2">
+                <Route className="w-5 h-5 text-gold-400" />
+                <div>
+                  <h3 className="font-semibold text-sm">Rescue Route Dispatch</h3>
+                  <p className="text-[11px] text-wheat-200/70">{routeStops.length} Stops Planned</p>
+                </div>
+              </div>
+              <button
+                onClick={() => setShowRouteDrawer(false)}
+                className="p-1 text-wheat-200 hover:text-white rounded-lg hover:bg-white/10"
+              >
+                <X className="w-5 h-5" />
+              </button>
+            </div>
+
+            {/* Route Stats Summary */}
+            <div className="p-4 bg-wheat-50/50 border-b border-wheat-200 grid grid-cols-3 gap-2 text-center">
+              <div className="bg-white p-2 rounded-xl border border-wheat-200">
+                <span className="block text-[10px] font-mono text-forest-800/60 uppercase">Distance</span>
+                <span className="font-bold text-forest-800 text-sm">{routeStats.totalDistKm} km</span>
+              </div>
+              <div className="bg-white p-2 rounded-xl border border-wheat-200">
+                <span className="block text-[10px] font-mono text-forest-800/60 uppercase">Est. Meals</span>
+                <span className="font-bold text-emerald-700 text-sm">~{routeStats.totalMeals}</span>
+              </div>
+              <div className="bg-white p-2 rounded-xl border border-wheat-200">
+                <span className="block text-[10px] font-mono text-forest-800/60 uppercase">Est. Time</span>
+                <span className="font-bold text-forest-800 text-sm">{routeStats.estMins}m</span>
+              </div>
+            </div>
+
+            {/* Stop Sequence List */}
+            <div className="flex-1 overflow-y-auto p-4 space-y-2.5">
+              <div className="flex items-center gap-2 text-xs font-semibold text-forest-800">
+                <span className="w-5 h-5 rounded-full bg-forest-800 text-wheat-50 flex items-center justify-center text-[10px] font-mono">0</span>
+                <span>Base Hub ({locationLabel})</span>
+              </div>
+
+              {routeStops.map((stop, idx) => (
+                <div
+                  key={stop.id}
+                  className="bg-white border border-wheat-200 rounded-xl p-3 shadow-2xs space-y-1.5 relative group"
+                >
+                  <div className="flex items-start justify-between gap-2">
+                    <div className="flex items-center gap-2">
+                      <span className="w-5 h-5 rounded-full bg-emerald-600 text-white flex items-center justify-center text-[10px] font-mono font-bold shrink-0">
+                        {idx + 1}
+                      </span>
+                      <span className="font-semibold text-xs text-forest-800">{stop.title}</span>
+                    </div>
+                    <button
+                      onClick={() => toggleRouteStop(stop)}
+                      className="text-forest-800/40 hover:text-rose-600 p-1"
+                      title="Remove stop"
+                    >
+                      <X className="w-3.5 h-3.5" />
+                    </button>
+                  </div>
+                  <p className="text-[11px] text-forest-800/60 pl-7">{stop.pickup_location || "Storefront"}</p>
+                </div>
+              ))}
+            </div>
+
+            {/* Google Maps External Dispatch */}
+            <div className="p-4 border-t border-wheat-200 bg-white space-y-2">
               <a
                 href={googleMapsRouteUrl}
                 target="_blank"
-                rel="noopener noreferrer"
-                className="w-full inline-flex items-center justify-center gap-2 bg-forest-800 text-wheat-50 py-3 rounded-xl text-xs font-semibold hover:bg-forest-700 shadow-sm transition-all"
+                rel="noreferrer"
+                className="w-full inline-flex items-center justify-center gap-2 px-4 py-3 rounded-xl text-xs sm:text-sm font-semibold bg-emerald-700 text-white hover:bg-emerald-800 transition-all shadow-sm"
               >
-                <Navigation className="w-4 h-4 text-gold-400" />
-                <span>Launch Driver Turn-by-Turn GPS</span>
-                <ExternalLink className="w-3.5 h-3.5 opacity-70" />
+                <Navigation className="w-4 h-4" />
+                <span>Launch Turn-by-Turn GPS</span>
               </a>
-            )}
-            <button
-              onClick={() => setRouteStops([])}
-              className="w-full text-center text-xs text-forest-800/50 hover:text-forest-800 py-1"
-            >
-              Clear Route Plan
-            </button>
+              <button
+                onClick={() => setRouteStops([])}
+                className="w-full text-center text-xs text-forest-800/50 hover:text-forest-800 py-1"
+              >
+                Clear Entire Route
+              </button>
+            </div>
           </div>
-        </div>
-      )}
+        )}
+      </div>
     </div>
   );
 }
