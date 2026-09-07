@@ -948,7 +948,7 @@ export default function InventoryPage() {
               </button>
             </div>
 
-            <form onSubmit={handleCreateItem} className="p-4 sm:p-6 space-y-4 overflow-y-auto flex-1">
+            <form onSubmit={handleCreateItem} className="p-4 sm:p-6 space-y-3.5 sm:space-y-4 overflow-y-auto flex-1">
               {addError && (
                 <div className="p-3 rounded-lg bg-tomato-500/10 border border-tomato-500/30 text-tomato-600 text-xs font-medium">
                   {addError}
@@ -956,7 +956,7 @@ export default function InventoryPage() {
               )}
 
               <div>
-                <label className="block text-xs uppercase tracking-wide text-forest-800/70 font-semibold mb-1">
+                <label className="block text-[11px] sm:text-xs uppercase tracking-wider text-forest-800/70 font-semibold mb-1">
                   Item Name *
                 </label>
                 <input
@@ -965,13 +965,13 @@ export default function InventoryPage() {
                   placeholder="e.g. Fresh Milk, Sourdough Loaf"
                   value={form.name}
                   onChange={updateForm("name")}
-                  className="w-full border border-wheat-200 rounded-lg px-3 py-2 h-10 text-xs sm:text-sm text-forest-900 placeholder:text-forest-800/40 focus:outline-none focus:ring-2 focus:ring-forest-400 bg-white"
+                  className="w-full border border-wheat-200 rounded-lg px-3 py-2 h-10 text-xs sm:text-sm text-forest-900 placeholder:text-forest-800/40 focus:outline-none focus:ring-2 focus:ring-forest-400 bg-white box-border"
                 />
               </div>
 
               <div className="grid grid-cols-1 sm:grid-cols-2 gap-3">
                 <div>
-                  <label className="block text-xs uppercase tracking-wide text-forest-800/70 font-semibold mb-1">
+                  <label className="block text-[11px] sm:text-xs uppercase tracking-wider text-forest-800/70 font-semibold mb-1">
                     Category
                   </label>
                   <select
@@ -998,9 +998,9 @@ export default function InventoryPage() {
                 />
               </div>
 
-              <div className="grid grid-cols-1 sm:grid-cols-2 gap-3">
+              <div className="grid grid-cols-2 gap-2.5 sm:gap-3">
                 <div>
-                  <label className="block text-xs uppercase tracking-wide text-forest-800/70 font-semibold mb-1">
+                  <label className="block text-[11px] sm:text-xs uppercase tracking-wider text-forest-800/70 font-semibold mb-1">
                     Quantity *
                   </label>
                   <input
@@ -1016,7 +1016,7 @@ export default function InventoryPage() {
                 </div>
 
                 <div>
-                  <label className="block text-xs uppercase tracking-wide text-forest-800/70 font-semibold mb-1">
+                  <label className="block text-[11px] sm:text-xs uppercase tracking-wider text-forest-800/70 font-semibold mb-1">
                     Unit
                   </label>
                   <select
@@ -1036,9 +1036,9 @@ export default function InventoryPage() {
                 </div>
               </div>
 
-              <div className="grid grid-cols-1 sm:grid-cols-2 gap-3">
+              <div className="grid grid-cols-2 gap-2.5 sm:gap-3">
                 <div>
-                  <label className="block text-xs uppercase tracking-wide text-forest-800/70 font-semibold mb-1">
+                  <label className="block text-[11px] sm:text-xs uppercase tracking-wider text-forest-800/70 font-semibold mb-1">
                     Expiry Date *
                   </label>
                   <input
@@ -1046,12 +1046,14 @@ export default function InventoryPage() {
                     required
                     value={form.expiry_date}
                     onChange={updateForm("expiry_date")}
-                    className="w-full border border-wheat-200 rounded-lg px-3 py-2 h-10 text-xs sm:text-sm text-forest-900 focus:outline-none focus:ring-2 focus:ring-forest-400 bg-white font-mono"
+                    className={`w-full border border-wheat-200 rounded-lg px-2.5 sm:px-3 py-2 h-10 text-xs sm:text-sm focus:outline-none focus:ring-2 focus:ring-forest-400 bg-white font-mono box-border ${
+                      !form.expiry_date ? "text-forest-800/40" : "text-forest-900"
+                    }`}
                   />
                 </div>
 
                 <div>
-                  <label className="block text-xs uppercase tracking-wide text-forest-800/70 font-semibold mb-1">
+                  <label className="block text-[11px] sm:text-xs uppercase tracking-wider text-forest-800/70 font-semibold mb-1">
                     Avg. Daily Usage
                   </label>
                   <input
@@ -1061,23 +1063,23 @@ export default function InventoryPage() {
                     placeholder="e.g. 1"
                     value={form.avg_daily_usage}
                     onChange={updateForm("avg_daily_usage")}
-                    className="w-full border border-wheat-200 rounded-lg px-3 py-2 h-10 text-xs sm:text-sm text-forest-900 placeholder:text-forest-800/40 focus:outline-none focus:ring-2 focus:ring-forest-400 bg-white"
+                    className="w-full border border-wheat-200 rounded-lg px-3 py-2 h-10 text-xs sm:text-sm text-forest-900 placeholder:text-forest-800/40 focus:outline-none focus:ring-2 focus:ring-forest-400 bg-white box-border"
                   />
                 </div>
               </div>
 
-              <div className="flex flex-col-reverse sm:flex-row items-stretch sm:items-center justify-end gap-2.5 sm:gap-3 pt-4 border-t border-wheat-200">
+              <div className="grid grid-cols-2 gap-2.5 sm:flex sm:items-center sm:justify-end sm:gap-3 pt-3.5 sm:pt-4 border-t border-wheat-200">
                 <button
                   type="button"
                   onClick={() => setShowAddModal(false)}
-                  className="w-full sm:w-auto px-4 py-2.5 text-xs sm:text-sm font-medium text-forest-800/70 hover:text-forest-800 rounded-lg hover:bg-wheat-100 transition-colors text-center"
+                  className="w-full sm:w-auto px-4 py-2.5 text-xs sm:text-sm font-medium text-forest-800/70 hover:text-forest-800 rounded-lg hover:bg-wheat-100 transition-colors text-center cursor-pointer"
                 >
                   Cancel
                 </button>
                 <button
                   type="submit"
                   disabled={submittingAdd}
-                  className="w-full sm:w-auto inline-flex items-center justify-center gap-2 px-5 py-2.5 rounded-lg text-xs sm:text-sm font-semibold bg-forest-800 text-wheat-50 hover:bg-forest-700 disabled:opacity-50 shadow-sm transition-all"
+                  className="w-full sm:w-auto inline-flex items-center justify-center gap-2 px-4 sm:px-5 py-2.5 rounded-lg text-xs sm:text-sm font-semibold bg-forest-800 text-wheat-50 hover:bg-forest-700 disabled:opacity-50 shadow-sm transition-all cursor-pointer whitespace-nowrap"
                 >
                   {submittingAdd ? "Saving..." : "Add to Inventory"}
                 </button>
