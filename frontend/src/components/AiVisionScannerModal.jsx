@@ -115,20 +115,21 @@ export default function AiVisionScannerModal({ isOpen, onClose, onAutofill }) {
   const handleFileUpload = (e) => {
     const file = e.target.files?.[0];
     if (!file) return;
+    const nameWithoutExt = file.name.replace(/\.[^/.]+$/, "").replace(/[_\-\+0-9]/g, " ").trim();
     const reader = new FileReader();
     reader.onload = () => {
       setImagePreview(reader.result);
-      runAiInspection(reader.result);
+      runAiInspection(reader.result, nameWithoutExt);
     };
     reader.readAsDataURL(file);
   };
 
-  const runAiInspection = async (base64Img) => {
+  const runAiInspection = async (base64Img, extraHint = "") => {
     setError("");
     setAnalyzing(true);
     setResult(null);
 
-    const effectiveHint = [itemHint, selectedCategory].filter(Boolean).join(" ");
+    const effectiveHint = [itemHint, selectedCategory, extraHint].filter(Boolean).join(" ");
 
     try {
       const data = await api.inspectFreshness(base64Img, effectiveHint);
