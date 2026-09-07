@@ -145,11 +145,11 @@ export default function PickupQrModal({ isOpen, onClose, pickup }) {
                 </strong>
               </div>
 
-              <div className="bg-wheat-50 p-2 rounded-lg border border-wheat-200 text-left">
-                <span className="text-[9px] text-forest-800/50 block uppercase">Surplus Listing</span>
-                <strong className="text-forest-900 text-xs font-bold flex items-center gap-1 mt-0.5">
+              <div className="bg-wheat-50 p-2 rounded-lg border border-wheat-200 text-left overflow-hidden">
+                <span className="text-[9px] text-forest-800/50 block uppercase">Surplus Item</span>
+                <strong className="text-forest-900 text-xs font-bold flex items-center gap-1 mt-0.5 truncate" title={pickup.listing_title || `Listing #${pickup.listing_id}`}>
                   <Truck className="w-3 h-3 text-forest-600 shrink-0" />
-                  Listing #{pickup.listing_id}
+                  <span className="truncate">{pickup.listing_title || `Listing #${pickup.listing_id}`}</span>
                 </strong>
               </div>
             </div>

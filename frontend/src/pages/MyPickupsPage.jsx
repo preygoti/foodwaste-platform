@@ -10,6 +10,8 @@ import {
   RefreshCw,
   Compass,
   QrCode,
+  MapPin,
+  Package,
 } from "lucide-react";
 import Layout from "../components/Layout";
 import PickupQrModal from "../components/PickupQrModal";
@@ -49,6 +51,7 @@ export default function MyPickupsPage() {
     const cached = api.getCached("my_pickups");
     return Array.isArray(cached) ? cached : [];
   });
+  const [listingsMap, setListingsMap] = useState({});
   const [loading, setLoading] = useState(() => !api.getCached("my_pickups"));
   const [processingId, setProcessingId] = useState(null);
   const [selectedQrPickup, setSelectedQrPickup] = useState(null);
@@ -64,6 +67,19 @@ export default function MyPickupsPage() {
         if (Array.isArray(data)) setPickups(data);
       })
       .finally(() => setLoading(false));
+
+    api
+      .browseListings()
+      .then((data) => {
+        if (Array.isArray(data)) {
+          const map = {};
+          data.forEach((item) => {
+            map[item.id] = item;
+          });
+          setListingsMap(map);
+        }
+      })
+      .catch(() => {});
   };
 
   useEffect(() => {
@@ -165,17 +181,28 @@ export default function MyPickupsPage() {
           {pickups.map((p) => {
             const statusCfg = STATUS_CONFIG[p.status] || STATUS_CONFIG.pending;
             const isFinished = p.status === "picked_up" || p.status === "cancelled";
+            const listing = listingsMap[p.listing_id] || {};
+            const itemTitle = p.listing_title || listing.title || `Food Donation #${p.listing_id}`;
+            const itemCategory = p.listing_category || listing.category;
+            const itemQuantity = p.listing_quantity ?? listing.quantity;
+            const itemUnit = p.listing_unit || listing.unit;
+            const itemLocation = p.pickup_location || listing.pickup_location;
 
             return (
               <div
                 key={p.id}
                 className="bg-white border border-wheat-200 rounded-xl p-4 sm:p-5 shadow-2xs flex flex-col sm:flex-row sm:items-center justify-between gap-4 hover:shadow-xs transition-shadow"
               >
-                <div className="space-y-1.5">
-                  <div className="flex items-center gap-2.5">
-                    <span className="font-display text-base sm:text-lg text-forest-800 font-semibold">
-                      Listing #{p.listing_id}
+                <div className="space-y-1.5 min-w-0 flex-1">
+                  <div className="flex items-center gap-2.5 flex-wrap">
+                    <span className="font-display text-base sm:text-lg text-forest-900 font-bold">
+                      {itemTitle}
                     </span>
+                    {itemCategory && (
+                      <span className="text-[11px] font-mono px-2 py-0.5 rounded-md bg-wheat-100 text-forest-800 border border-wheat-200 capitalize">
+                        {itemCategory} {itemQuantity ? `· ${itemQuantity} ${itemUnit || "units"}` : ""}
+                      </span>
+                    )}
                     <span
                       className="inline-flex items-center gap-1 font-mono font-semibold px-2.5 py-0.5 text-[11px] rounded-full tracking-wide border shadow-2xs"
                       style={{
@@ -192,13 +219,19 @@ export default function MyPickupsPage() {
                     </span>
                   </div>
 
-                  <div className="flex flex-wrap items-center gap-4 text-xs text-forest-800/70">
-                    <span className="flex items-center gap-1 font-medium text-forest-600">
-                      <Utensils className="w-3.5 h-3.5 shrink-0" />
+                  <div className="flex flex-wrap items-center gap-3 sm:gap-4 text-xs text-forest-800/70">
+                    <span className="flex items-center gap-1 font-medium text-forest-700">
+                      <Utensils className="w-3.5 h-3.5 text-forest-600 shrink-0" />
                       ~{p.meals_estimate} meals estimated
                     </span>
+                    {itemLocation && (
+                      <span className="flex items-center gap-1 text-forest-800/80 min-w-0">
+                        <MapPin className="w-3.5 h-3.5 text-forest-500 shrink-0" />
+                        <span className="truncate max-w-xs sm:max-w-md">Pickup: <strong>{itemLocation}</strong></span>
+                      </span>
+                    )}
                     {p.scheduled_time && (
-                      <span className="flex items-center gap-1 font-mono">
+                      <span className="flex items-center gap-1 font-mono text-forest-800/70">
                         <Clock className="w-3.5 h-3.5 text-forest-800/40 shrink-0" />
                         {new Date(p.scheduled_time).toLocaleString(undefined, {
                           dateStyle: "medium",

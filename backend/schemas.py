@@ -168,6 +168,11 @@ class PickupUpdate(BaseModel):
 class PickupOut(BaseModel):
     id: int
     listing_id: int
+    listing_title: Optional[str] = None
+    listing_category: Optional[str] = None
+    listing_quantity: Optional[float] = None
+    listing_unit: Optional[str] = None
+    pickup_location: Optional[str] = None
     ngo_id: int
     ngo_name: Optional[str] = None
     status: str

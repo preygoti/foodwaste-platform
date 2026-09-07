@@ -615,10 +615,20 @@ def listing_pickups(
 # ---- Pickup / matching ----
 def _pickup_out(pickup: models.Pickup, db: Session) -> schemas.PickupOut:
     ngo = db.query(models.User).filter(models.User.id == pickup.ngo_id).first()
+    listing = db.query(models.Listing).filter(models.Listing.id == pickup.listing_id).first()
     return schemas.PickupOut(
-        id=pickup.id, listing_id=pickup.listing_id, ngo_id=pickup.ngo_id,
-        ngo_name=ngo.org_name if ngo else None, status=pickup.status.value,
-        scheduled_time=pickup.scheduled_time, meals_estimate=pickup.meals_estimate,
+        id=pickup.id,
+        listing_id=pickup.listing_id,
+        listing_title=listing.title if listing else None,
+        listing_category=listing.category if listing else None,
+        listing_quantity=listing.quantity if listing else None,
+        listing_unit=listing.unit if listing else None,
+        pickup_location=listing.pickup_location if listing else None,
+        ngo_id=pickup.ngo_id,
+        ngo_name=ngo.org_name if ngo else None,
+        status=pickup.status.value,
+        scheduled_time=pickup.scheduled_time,
+        meals_estimate=pickup.meals_estimate,
         created_at=pickup.created_at,
     )
 
