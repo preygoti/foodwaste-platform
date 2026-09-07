@@ -142,7 +142,8 @@ export default function BrowseListingsPage() {
   // Claim Dialog state
   const [selectedListing, setSelectedListing] = useState(null);
   const [mealsEstimate, setMealsEstimate] = useState("");
-  const [scheduledTime, setScheduledTime] = useState("");
+  const [pickupDate, setPickupDate] = useState("");
+  const [pickupTime, setPickupTime] = useState("10:00");
   const [claiming, setClaiming] = useState(false);
   const [claimSuccess, setClaimSuccess] = useState(false);
   const [claimError, setClaimError] = useState("");
@@ -229,8 +230,11 @@ export default function BrowseListingsPage() {
     setMealsEstimate(String(Math.round(listing.quantity * 2.5)));
     const tomorrow = new Date();
     tomorrow.setDate(tomorrow.getDate() + 1);
-    tomorrow.setHours(10, 0, 0, 0);
-    setScheduledTime(tomorrow.toISOString().slice(0, 16));
+    const yyyy = tomorrow.getFullYear();
+    const mm = String(tomorrow.getMonth() + 1).padStart(2, "0");
+    const dd = String(tomorrow.getDate()).padStart(2, "0");
+    setPickupDate(`${yyyy}-${mm}-${dd}`);
+    setPickupTime("10:00");
     setClaimSuccess(false);
     setClaimError("");
   };
@@ -241,10 +245,14 @@ export default function BrowseListingsPage() {
     setClaiming(true);
     setClaimError("");
     try {
+      let finalIsoTime = null;
+      if (pickupDate && pickupTime) {
+        finalIsoTime = new Date(`${pickupDate}T${pickupTime}:00`).toISOString();
+      }
       await api.requestPickup({
         listing_id: selectedListing.id,
         meals_estimate: parseFloat(mealsEstimate) || 0,
-        scheduled_time: scheduledTime ? new Date(scheduledTime).toISOString() : null,
+        scheduled_time: finalIsoTime,
       });
       setClaimSuccess(true);
       setTimeout(() => {
@@ -568,39 +576,47 @@ export default function BrowseListingsPage() {
                     </p>
                   </div>
 
-                  {/* Split Date & Time Inputs */}
-                  <div className="grid grid-cols-1 sm:grid-cols-2 gap-3">
-                    <div>
-                      <label className="block text-xs uppercase tracking-wide text-forest-800/70 font-semibold mb-1">
-                        Proposed Pickup Date *
-                      </label>
-                      <input
-                        type="date"
-                        required
-                        value={scheduledTime ? scheduledTime.split("T")[0] : ""}
-                        onChange={(e) => {
-                          const timePart = scheduledTime.includes("T") ? scheduledTime.split("T")[1] : "10:00";
-                          setScheduledTime(`${e.target.value}T${timePart}`);
-                        }}
-                        className="w-full border border-wheat-200 rounded-lg px-3.5 py-2.5 text-sm focus:outline-none focus:ring-2 focus:ring-forest-400 bg-white font-mono"
-                      />
-                    </div>
+                  {/* Field 2: Proposed Pickup Date (Dedicated Full-Width Block) */}
+                  <div className="w-full">
+                    <label className="block text-xs uppercase tracking-wide text-forest-800/70 font-semibold mb-1.5">
+                      Proposed Pickup Date *
+                    </label>
+                    <input
+                      type="date"
+                      required
+                      value={pickupDate}
+                      onChange={(e) => setPickupDate(e.target.value)}
+                      className="w-full bg-white border border-wheat-200 rounded-lg px-3.5 py-2.5 text-sm text-forest-900 focus:outline-none focus:ring-2 focus:ring-forest-400 font-mono shadow-2xs box-border"
+                    />
+                  </div>
 
-                    <div>
-                      <label className="block text-xs uppercase tracking-wide text-forest-800/70 font-semibold mb-1">
-                        Proposed Pickup Time *
-                      </label>
-                      <input
-                        type="time"
-                        required
-                        value={scheduledTime.includes("T") ? scheduledTime.split("T")[1].slice(0, 5) : "10:00"}
-                        onChange={(e) => {
-                          const datePart = scheduledTime.includes("T") ? scheduledTime.split("T")[0] : new Date().toISOString().slice(0, 10);
-                          setScheduledTime(`${datePart}T${e.target.value}`);
-                        }}
-                        className="w-full border border-wheat-200 rounded-lg px-3.5 py-2.5 text-sm focus:outline-none focus:ring-2 focus:ring-forest-400 bg-white font-mono"
-                      />
-                    </div>
+                  {/* Field 3: Proposed Pickup Time Window (Dedicated Full-Width Dropdown Block) */}
+                  <div className="w-full">
+                    <label className="block text-xs uppercase tracking-wide text-forest-800/70 font-semibold mb-1.5">
+                      Proposed Pickup Time Window *
+                    </label>
+                    <select
+                      required
+                      value={pickupTime}
+                      onChange={(e) => setPickupTime(e.target.value)}
+                      className="w-full bg-white border border-wheat-200 rounded-lg px-3.5 py-2.5 text-sm text-forest-900 focus:outline-none focus:ring-2 focus:ring-forest-400 font-mono shadow-2xs box-border cursor-pointer"
+                    >
+                      <option value="07:00">07:00 AM — Early Morning Pickup</option>
+                      <option value="08:00">08:00 AM — Morning Dispatch</option>
+                      <option value="09:00">09:00 AM — Morning Window</option>
+                      <option value="10:00">10:00 AM — Standard Morning (Recommended)</option>
+                      <option value="11:00">11:00 AM — Late Morning</option>
+                      <option value="12:00">12:00 PM — Noon / Lunch Window</option>
+                      <option value="13:00">01:00 PM — Early Afternoon</option>
+                      <option value="14:00">02:00 PM — Afternoon Window</option>
+                      <option value="15:00">03:00 PM — Mid-Afternoon</option>
+                      <option value="16:00">04:00 PM — Late Afternoon</option>
+                      <option value="17:00">05:00 PM — Evening Dispatch</option>
+                      <option value="18:00">06:00 PM — Evening Window</option>
+                      <option value="19:00">07:00 PM — Late Evening</option>
+                      <option value="20:00">08:00 PM — Night Window</option>
+                      <option value="21:00">09:00 PM — Late Night Emergency Pickup</option>
+                    </select>
                   </div>
 
                   {/* Action Buttons */}
