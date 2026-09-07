@@ -576,7 +576,7 @@ export default function BrowseListingsPage() {
                       placeholder="e.g. 25"
                       value={mealsEstimate}
                       onChange={(e) => setMealsEstimate(e.target.value)}
-                      className="w-full block box-border border border-wheat-200 rounded-xl px-3.5 py-2.5 text-sm focus:outline-none focus:ring-2 focus:ring-forest-400 bg-white"
+                      className="w-full max-w-[240px] block box-border border border-wheat-200 rounded-xl px-3.5 py-2.5 text-sm focus:outline-none focus:ring-2 focus:ring-forest-400 bg-white"
                     />
                     <p className="text-[11px] text-forest-800/50 mt-1">
                       Based on ~2.5 community meals per unit.
@@ -593,7 +593,7 @@ export default function BrowseListingsPage() {
                       required
                       value={pickupDate}
                       onChange={(e) => setPickupDate(e.target.value)}
-                      className="w-full block box-border bg-white border border-wheat-200 rounded-xl px-3.5 py-2.5 text-sm text-forest-900 focus:outline-none focus:ring-2 focus:ring-forest-400 font-mono"
+                      className="w-full max-w-[240px] block box-border bg-white border border-wheat-200 rounded-xl px-3.5 py-2.5 text-sm text-forest-900 focus:outline-none focus:ring-2 focus:ring-forest-400 font-mono text-center"
                     />
                   </div>
 
@@ -606,21 +606,21 @@ export default function BrowseListingsPage() {
                       required
                       value={pickupTime}
                       onChange={(e) => setPickupTime(e.target.value)}
-                      className="w-full block box-border bg-white border border-wheat-200 rounded-xl px-3.5 py-2.5 text-sm text-forest-900 focus:outline-none focus:ring-2 focus:ring-forest-400 font-mono cursor-pointer"
+                      className="w-full max-w-[240px] block box-border bg-white border border-wheat-200 rounded-xl px-3.5 py-2.5 text-sm text-forest-900 focus:outline-none focus:ring-2 focus:ring-forest-400 font-mono text-center cursor-pointer"
                     >
-                      <option value="08:00">08:00 AM — Morning Window</option>
-                      <option value="09:00">09:00 AM — Morning Window</option>
-                      <option value="10:00">10:00 AM — Standard Morning (Recommended)</option>
-                      <option value="11:00">11:00 AM — Late Morning</option>
-                      <option value="12:00">12:00 PM — Noon / Lunch Window</option>
-                      <option value="13:00">01:00 PM — Early Afternoon</option>
-                      <option value="14:00">02:00 PM — Afternoon Window</option>
-                      <option value="15:00">03:00 PM — Mid-Afternoon</option>
-                      <option value="16:00">04:00 PM — Late Afternoon</option>
-                      <option value="17:00">05:00 PM — Evening Dispatch</option>
-                      <option value="18:00">06:00 PM — Evening Window</option>
-                      <option value="19:00">07:00 PM — Late Evening</option>
-                      <option value="20:00">08:00 PM — Night Window</option>
+                      <option value="08:00">08:00 AM (Morning)</option>
+                      <option value="09:00">09:00 AM (Morning)</option>
+                      <option value="10:00">10:00 AM (Recommended)</option>
+                      <option value="11:00">11:00 AM (Late Morning)</option>
+                      <option value="12:00">12:00 PM (Noon / Lunch)</option>
+                      <option value="13:00">01:00 PM (Afternoon)</option>
+                      <option value="14:00">02:00 PM (Afternoon)</option>
+                      <option value="15:00">03:00 PM (Mid-Afternoon)</option>
+                      <option value="16:00">04:00 PM (Late Afternoon)</option>
+                      <option value="17:00">05:00 PM (Evening)</option>
+                      <option value="18:00">06:00 PM (Evening)</option>
+                      <option value="19:00">07:00 PM (Late Evening)</option>
+                      <option value="20:00">08:00 PM (Night)</option>
                     </select>
                   </div>
 
