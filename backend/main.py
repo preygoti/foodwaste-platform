@@ -4,7 +4,10 @@ import hashlib
 from datetime import date, datetime, timedelta
 from typing import List, Optional
 
-from fastapi import FastAPI, Depends, HTTPException, status
+import time
+from collections import defaultdict
+from fastapi import FastAPI, Depends, HTTPException, status, Request, Response
+from fastapi.responses import JSONResponse
 from fastapi.middleware.cors import CORSMiddleware
 from fastapi.security import OAuth2PasswordRequestForm
 from sqlalchemy import func, text
@@ -34,6 +37,66 @@ except Exception:
     pass
 
 app = FastAPI(title="AI-Powered Food Waste Management Platform API")
+
+# ------------------------------------------------------------
+# In-Memory Anti-Brute-Force & Rate Limiting Storage
+# ------------------------------------------------------------
+_ip_request_timestamps = defaultdict(list)
+_auth_request_timestamps = defaultdict(list)
+
+MAX_GLOBAL_PER_MINUTE = 300
+MAX_AUTH_PER_MINUTE = 30
+MAX_REQUEST_BODY_BYTES = 25 * 1024 * 1024  # 25MB max body size
+
+@app.middleware("http")
+async def security_and_rate_limit_middleware(request: Request, call_next):
+    # 1. Payload Size DoS Protection
+    content_length = request.headers.get("content-length")
+    if content_length and int(content_length) > MAX_REQUEST_BODY_BYTES:
+        return JSONResponse(
+            status_code=status.HTTP_413_REQUEST_ENTITY_TOO_LARGE,
+            content={"detail": "Payload too large. Maximum allowed request size is 25MB."}
+        )
+
+    # 2. Rate Limiting (Free In-Memory Sliding Window)
+    client_ip = request.client.host if request.client else "unknown"
+    now = time.time()
+    one_min_ago = now - 60.0
+
+    path = request.url.path
+    if path.startswith("/auth/"):
+        auth_times = _auth_request_timestamps[client_ip]
+        _auth_request_timestamps[client_ip] = [t for t in auth_times if t > one_min_ago]
+        if len(_auth_request_timestamps[client_ip]) >= MAX_AUTH_PER_MINUTE:
+            return JSONResponse(
+                status_code=status.HTTP_429_TOO_MANY_REQUESTS,
+                content={"detail": "Too many authentication requests. Please wait a minute before retrying."},
+                headers={"Retry-After": "60"}
+            )
+        _auth_request_timestamps[client_ip].append(now)
+
+    global_times = _ip_request_timestamps[client_ip]
+    _ip_request_timestamps[client_ip] = [t for t in global_times if t > one_min_ago]
+    if len(_ip_request_timestamps[client_ip]) >= MAX_GLOBAL_PER_MINUTE:
+        return JSONResponse(
+            status_code=status.HTTP_429_TOO_MANY_REQUESTS,
+            content={"detail": "Rate limit exceeded. Please slow down your requests."},
+            headers={"Retry-After": "60"}
+        )
+    _ip_request_timestamps[client_ip].append(now)
+
+    # 3. Process the actual request
+    response = await call_next(request)
+
+    # 4. Inject OWASP Enterprise Security Headers
+    response.headers["X-Content-Type-Options"] = "nosniff"
+    response.headers["X-Frame-Options"] = "DENY"
+    response.headers["X-XSS-Protection"] = "1; mode=block"
+    response.headers["Referrer-Policy"] = "strict-origin-when-cross-origin"
+    response.headers["Permissions-Policy"] = "camera=*, geolocation=*, microphone=()"
+    response.headers["Strict-Transport-Security"] = "max-age=31536000; includeSubDomains"
+
+    return response
 
 app.add_middleware(
     CORSMiddleware,
