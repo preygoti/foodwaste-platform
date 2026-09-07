@@ -981,7 +981,7 @@ export default function InventoryPage() {
                 <div>
                   <LocationAutocompleteInput
                     label="Storage Location"
-                    placeholder="e.g. Adajan, Surat or Mumbai"
+                    placeholder="e.g. Surat, Gujarat"
                     value={form.storage_location}
                     onChange={(val) => setForm((prev) => ({ ...prev, storage_location: val }))}
                   />

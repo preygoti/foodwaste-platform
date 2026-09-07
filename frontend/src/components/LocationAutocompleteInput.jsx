@@ -5,7 +5,7 @@ import { GLOBAL_LOCATION_SUGGESTIONS } from "../utils/geocoding";
 export default function LocationAutocompleteInput({
   value = "",
   onChange,
-  placeholder = "e.g. Adajan, Surat or Mumbai",
+  placeholder = "e.g. Surat, Gujarat",
   label = "Storage Location",
   required = false,
   className = "",
@@ -56,9 +56,9 @@ export default function LocationAutocompleteInput({
     : GLOBAL_LOCATION_SUGGESTIONS.slice(0, 6);
 
   return (
-    <div ref={containerRef} className={`relative w-full ${className}`}>
+    <div ref={containerRef} className={`relative ${className}`}>
       {label && (
-        <label className="block text-xs uppercase tracking-wide text-forest-800/70 font-semibold mb-1 whitespace-nowrap overflow-hidden text-ellipsis">
+        <label className="block text-xs uppercase tracking-wide text-forest-800/70 font-semibold mb-1">
           {label} {required && <span className="text-rose-600">*</span>}
         </label>
       )}
@@ -71,7 +71,7 @@ export default function LocationAutocompleteInput({
           onFocus={() => setIsOpen(true)}
           onChange={handleChange}
           placeholder={placeholder}
-          className="w-full border border-wheat-200 rounded-lg pl-8 pr-7 py-2 text-xs sm:text-sm focus:outline-none focus:ring-2 focus:ring-forest-400 bg-white h-[38px] leading-tight"
+          className="w-full border border-wheat-200 rounded-lg pl-8 pr-7 py-2 text-xs sm:text-sm focus:outline-none focus:ring-2 focus:ring-forest-400 bg-white"
         />
 
         <MapPin className="w-3.5 h-3.5 text-forest-800/40 absolute left-2.5 top-1/2 -translate-y-1/2 pointer-events-none" />
