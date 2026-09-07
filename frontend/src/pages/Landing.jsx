@@ -415,27 +415,64 @@ export default function Landing() {
             </p>
           </div>
 
-          {/* Step Selector Tabs for Desktop / Mobile */}
-          <div className="flex items-center justify-center gap-2 overflow-x-auto pb-2 no-scrollbar">
+          {/* 4-Step Interactive Process Navigation Grid */}
+          <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-3 sm:gap-4">
             {workflowSteps.map((step, idx) => {
               const Icon = step.icon;
               const isActive = activeWorkflowTab === idx;
               return (
                 <button
                   key={step.num}
+                  type="button"
                   onClick={() => setActiveWorkflowTab(idx)}
-                  className={`flex items-center gap-2 px-4 py-2.5 rounded-xl text-xs sm:text-sm font-semibold transition-all shrink-0 border ${
+                  className={`text-left p-4 sm:p-5 rounded-2xl border transition-all flex flex-col justify-between relative overflow-hidden group active:scale-[0.99] min-h-[140px] ${
                     isActive
-                      ? "bg-forest-800 text-wheat-50 border-forest-800 shadow-sm"
-                      : "bg-wheat-50/70 text-forest-800/70 border-wheat-200 hover:bg-wheat-100"
+                      ? "bg-forest-800 text-wheat-50 border-forest-800 shadow-md ring-2 ring-forest-800/20"
+                      : "bg-white text-forest-800 border-wheat-200 hover:border-forest-600/50 hover:bg-wheat-50/70 shadow-2xs"
                   }`}
                 >
-                  <span className={`w-5 h-5 rounded-full flex items-center justify-center font-mono text-[10px] font-bold ${
-                    isActive ? "bg-emerald-500 text-forest-900" : "bg-wheat-200 text-forest-800"
-                  }`}>
-                    {step.num}
-                  </span>
-                  <span>{step.title}</span>
+                  {/* Top Row: Number Badge & Icon */}
+                  <div className="flex items-center justify-between mb-3 w-full">
+                    <span
+                      className={`font-mono text-xs font-bold px-2.5 py-1 rounded-lg ${
+                        isActive
+                          ? "bg-emerald-500 text-forest-950"
+                          : "bg-wheat-100 text-forest-800/80 group-hover:bg-forest-100"
+                      }`}
+                    >
+                      STEP {step.num}
+                    </span>
+                    <div
+                      className={`p-2 rounded-xl transition-colors ${
+                        isActive
+                          ? "bg-forest-700 text-gold-400"
+                          : "bg-wheat-100 text-forest-700 group-hover:bg-forest-100"
+                      }`}
+                    >
+                      <Icon className="w-4 h-4" />
+                    </div>
+                  </div>
+
+                  {/* Title & Badge */}
+                  <div className="space-y-1">
+                    <h4 className="font-display font-bold text-sm sm:text-base leading-snug">
+                      {step.title}
+                    </h4>
+                    <p
+                      className={`text-[11px] leading-tight ${
+                        isActive ? "text-wheat-200/80" : "text-forest-800/60"
+                      }`}
+                    >
+                      {step.badge}
+                    </p>
+                  </div>
+
+                  {/* Active Bottom Accent Indicator */}
+                  <div
+                    className={`absolute bottom-0 left-0 right-0 h-1 transition-all ${
+                      isActive ? "bg-emerald-400" : "bg-transparent group-hover:bg-wheat-300"
+                    }`}
+                  />
                 </button>
               );
             })}
