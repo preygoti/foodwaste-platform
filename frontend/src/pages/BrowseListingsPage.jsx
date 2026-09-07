@@ -496,18 +496,21 @@ export default function BrowseListingsPage() {
 
       {/* ------------------------------------------------------------- */}
       {/* ------------------------------------------------------------- */}
-      {/* CLAIM SURPLUS MODAL (100% Contained, Perfect Alignment)       */}
+      {/* CLAIM SURPLUS MODAL (100% Contained, Mobile-First Layout)     */}
       {/* ------------------------------------------------------------- */}
       {selectedListing && (
-        <div className="fixed inset-0 z-50 flex items-center justify-center p-3 sm:p-4 bg-black/60 backdrop-blur-md overflow-x-hidden overflow-y-auto animate-in fade-in duration-150">
-          <div className="relative w-full max-w-md bg-white border border-wheat-200 rounded-2xl shadow-2xl overflow-hidden my-auto flex flex-col box-border">
+        <div className="fixed inset-0 z-50 flex items-center justify-center p-3 sm:p-6 bg-black/60 backdrop-blur-md overflow-x-hidden overflow-y-auto animate-in fade-in duration-150">
+          <div 
+            className="relative bg-white border border-wheat-200 rounded-2xl shadow-2xl overflow-hidden my-auto flex flex-col box-border"
+            style={{ width: "min(100%, 520px)", maxWidth: "100%" }}
+          >
             {/* Header */}
-            <div className="flex items-center justify-between px-4 sm:px-6 py-4 border-b border-wheat-200 bg-gradient-to-r from-forest-900 via-forest-800 to-forest-800 text-wheat-50 shrink-0">
-              <div className="min-w-0 pr-2">
-                <span className="text-[10px] font-mono tracking-widest uppercase text-emerald-300 font-semibold block mb-0.5">
+            <div className="flex items-center justify-between px-4 sm:px-6 py-4 border-b border-wheat-200 bg-gradient-to-r from-forest-900 via-forest-800 to-forest-800 text-wheat-50 shrink-0 overflow-hidden box-border">
+              <div className="min-w-0 pr-2 flex-1">
+                <span className="text-[10px] font-mono tracking-widest uppercase text-emerald-300 font-semibold block mb-0.5 truncate">
                   Redistribution Marketplace · Module 03
                 </span>
-                <h2 className="font-display text-base sm:text-lg font-bold text-white flex items-center gap-2">
+                <h2 className="font-display text-base sm:text-lg font-bold text-white flex items-center gap-2 truncate">
                   <Utensils className="w-5 h-5 text-emerald-300 shrink-0" />
                   <span className="truncate">Claim Surplus Food</span>
                 </h2>
@@ -516,22 +519,24 @@ export default function BrowseListingsPage() {
                 </p>
               </div>
               <button
+                type="button"
                 onClick={() => setSelectedListing(null)}
-                className="p-1.5 text-wheat-300 hover:text-white rounded-lg hover:bg-white/10 transition-colors shrink-0"
+                className="p-2 text-wheat-300 hover:text-white rounded-lg hover:bg-white/10 transition-colors shrink-0"
                 title="Close"
+                aria-label="Close"
               >
                 <X className="w-5 h-5" />
               </button>
             </div>
 
             {/* Form Body */}
-            <form onSubmit={handleClaimSubmit} className="p-4 sm:p-5 space-y-3.5 overflow-x-hidden box-border">
+            <form onSubmit={handleClaimSubmit} className="p-4 sm:p-6 space-y-4 overflow-x-hidden overflow-y-auto box-border flex-1 max-h-[calc(100dvh-120px)]">
               {/* Item Info Card */}
-              <div className="p-3.5 rounded-xl bg-wheat-50 border border-wheat-200 text-xs text-forest-800 space-y-1.5 box-border overflow-hidden">
+              <div className="p-3.5 sm:p-4 rounded-xl bg-wheat-50 border border-wheat-200 text-xs text-forest-800 space-y-2 box-border overflow-hidden w-full">
                 <div className="flex items-start justify-between gap-2">
-                  <div className="min-w-0">
+                  <div className="min-w-0 flex-1">
                     <p className="font-semibold text-sm text-forest-900 truncate">{selectedListing.title}</p>
-                    <p className="text-forest-800/70 capitalize mt-0.5 text-[11px]">
+                    <p className="text-forest-800/70 capitalize mt-0.5 text-xs truncate">
                       Category: <span className="font-medium text-forest-900">{selectedListing.category}</span> &bull; Stock: <strong className="text-forest-900">{selectedListing.quantity} {selectedListing.unit}</strong>
                     </p>
                   </div>
@@ -539,20 +544,20 @@ export default function BrowseListingsPage() {
                     <LiveCountdownBadge expiryDateStr={selectedListing.expiry_date} now={now} />
                   </div>
                 </div>
-                <div className="flex items-center gap-1 text-forest-800/70 border-t border-wheat-200/70 pt-1.5 text-[11px] min-w-0">
+                <div className="flex items-center gap-1 text-forest-800/70 border-t border-wheat-200/70 pt-2 text-xs min-w-0">
                   <MapPin className="w-3.5 h-3.5 text-forest-600 shrink-0" />
-                  <span className="truncate min-w-0">Pickup: <strong>{selectedListing.pickup_location}</strong></span>
+                  <span className="truncate min-w-0">Pickup: <strong className="text-forest-900">{selectedListing.pickup_location}</strong></span>
                 </div>
               </div>
 
               {claimError && (
-                <div className="p-3 rounded-xl bg-tomato-500/10 border border-tomato-500/30 text-tomato-600 text-xs font-medium">
+                <div className="p-3 rounded-xl bg-tomato-500/10 border border-tomato-500/30 text-tomato-600 text-xs font-medium box-border">
                   {claimError}
                 </div>
               )}
 
               {claimSuccess ? (
-                <div className="p-4 rounded-xl bg-forest-500/10 border border-forest-500/30 text-forest-700 text-sm font-medium flex items-center gap-2">
+                <div className="p-4 rounded-xl bg-forest-500/10 border border-forest-500/30 text-forest-700 text-sm font-medium flex items-center gap-2 box-border">
                   <CheckCircle2 className="w-5 h-5 text-forest-600 shrink-0" />
                   <span>Pickup request submitted! Coordinating with donor...</span>
                 </div>
@@ -571,7 +576,7 @@ export default function BrowseListingsPage() {
                       placeholder="e.g. 25"
                       value={mealsEstimate}
                       onChange={(e) => setMealsEstimate(e.target.value)}
-                      className="w-full box-border border border-wheat-200 rounded-xl px-3.5 py-2.5 text-sm focus:outline-none focus:ring-2 focus:ring-forest-400 bg-white"
+                      className="w-full block box-border border border-wheat-200 rounded-xl px-3.5 py-2.5 text-sm focus:outline-none focus:ring-2 focus:ring-forest-400 bg-white"
                     />
                     <p className="text-[11px] text-forest-800/50 mt-1">
                       Based on ~2.5 community meals per unit.
@@ -588,7 +593,7 @@ export default function BrowseListingsPage() {
                       required
                       value={pickupDate}
                       onChange={(e) => setPickupDate(e.target.value)}
-                      className="w-full box-border bg-white border border-wheat-200 rounded-xl px-3.5 py-2.5 text-sm text-forest-900 focus:outline-none focus:ring-2 focus:ring-forest-400 font-mono"
+                      className="w-full block box-border bg-white border border-wheat-200 rounded-xl px-3.5 py-2.5 text-sm text-forest-900 focus:outline-none focus:ring-2 focus:ring-forest-400 font-mono"
                     />
                   </div>
 
@@ -601,7 +606,7 @@ export default function BrowseListingsPage() {
                       required
                       value={pickupTime}
                       onChange={(e) => setPickupTime(e.target.value)}
-                      className="w-full box-border bg-white border border-wheat-200 rounded-xl px-3.5 py-2.5 text-sm text-forest-900 focus:outline-none focus:ring-2 focus:ring-forest-400 font-mono cursor-pointer"
+                      className="w-full block box-border bg-white border border-wheat-200 rounded-xl px-3.5 py-2.5 text-sm text-forest-900 focus:outline-none focus:ring-2 focus:ring-forest-400 font-mono cursor-pointer"
                     >
                       <option value="08:00">08:00 AM — Morning Window</option>
                       <option value="09:00">09:00 AM — Morning Window</option>
@@ -620,18 +625,18 @@ export default function BrowseListingsPage() {
                   </div>
 
                   {/* Action Buttons */}
-                  <div className="grid grid-cols-2 gap-2.5 pt-3 border-t border-wheat-200 w-full box-border">
+                  <div className="flex flex-col-reverse sm:flex-row items-stretch sm:items-center justify-end gap-2.5 sm:gap-3 pt-4 border-t border-wheat-200 w-full box-border">
                     <button
                       type="button"
                       onClick={() => setSelectedListing(null)}
-                      className="w-full py-2.5 text-xs sm:text-sm font-semibold text-forest-800/70 hover:text-forest-800 rounded-xl bg-wheat-100 hover:bg-wheat-200 transition-colors text-center"
+                      className="w-full sm:w-auto px-5 py-2.5 text-sm font-semibold text-forest-800/70 hover:text-forest-800 rounded-xl bg-wheat-100 hover:bg-wheat-200 transition-colors text-center box-border"
                     >
                       Cancel
                     </button>
                     <button
                       type="submit"
                       disabled={claiming}
-                      className="w-full py-2.5 text-xs sm:text-sm font-bold bg-forest-800 text-wheat-50 hover:bg-forest-700 disabled:opacity-50 rounded-xl shadow-sm transition-all text-center"
+                      className="w-full sm:w-auto inline-flex items-center justify-center gap-2 px-6 py-2.5 rounded-xl text-sm font-bold bg-forest-800 text-wheat-50 hover:bg-forest-700 disabled:opacity-50 shadow-sm transition-all text-center box-border"
                     >
                       {claiming ? "Submitting..." : "Confirm Claim"}
                     </button>
