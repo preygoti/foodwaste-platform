@@ -998,10 +998,10 @@ export default function Landing() {
       {/* ------------------------------------------------------------- */}
       {/* 12. FOOTER                                                    */}
       {/* ------------------------------------------------------------- */}
-      <footer className="py-12 px-4 sm:px-6 lg:px-8 bg-wheat-50 border-t border-wheat-200">
-        <div className="max-w-6xl mx-auto space-y-8">
-          <div className="flex flex-col md:flex-row items-start md:items-center justify-between gap-6 border-b border-wheat-200/80 pb-8">
-            <div className="space-y-1">
+      <footer className="py-12 px-5 sm:px-6 lg:px-8 bg-wheat-50 border-t border-wheat-200 w-full">
+        <div className="max-w-6xl w-full mx-auto space-y-8">
+          <div className="flex flex-col md:flex-row items-center justify-between gap-6 border-b border-wheat-200/80 pb-8 text-center md:text-left w-full">
+            <div className="space-y-1 text-center md:text-left w-full md:w-auto">
               <span className="font-display italic text-lg font-bold text-forest-800 block">
                 HARVEST LEDGER
               </span>
@@ -1010,27 +1010,27 @@ export default function Landing() {
               </p>
             </div>
 
-            <nav className="flex flex-wrap items-center gap-6 text-xs font-semibold text-forest-800/70">
-              <Link to="/register" className="hover:text-forest-950 transition-colors">
+            <nav className="flex flex-wrap items-center justify-center md:justify-end gap-x-6 gap-y-2.5 text-xs font-semibold text-forest-800/70 w-full md:w-auto">
+              <Link to="/register" className="hover:text-forest-950 transition-colors py-1 px-1">
                 Platform
               </Link>
-              <a href="#how-it-works" className="hover:text-forest-950 transition-colors">
+              <a href="#how-it-works" className="hover:text-forest-950 transition-colors py-1 px-1">
                 How It Works
               </a>
-              <a href="#features" className="hover:text-forest-950 transition-colors">
+              <a href="#features" className="hover:text-forest-950 transition-colors py-1 px-1">
                 Features
               </a>
-              <a href="#impact" className="hover:text-forest-950 transition-colors">
+              <a href="#impact" className="hover:text-forest-950 transition-colors py-1 px-1">
                 Impact
               </a>
             </nav>
           </div>
 
-          <div className="flex flex-col sm:flex-row items-center justify-between gap-4 text-xs text-forest-800/50 font-mono">
-            <p>
+          <div className="flex flex-col md:flex-row items-center justify-between gap-4 text-xs text-forest-800/50 font-mono text-center md:text-left w-full">
+            <p className="text-center md:text-left leading-relaxed">
               &copy; {new Date().getFullYear()} HARVEST LEDGER &bull; Built to help turn surplus into impact.
             </p>
-            <p className="text-[11px] text-forest-800/40">
+            <p className="text-[11px] text-forest-800/40 text-center md:text-right leading-relaxed">
               Food Waste Management &bull; Community Redistribution
             </p>
           </div>
