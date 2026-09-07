@@ -49,6 +49,22 @@ function authHeaders() {
   return token ? { Authorization: `Bearer ${token}` } : {};
 }
 
+async function safeFetch(url, options = {}) {
+  try {
+    return await fetch(url, options);
+  } catch (err) {
+    // If the network request failed (e.g. Render free tier cold-start wake-up or transient timeout), retry once
+    try {
+      await new Promise((resolve) => setTimeout(resolve, 1500));
+      return await fetch(url, options);
+    } catch (secondErr) {
+      throw new Error(
+        "Cannot reach backend server. The cloud service may be waking up from sleep (Render free tier cold start, ~30s) or you are offline. Please try again in a moment."
+      );
+    }
+  }
+}
+
 async function handle(res) {
   if (!res.ok) {
     if (res.status === 401) {
@@ -72,7 +88,7 @@ async function handle(res) {
 
 /** Fetch with instant cache return and background revalidation */
 async function fetchCached(url, cacheKey) {
-  const resPromise = fetch(url, { headers: authHeaders() })
+  const resPromise = safeFetch(url, { headers: authHeaders() })
     .then(handle)
     .then((data) => {
       setCached(cacheKey, data);
@@ -91,7 +107,7 @@ export const api = {
   getCached,
 
   async sendRegistrationOtp(email) {
-    const res = await fetch(`${API_URL}/auth/send-registration-otp`, {
+    const res = await safeFetch(`${API_URL}/auth/send-registration-otp`, {
       method: "POST",
       headers: { "Content-Type": "application/json" },
       body: JSON.stringify({ email: (email || "").trim().toLowerCase() }),
@@ -100,7 +116,7 @@ export const api = {
   },
 
   async verifyRegistrationOtp(email, otp) {
-    const res = await fetch(`${API_URL}/auth/verify-registration-otp`, {
+    const res = await safeFetch(`${API_URL}/auth/verify-registration-otp`, {
       method: "POST",
       headers: { "Content-Type": "application/json" },
       body: JSON.stringify({
@@ -117,7 +133,7 @@ export const api = {
       email: (data.email || "").trim().toLowerCase(),
       org_name: (data.org_name || "").trim(),
     };
-    const res = await fetch(`${API_URL}/auth/register`, {
+    const res = await safeFetch(`${API_URL}/auth/register`, {
       method: "POST",
       headers: { "Content-Type": "application/json" },
       body: JSON.stringify(payload),
@@ -130,7 +146,7 @@ export const api = {
     const form = new URLSearchParams();
     form.set("username", (email || "").trim().toLowerCase());
     form.set("password", password);
-    const res = await fetch(`${API_URL}/auth/login`, {
+    const res = await safeFetch(`${API_URL}/auth/login`, {
       method: "POST",
       headers: { "Content-Type": "application/x-www-form-urlencoded" },
       body: form,
@@ -140,7 +156,7 @@ export const api = {
   },
 
   async forgotPassword(email) {
-    const res = await fetch(`${API_URL}/auth/forgot-password`, {
+    const res = await safeFetch(`${API_URL}/auth/forgot-password`, {
       method: "POST",
       headers: { "Content-Type": "application/json" },
       body: JSON.stringify({ email: (email || "").trim().toLowerCase() }),
@@ -149,7 +165,7 @@ export const api = {
   },
 
   async verifyOtp(email, otp) {
-    const res = await fetch(`${API_URL}/auth/verify-otp`, {
+    const res = await safeFetch(`${API_URL}/auth/verify-otp`, {
       method: "POST",
       headers: { "Content-Type": "application/json" },
       body: JSON.stringify({
@@ -161,7 +177,7 @@ export const api = {
   },
 
   async resetPassword(email, otp, newPassword) {
-    const res = await fetch(`${API_URL}/auth/reset-password`, {
+    const res = await safeFetch(`${API_URL}/auth/reset-password`, {
       method: "POST",
       headers: { "Content-Type": "application/json" },
       body: JSON.stringify({
@@ -174,7 +190,7 @@ export const api = {
   },
 
   async me() {
-    const res = await fetch(`${API_URL}/auth/me`, { headers: authHeaders() });
+    const res = await safeFetch(`${API_URL}/auth/me`, { headers: authHeaders() });
     return handle(res);
   },
 
@@ -182,7 +198,7 @@ export const api = {
   async listInventory(forceFresh = false) {
     if (forceFresh) {
       clearApiCache("inventory");
-      const res = await fetch(`${API_URL}/inventory`, { headers: authHeaders() });
+      const res = await safeFetch(`${API_URL}/inventory`, { headers: authHeaders() });
       const data = await handle(res);
       setCached("inventory", data);
       return data;
@@ -190,7 +206,7 @@ export const api = {
     return fetchCached(`${API_URL}/inventory`, "inventory");
   },
   async createInventoryItem(data) {
-    const res = await fetch(`${API_URL}/inventory`, {
+    const res = await safeFetch(`${API_URL}/inventory`, {
       method: "POST",
       headers: { "Content-Type": "application/json", ...authHeaders() },
       body: JSON.stringify(data),
@@ -199,7 +215,7 @@ export const api = {
     return handle(res);
   },
   async updateInventoryItem(id, data) {
-    const res = await fetch(`${API_URL}/inventory/${id}`, {
+    const res = await safeFetch(`${API_URL}/inventory/${id}`, {
       method: "PATCH",
       headers: { "Content-Type": "application/json", ...authHeaders() },
       body: JSON.stringify(data),
@@ -208,7 +224,7 @@ export const api = {
     return handle(res);
   },
   async deleteInventoryItem(id) {
-    const res = await fetch(`${API_URL}/inventory/${id}`, {
+    const res = await safeFetch(`${API_URL}/inventory/${id}`, {
       method: "DELETE",
       headers: authHeaders(),
     });
@@ -216,7 +232,7 @@ export const api = {
     return handle(res);
   },
   async clearExpiredInventory() {
-    const res = await fetch(`${API_URL}/inventory/expired/clear`, {
+    const res = await safeFetch(`${API_URL}/inventory/expired/clear`, {
       method: "DELETE",
       headers: authHeaders(),
     });
@@ -224,7 +240,7 @@ export const api = {
     return handle(res);
   },
   async bulkUploadCsv(rows) {
-    const res = await fetch(`${API_URL}/inventory/bulk-csv`, {
+    const res = await safeFetch(`${API_URL}/inventory/bulk-csv`, {
       method: "POST",
       headers: { "Content-Type": "application/json", ...authHeaders() },
       body: JSON.stringify(rows),
@@ -235,7 +251,7 @@ export const api = {
 
   // Listings
   async createListing(data) {
-    const res = await fetch(`${API_URL}/listings`, {
+    const res = await safeFetch(`${API_URL}/listings`, {
       method: "POST",
       headers: { "Content-Type": "application/json", ...authHeaders() },
       body: JSON.stringify(data),
@@ -255,7 +271,7 @@ export const api = {
 
   // Pickups
   async requestPickup(data) {
-    const res = await fetch(`${API_URL}/pickups`, {
+    const res = await safeFetch(`${API_URL}/pickups`, {
       method: "POST",
       headers: { "Content-Type": "application/json", ...authHeaders() },
       body: JSON.stringify(data),
@@ -267,7 +283,7 @@ export const api = {
     return handle(res);
   },
   async updatePickup(id, data) {
-    const res = await fetch(`${API_URL}/pickups/${id}`, {
+    const res = await safeFetch(`${API_URL}/pickups/${id}`, {
       method: "PATCH",
       headers: { "Content-Type": "application/json", ...authHeaders() },
       body: JSON.stringify(data),
@@ -301,7 +317,7 @@ export const api = {
 
   // AI Vision Food Freshness Inspector
   async inspectFreshness(imageBase64, itemHint = "") {
-    const res = await fetch(`${API_URL}/ai/inspect-freshness`, {
+    const res = await safeFetch(`${API_URL}/ai/inspect-freshness`, {
       method: "POST",
       headers: { "Content-Type": "application/json", ...authHeaders() },
       body: JSON.stringify({ image_base64: imageBase64, item_hint: itemHint }),
@@ -311,7 +327,7 @@ export const api = {
 
   // QR Code Proof of Rescue Handshake Verification
   async verifyPickupHandshake(pickupId, handshakeToken = "") {
-    const res = await fetch(`${API_URL}/pickups/${pickupId}/verify-handshake`, {
+    const res = await safeFetch(`${API_URL}/pickups/${pickupId}/verify-handshake`, {
       method: "POST",
       headers: { "Content-Type": "application/json", ...authHeaders() },
       body: JSON.stringify({ pickup_id: Number(pickupId), handshake_token: handshakeToken }),
