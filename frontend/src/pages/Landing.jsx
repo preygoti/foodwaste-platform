@@ -1,9 +1,8 @@
-import { useState, useId } from "react";
+import { useState, useEffect, useRef } from "react";
 import { Link } from "react-router-dom";
 import {
   ArrowRight,
-  Scan,
-  Upload,
+  Package,
   Sparkles,
   Store,
   ShieldCheck,
@@ -16,219 +15,305 @@ import {
   MapPin,
   Truck,
   FileText,
-  DollarSign,
   HeartHandshake,
-  Users,
-  Compass,
-  ChevronDown,
-  ChevronUp,
-  Calculator,
-  Globe2,
-  Flame,
-  Utensils,
+  AlertTriangle,
+  AlertCircle,
   BarChart3,
-  HelpCircle,
-  ExternalLink,
-  ShieldAlert,
-  Zap,
+  Bell,
+  Menu,
+  X,
+  Compass,
+  Check,
+  Flame,
+  Activity,
+  Layers,
+  Search,
 } from "lucide-react";
 import Card3D from "../components/Card3D";
+import { api } from "../api";
+
+/**
+ * Custom hook for smooth scroll-triggered viewport entrance animations
+ */
+function useScrollReveal(threshold = 0.15) {
+  const ref = useRef(null);
+  const [isVisible, setIsVisible] = useState(false);
+
+  useEffect(() => {
+    const el = ref.current;
+    if (!el) return;
+
+    // Check if user prefers reduced motion
+    const prefersReducedMotion = window.matchMedia("(prefers-reduced-motion: reduce)").matches;
+    if (prefersReducedMotion) {
+      setIsVisible(true);
+      return;
+    }
+
+    const observer = new IntersectionObserver(
+      ([entry]) => {
+        if (entry.isIntersecting) {
+          setIsVisible(true);
+          observer.unobserve(el);
+        }
+      },
+      { threshold, rootMargin: "0px 0px -40px 0px" }
+    );
+
+    observer.observe(el);
+    return () => observer.disconnect();
+  }, [threshold]);
+
+  return [ref, isVisible];
+}
+
+/**
+ * Custom hook for count-up animation on numeric metrics
+ */
+function useCountUp(targetNumber, isVisible, duration = 1600) {
+  const [count, setCount] = useState(0);
+
+  useEffect(() => {
+    if (!isVisible || typeof targetNumber !== "number" || targetNumber <= 0) return;
+
+    let start = 0;
+    const end = targetNumber;
+    const startTime = performance.now();
+
+    const animate = (currentTime) => {
+      const progress = Math.min((currentTime - startTime) / duration, 1);
+      // Ease out cubic
+      const ease = 1 - Math.pow(1 - progress, 3);
+      setCount(Math.floor(ease * end));
+
+      if (progress < 1) {
+        requestAnimationFrame(animate);
+      } else {
+        setCount(end);
+      }
+    };
+
+    requestAnimationFrame(animate);
+  }, [targetNumber, isVisible, duration]);
+
+  return count;
+}
 
 export default function Landing() {
-  // Interactive Calculator State
-  const [wasteVolumeKg, setWasteVolumeKg] = useState(350);
-  const [activeWorkflowTab, setActiveWorkflowTab] = useState(0);
-  const [openFaq, setOpenFaq] = useState(null);
+  const [mobileMenuOpen, setMobileMenuOpen] = useState(false);
+  const [platformMetrics, setPlatformMetrics] = useState(null);
 
-  // Dynamic calculations for the ROI Calculator
-  const mealsProvided = Math.round(wasteVolumeKg * 2.5);
-  const co2AvoidedKg = Math.round(wasteVolumeKg * 2.45);
-  const taxReliefEst = Math.round(wasteVolumeKg * 140); // Approx ₹140 or equivalent currency / kg value
-  const landfillSaved = Math.round(wasteVolumeKg * 25);
+  // Section reveal refs
+  const [problemRef, problemVisible] = useScrollReveal(0.12);
+  const [solutionRef, solutionVisible] = useScrollReveal(0.12);
+  const [howItWorksRef, howItWorksVisible] = useScrollReveal(0.1);
+  const [riskScoringRef, riskScoringVisible] = useScrollReveal(0.12);
+  const [featuresRef, featuresVisible] = useScrollReveal(0.08);
+  const [impactRef, impactVisible] = useScrollReveal(0.1);
+  const [statementRef, statementVisible] = useScrollReveal(0.15);
+  const [ctaRef, ctaVisible] = useScrollReveal(0.15);
 
-  const workflowSteps = [
-    {
-      num: "01",
-      title: "Rapid Multi-Modal Ingestion",
-      badge: "Module 01 · Ledger Ingestion",
-      icon: Scan,
-      desc: "Log batches in seconds. Use your device camera to scan 1D/2D barcodes with instant metadata lookup, upload bulk CSV spreadsheets with automated column mapping, or use our smart form.",
-      highlights: [
-        "Live camera barcode scanner (`html5-qrcode`)",
-        "PapaParse client-side batch CSV processing",
-        "Custom storage bin & shelf-life logging",
-      ],
-      mockup: {
-        title: "Barcode Scanner Active",
-        subtitle: "Camera OCR & Barcode Decoding",
-        code: "8901030894512",
-        detected: "Organic Greek Yogurt · 24 Units (Cold Room 2)",
-      },
-    },
-    {
-      num: "02",
-      title: "AI Risk Engine & Freshness Scan",
-      badge: "Module 02 · Predictive AI",
-      icon: Sparkles,
-      desc: "Our heuristic waste risk engine scores each inventory item from 0 to 100 based on expiry urgency and daily consumption velocity, accompanied by AI vision freshness inspection.",
-      highlights: [
-        "0–100 waste risk scoring engine",
-        "Automated `Reorder +X` stock buffer advice",
-        "Real-time reactive 1-second countdown tickers",
-      ],
-      mockup: {
-        title: "AI Spoilage Prediction",
-        subtitle: "Freshness Index: 94% (Grade A)",
-        code: "RISK LEVEL: WATCH (Score 52)",
-        detected: "Consume or list within 48h for 100% waste avoidance",
-      },
-    },
-    {
-      num: "03",
-      title: "1-Click Surplus Marketplace",
-      badge: "Module 03 · Redistribution",
-      icon: Store,
-      desc: "Instantly broadcast near-expiry inventory to verified local NGOs and food banks on our real-time radar map with dynamic GPS radius and turn-by-turn routing.",
-      highlights: [
-        "Live Radar Map powered by OpenStreetMap",
-        "Multi-city address geocoding & Haversine distance",
-        "Turn-by-turn Google Maps driving navigation",
-      ],
-      mockup: {
-        title: "Surplus Broadcast Active",
-        subtitle: "Available to 18 Verified Non-Profits Nearby",
-        code: "RADIUS: 15 KM",
-        detected: "40 Liters Milk & 18 Sourdough Loaves Ready for Pickup",
-      },
-    },
-    {
-      num: "04",
-      title: "Digital QR Handshake & ESG Statement",
-      badge: "Module 04 · Trust & Telemetry",
-      icon: ShieldCheck,
-      desc: "Coordinate pickups with competitive NGO requests. Once accepted, drivers present a cryptographic QR pass at storefront pickup to verify handoff and auto-generate ESG audit tax relief certificates.",
-      highlights: [
-        "Cryptographic Driver Rescue Pass (`HL-RES-XXXX`)",
-        "Donor storefront QR camera verification",
-        "Printable official ESG tax deduction audit statements",
-      ],
-      mockup: {
-        title: "Handshake Verified 🎉",
-        subtitle: "Chain of Custody Transferred to Helping Hands NGO",
-        code: "PASS ID: HL-RES-5002",
-        detected: "ESG Statement Generated: 100 kg Diverted (245 kg CO₂e Saved)",
-      },
-    },
-  ];
+  // Fetch real platform metrics if available
+  useEffect(() => {
+    api
+      .getDashboardMetrics()
+      .then((data) => {
+        if (data && typeof data === "object") {
+          setPlatformMetrics(data);
+        }
+      })
+      .catch(() => {
+        // Fallback gracefully if unauthenticated or endpoint is idle
+      });
+  }, []);
 
-  const faqs = [
-    {
-      q: "How does Harvest Ledger prevent edible food from reaching landfills?",
-      a: "Harvest Ledger pairs predictive shelf-life tracking with a real-time redistribution marketplace. When food inventory nears its expiration date, businesses can post it with a single click. Verified local NGOs and food rescue charities receive immediate alerts, request the batch, and dispatch drivers for timely pickup.",
-    },
-    {
-      q: "What is the Digital QR Rescue Handshake and how does it work?",
-      a: "To eliminate fraud and maintain verifiable chain-of-custody, the platform generates a unique Digital Rescue Pass QR code for the NGO driver once the donor accepts their request. Upon arrival at the donor's storefront, the donor scans the driver's QR pass using our built-in camera scanner. This closes the rescue loop, releases the custody record, and logs compliance data.",
-    },
-    {
-      q: "How are the ESG Tax Relief & Environmental metrics computed?",
-      a: "Every verified food donation automatically calculates: 1) Fair-market valuation tax deduction credits, 2) Landfill disposal fees avoided by weight, 3) Meals provided (standard ratio of ~2.5 meals per kg), and 4) CO₂e greenhouse gas emissions prevented (based on EPA WARM landfill diversion emission factors of 2.45 kg CO₂e per kg of food).",
-    },
-    {
-      q: "Is Harvest Ledger free for NGOs and community food banks?",
-      a: "Yes! 100% of Harvest Ledger's NGO tools—including the Available Surplus Marketplace, Live Radar Map, Driver QR Passes, and Impact Analytics—are completely free for registered non-profit organizations, shelters, and community kitchens.",
-    },
-    {
-      q: "How does the mandatory 6-digit email OTP verification protect users?",
-      a: "During registration and password resets, the platform dispatches a secure 6-digit verification code to the user's work email (via Brevo HTTPS API or SMTP). This prevents unauthorized signups, ensures all donor and non-profit accounts are legitimate, and protects organization identity.",
-    },
-    {
-      q: "Can I import large existing inventory databases using Excel or CSV?",
-      a: "Yes! Harvest Ledger includes a bulk CSV Ingestion Engine. You can upload spreadsheets with hundreds of rows, download standardized CSV templates, map columns automatically, and validate date formats in real time with client-side zero-latency parsing.",
-    },
-  ];
-
-  const toggleFaq = (idx) => {
-    setOpenFaq(openFaq === idx ? null : idx);
-  };
+  // Handle escape key and body scroll lock for mobile menu
+  useEffect(() => {
+    const handleKeyDown = (e) => {
+      if (e.key === "Escape" && mobileMenuOpen) {
+        setMobileMenuOpen(false);
+      }
+    };
+    if (mobileMenuOpen) {
+      document.body.style.overflow = "hidden";
+      window.addEventListener("keydown", handleKeyDown);
+    } else {
+      document.body.style.overflow = "";
+    }
+    return () => {
+      document.body.style.overflow = "";
+      window.removeEventListener("keydown", handleKeyDown);
+    };
+  }, [mobileMenuOpen]);
 
   return (
-    <div className="min-h-screen bg-wheat-50 text-forest-800 flex flex-col overflow-x-hidden selection:bg-forest-800 selection:text-wheat-100">
+    <div className="min-h-screen bg-wheat-50 text-forest-800 flex flex-col overflow-x-hidden selection:bg-forest-800 selection:text-wheat-50 font-sans antialiased">
       {/* ------------------------------------------------------------- */}
-      {/* STICKY NAVIGATION HEADER                                      */}
+      {/* 1. NAVIGATION                                                 */}
       {/* ------------------------------------------------------------- */}
-      <header className="sticky top-0 z-40 bg-wheat-50/90 backdrop-blur-md border-b border-wheat-200/80 transition-all">
+      <header className="sticky top-0 z-40 bg-wheat-50/95 backdrop-blur-md border-b border-wheat-200/80 transition-all">
         <div className="max-w-6xl w-full mx-auto px-4 sm:px-6 lg:px-8 py-3.5 flex items-center justify-between">
-          <div className="flex items-center gap-6">
-            <Link to="/" className="group flex items-center gap-2">
-              <div className="w-8 h-8 rounded-lg bg-forest-800 text-wheat-50 flex items-center justify-center font-bold text-sm shadow-2xs group-hover:scale-105 transition-transform">
-                HL
-              </div>
-              <div>
-                <p className="font-display italic text-xl sm:text-2xl text-forest-800 font-bold tracking-tight leading-none">
-                  Harvest&nbsp;Ledger
-                </p>
-                <p className="text-[9px] sm:text-[10px] font-mono uppercase tracking-widest text-forest-800/50 mt-0.5">
-                  AI Surplus &amp; Redistribution
-                </p>
-              </div>
-            </Link>
+          {/* Brand */}
+          <Link to="/" className="group flex items-center gap-2.5">
+            <div className="w-8 h-8 rounded-lg bg-forest-800 text-wheat-50 flex items-center justify-center font-display italic font-bold text-sm shadow-2xs group-hover:scale-105 transition-transform">
+              HL
+            </div>
+            <div>
+              <span className="font-display italic text-lg sm:text-xl text-forest-800 font-bold tracking-tight block leading-none">
+                HARVEST LEDGER
+              </span>
+              <span className="text-[10px] font-mono tracking-wider text-forest-800/60 block mt-0.5">
+                Turn Surplus Into Impact
+              </span>
+            </div>
+          </Link>
 
-            {/* Desktop Navigation Links */}
-            <nav className="hidden md:flex items-center gap-5 text-xs font-semibold text-forest-800/70">
-              <a href="#how-it-works" className="hover:text-forest-900 transition-colors">
-                How It Works
-              </a>
-              <a href="#benefits" className="hover:text-forest-900 transition-colors">
-                Key Benefits
-              </a>
-              <a href="#calculator" className="hover:text-forest-900 transition-colors">
-                ROI Calculator
-              </a>
-              <a href="#environmental-impact" className="hover:text-forest-900 transition-colors">
-                Environmental Impact
-              </a>
-              <a href="#faq" className="hover:text-forest-900 transition-colors">
-                FAQ
-              </a>
-            </nav>
-          </div>
+          {/* Desktop Navigation Links */}
+          <nav className="hidden md:flex items-center gap-7 text-xs font-semibold text-forest-800/75">
+            <a href="#hero" className="hover:text-forest-950 transition-colors">
+              Home
+            </a>
+            <a href="#how-it-works" className="hover:text-forest-950 transition-colors">
+              How It Works
+            </a>
+            <a href="#features" className="hover:text-forest-950 transition-colors">
+              Features
+            </a>
+            <a href="#impact" className="hover:text-forest-950 transition-colors">
+              Impact
+            </a>
+          </nav>
 
-          <div className="flex items-center gap-2 sm:gap-3">
+          {/* Right Action & Mobile Menu Toggle */}
+          <div className="flex items-center gap-3">
             <Link
               to="/login"
-              className="px-3.5 py-1.5 sm:px-4 sm:py-2 text-xs sm:text-sm font-semibold text-forest-800 bg-white border border-wheat-300 rounded-xl hover:bg-wheat-100 transition-all shadow-2xs active:scale-[0.98]"
+              className="hidden sm:inline-flex px-3.5 py-1.5 text-xs font-semibold text-forest-800 hover:text-forest-950 hover:bg-wheat-100 rounded-lg transition-colors"
             >
               Sign In
             </Link>
             <Link
               to="/register"
-              className="px-3.5 py-1.5 sm:px-4 sm:py-2 text-xs sm:text-sm font-semibold bg-forest-800 text-wheat-50 border border-forest-800 rounded-xl hover:bg-forest-700 shadow-sm transition-all active:scale-[0.98] flex items-center gap-1.5"
+              className="inline-flex items-center gap-1.5 px-4 py-2 text-xs font-semibold bg-forest-800 text-wheat-50 rounded-xl hover:bg-forest-700 shadow-sm transition-all active:scale-[0.98]"
             >
               <span>Get Started</span>
               <ArrowRight className="w-3.5 h-3.5 hidden sm:inline" />
             </Link>
+
+            {/* Mobile Menu Button */}
+            <button
+              type="button"
+              onClick={() => setMobileMenuOpen(true)}
+              className="md:hidden p-2 rounded-lg text-forest-800 hover:bg-wheat-100 transition-colors"
+              aria-label="Open Navigation Menu"
+              aria-expanded={mobileMenuOpen}
+            >
+              <Menu className="w-5 h-5" />
+            </button>
           </div>
         </div>
       </header>
 
+      {/* Mobile Drawer Backdrop & Navigation */}
+      {mobileMenuOpen && (
+        <div
+          className="fixed inset-0 z-50 bg-black/60 backdrop-blur-sm md:hidden animate-in fade-in duration-200"
+          onClick={() => setMobileMenuOpen(false)}
+        >
+          <div
+            className="fixed inset-y-0 right-0 w-72 max-w-[85vw] bg-white border-l border-wheat-200 shadow-2xl p-6 flex flex-col justify-between animate-in slide-in-from-right duration-250"
+            onClick={(e) => e.stopPropagation()}
+          >
+            <div className="space-y-6">
+              <div className="flex items-center justify-between pb-4 border-b border-wheat-100">
+                <div>
+                  <span className="font-display italic text-lg font-bold text-forest-800 block">
+                    HARVEST LEDGER
+                  </span>
+                  <span className="text-[10px] font-mono text-forest-800/60">
+                    Turn Surplus Into Impact
+                  </span>
+                </div>
+                <button
+                  type="button"
+                  onClick={() => setMobileMenuOpen(false)}
+                  className="p-1.5 text-forest-800/60 hover:text-forest-800 rounded-lg hover:bg-wheat-100 transition-colors"
+                  aria-label="Close Menu"
+                >
+                  <X className="w-5 h-5" />
+                </button>
+              </div>
+
+              <nav className="space-y-2 text-sm font-semibold text-forest-800">
+                <a
+                  href="#hero"
+                  onClick={() => setMobileMenuOpen(false)}
+                  className="block px-3 py-2.5 rounded-lg hover:bg-wheat-50 transition-colors"
+                >
+                  Home
+                </a>
+                <a
+                  href="#how-it-works"
+                  onClick={() => setMobileMenuOpen(false)}
+                  className="block px-3 py-2.5 rounded-lg hover:bg-wheat-50 transition-colors"
+                >
+                  How It Works
+                </a>
+                <a
+                  href="#features"
+                  onClick={() => setMobileMenuOpen(false)}
+                  className="block px-3 py-2.5 rounded-lg hover:bg-wheat-50 transition-colors"
+                >
+                  Features
+                </a>
+                <a
+                  href="#impact"
+                  onClick={() => setMobileMenuOpen(false)}
+                  className="block px-3 py-2.5 rounded-lg hover:bg-wheat-50 transition-colors"
+                >
+                  Impact
+                </a>
+              </nav>
+            </div>
+
+            <div className="space-y-2.5 pt-6 border-t border-wheat-100">
+              <Link
+                to="/login"
+                onClick={() => setMobileMenuOpen(false)}
+                className="w-full inline-flex items-center justify-center py-2.5 border border-wheat-300 text-forest-800 font-semibold text-xs rounded-xl hover:bg-wheat-50 transition-colors"
+              >
+                Sign In
+              </Link>
+              <Link
+                to="/register"
+                onClick={() => setMobileMenuOpen(false)}
+                className="w-full inline-flex items-center justify-center gap-1.5 py-2.5 bg-forest-800 text-wheat-50 font-semibold text-xs rounded-xl hover:bg-forest-700 shadow-sm transition-colors"
+              >
+                <span>Get Started Free</span>
+                <ArrowRight className="w-3.5 h-3.5" />
+              </Link>
+            </div>
+          </div>
+        </div>
+      )}
+
       {/* ------------------------------------------------------------- */}
-      {/* HERO SECTION                                                  */}
+      {/* 2. HERO SECTION & 3. HERO VISUAL                              */}
       {/* ------------------------------------------------------------- */}
-      <section className="relative max-w-6xl w-full mx-auto px-4 sm:px-6 lg:px-8 pt-10 sm:pt-16 pb-14 sm:pb-20 grid md:grid-cols-12 gap-8 lg:gap-12 items-center">
-        <div className="md:col-span-7 space-y-5 sm:space-y-6">
+      <section id="hero" className="relative max-w-6xl w-full mx-auto px-4 sm:px-6 lg:px-8 pt-10 sm:pt-16 pb-16 sm:pb-24 grid md:grid-cols-12 gap-8 lg:gap-12 items-center">
+        {/* Left Hero Content */}
+        <div className="md:col-span-7 space-y-6 animate-in fade-in slide-in-from-bottom-3 duration-500">
           <div className="inline-flex items-center gap-2 px-3 py-1 rounded-full bg-forest-800/10 border border-forest-800/20 text-forest-800 font-mono text-xs">
             <span className="w-2 h-2 rounded-full bg-emerald-500 animate-pulse" />
-            <span>AI-Driven Food Waste Intelligence &bull; Live v2.0</span>
+            <span className="uppercase tracking-wider font-semibold">SMART FOOD RESCUE PLATFORM</span>
           </div>
 
           <h1 className="font-display text-4xl sm:text-5xl lg:text-6xl leading-[1.08] text-forest-800 font-bold tracking-tight">
-            Stop Food Spoilage. <br />
-            <span className="italic font-normal text-forest-700">Predict, Rescue &amp; Redistribute</span> Surplus.
+            Turn Surplus Food Into Real Impact.
           </h1>
 
           <p className="text-forest-800/75 text-base sm:text-lg leading-relaxed max-w-xl">
-            A high-precision operating platform connecting commercial food businesses with verified non-profit networks. Features camera barcode scanning, AI waste risk scoring, live radar discovery, digital QR handshakes, and automated ESG tax deductions.
+            Harvest Ledger helps businesses and organizations track surplus food, identify what needs attention, and connect usable food with people who can rescue it — before it becomes waste.
           </p>
 
           <div className="flex flex-col sm:flex-row items-stretch sm:items-center gap-3 pt-2">
@@ -236,117 +321,101 @@ export default function Landing() {
               to="/register"
               className="inline-flex items-center justify-center gap-2 px-6 py-3.5 bg-forest-800 text-wheat-50 border border-forest-800 rounded-xl font-semibold text-sm sm:text-base hover:bg-forest-700 shadow-md transition-all active:scale-[0.99]"
             >
-              <span>Register Organization Free</span>
+              <span>Start Rescuing Food</span>
               <ArrowRight className="w-4 h-4" />
             </Link>
             <a
               href="#how-it-works"
               className="inline-flex items-center justify-center gap-2 px-6 py-3.5 bg-white text-forest-800 border border-wheat-300 rounded-xl font-semibold text-sm sm:text-base hover:bg-wheat-100 transition-all shadow-2xs active:scale-[0.99]"
             >
-              <Compass className="w-4 h-4 text-forest-600" />
-              <span>Explore How It Works</span>
+              <span>See How It Works</span>
             </a>
           </div>
 
-          {/* Quick Feature Tickers */}
-          <div className="flex flex-wrap items-center gap-3 sm:gap-6 pt-3 text-xs font-mono text-forest-800/70">
-            <span className="flex items-center gap-1.5 bg-wheat-100/70 px-2.5 py-1 rounded-lg border border-wheat-200">
-              <CheckCircle2 className="w-3.5 h-3.5 text-emerald-600" />
-              1-Sec Expiry Countdowns
-            </span>
-            <span className="flex items-center gap-1.5 bg-wheat-100/70 px-2.5 py-1 rounded-lg border border-wheat-200">
-              <CheckCircle2 className="w-3.5 h-3.5 text-emerald-600" />
-              Zero-Landfill Guarantee
-            </span>
-            <span className="flex items-center gap-1.5 bg-wheat-100/70 px-2.5 py-1 rounded-lg border border-wheat-200">
-              <CheckCircle2 className="w-3.5 h-3.5 text-emerald-600" />
-              Official ESG Tax Statement
-            </span>
-          </div>
+          <p className="text-xs font-mono uppercase tracking-widest text-forest-800/50 pt-2">
+            Track &bull; Rescue &bull; Redistribute
+          </p>
         </div>
 
-        {/* 3D Live Mock Interactive Ledger Card */}
-        <div className="md:col-span-5 relative">
-          {/* Ambient 3D Floating Pill 1 (Top Left) */}
-          <div className="absolute -top-4 -left-3 z-20 hidden sm:flex items-center gap-1.5 px-3 py-1.5 bg-forest-800 text-wheat-50 rounded-full shadow-lg text-xs font-mono font-semibold animate-float-slow border border-forest-600">
+        {/* 3. HERO VISUAL: Modern Interactive Dashboard Preview */}
+        <div className="md:col-span-5 relative animate-in fade-in zoom-in-95 duration-700">
+          {/* Subtle Floating Badge 1 (Top Left) */}
+          <div className="absolute -top-3 -left-3 z-20 hidden sm:flex items-center gap-1.5 px-3 py-1.5 bg-forest-800 text-wheat-50 rounded-full shadow-lg text-xs font-mono font-semibold animate-float-slow border border-forest-600">
             <Leaf className="w-3.5 h-3.5 text-emerald-400" />
-            <span>100% Landfill Diversion</span>
+            <span>Food Saved 🌱</span>
           </div>
 
-          {/* Ambient 3D Floating Pill 2 (Bottom Right) */}
-          <div className="absolute -bottom-4 -right-3 z-20 hidden sm:flex items-center gap-1.5 px-3 py-1.5 bg-tomato-500 text-white rounded-full shadow-lg text-xs font-mono font-semibold animate-float-delayed border border-tomato-400">
-            <Sparkles className="w-3.5 h-3.5 text-amber-200" />
-            <span>Live AI Risk Matrix</span>
+          {/* Subtle Floating Badge 2 (Bottom Right) */}
+          <div className="absolute -bottom-3 -right-2 z-20 hidden sm:flex items-center gap-1.5 px-3 py-1.5 bg-emerald-600 text-white rounded-full shadow-lg text-xs font-mono font-semibold animate-float-delayed border border-emerald-500">
+            <CheckCircle2 className="w-3.5 h-3.5 text-white" />
+            <span>Pickup Scheduled ✓</span>
           </div>
 
-          <Card3D maxTilt={8} scale={1.02}>
+          {/* Subtle Floating Badge 3 (Top Right) */}
+          <div className="absolute -top-3 -right-2 z-20 hidden sm:flex items-center gap-1.5 px-2.5 py-1 bg-rose-50 text-rose-800 rounded-full shadow-md text-[11px] font-mono font-semibold border border-rose-200">
+            <Flame className="w-3 h-3 text-rose-600" />
+            <span>Risk Detected</span>
+          </div>
+
+          <Card3D maxTilt={7} scale={1.02}>
             <div className="bg-white border border-wheat-200 rounded-2xl shadow-xl p-5 sm:p-6 space-y-4">
               <div className="flex items-center justify-between border-b border-wheat-100 pb-3">
-                <div className="flex items-center gap-2">
-                  <span className="w-2.5 h-2.5 rounded-full bg-emerald-500 animate-pulse" />
-                  <p className="font-mono text-xs uppercase tracking-widest text-forest-800/80 font-bold">
-                    Live Surplus Ledger
-                  </p>
+                <div className="space-y-0.5">
+                  <span className="text-[10px] font-mono uppercase tracking-wider text-forest-800/50 block font-semibold">
+                    UI Visualizer &bull; Live Telemetry
+                  </span>
+                  <h3 className="font-display font-bold text-base text-forest-800">
+                    FOOD RESCUE STATUS
+                  </h3>
                 </div>
-                <span className="px-2 py-0.5 rounded text-[10px] font-mono bg-forest-50 text-forest-700 font-semibold border border-forest-100">
-                  Real-Time &bull; Active
+                <span className="px-2.5 py-1 rounded-full text-[10px] font-mono font-bold bg-emerald-50 text-emerald-800 border border-emerald-200 flex items-center gap-1">
+                  <span className="w-1.5 h-1.5 rounded-full bg-emerald-500 animate-pulse" />
+                  Active
                 </span>
               </div>
 
-              <div className="space-y-2.5">
-                {[
-                  {
-                    name: "Fresh Whole Milk · 40 Liters",
-                    location: "Cold Storage B",
-                    days: "14h 22m remaining",
-                    risk: "CRITICAL · 88",
-                    color: "#dc2626",
-                    bg: "rgba(220, 38, 38, 0.1)",
-                  },
-                  {
-                    name: "Artisan Sourdough · 25 Loaves",
-                    location: "Bakery Bin 1",
-                    days: "2d 06h remaining",
-                    risk: "WATCH · 54",
-                    color: "#d97706",
-                    bg: "rgba(217, 119, 6, 0.1)",
-                  },
-                  {
-                    name: "Organic Apples · 65 kg",
-                    location: "Produce Bay A",
-                    days: "4d 18h remaining",
-                    risk: "FRESH · 18",
-                    color: "#16a34a",
-                    bg: "rgba(22, 163, 74, 0.1)",
-                  },
-                ].map((row) => (
-                  <div
-                    key={row.name}
-                    className="p-3 rounded-xl bg-wheat-50/50 border border-wheat-200 flex items-center justify-between gap-2 hover:border-forest-400/50 transition-colors"
-                  >
-                    <div className="min-w-0">
-                      <p className="text-xs sm:text-sm font-semibold text-forest-800 truncate">{row.name}</p>
-                      <p className="text-[10px] sm:text-[11px] text-forest-800/60 flex items-center gap-1 mt-0.5">
-                        <MapPin className="w-3 h-3 text-forest-600 shrink-0" />
-                        <span>{row.location} &bull; <strong className="text-forest-800">{row.days}</strong></span>
-                      </p>
-                    </div>
-                    <span
-                      className="font-mono text-[9px] sm:text-[10px] font-bold px-2 py-1 rounded-full whitespace-nowrap shrink-0"
-                      style={{ color: row.color, backgroundColor: row.bg }}
-                    >
-                      {row.risk}
-                    </span>
+              {/* 3 Metric Indicator Cards */}
+              <div className="grid grid-cols-3 gap-2 text-center font-mono">
+                <div className="p-2.5 rounded-xl bg-rose-50/70 border border-rose-100">
+                  <span className="text-[10px] text-rose-800/70 uppercase block font-semibold">Food At Risk</span>
+                  <strong className="text-base sm:text-lg font-bold text-rose-800">12 Items</strong>
+                </div>
+                <div className="p-2.5 rounded-xl bg-amber-50/70 border border-amber-100">
+                  <span className="text-[10px] text-amber-800/70 uppercase block font-semibold">Ready for Rescue</span>
+                  <strong className="text-base sm:text-lg font-bold text-amber-900">8 Items</strong>
+                </div>
+                <div className="p-2.5 rounded-xl bg-emerald-50/70 border border-emerald-100">
+                  <span className="text-[10px] text-emerald-800/70 uppercase block font-semibold">Rescued Month</span>
+                  <strong className="text-base sm:text-lg font-bold text-emerald-800">124 kg</strong>
+                </div>
+              </div>
+
+              {/* Sample Batch Ledger Row */}
+              <div className="space-y-2 pt-1">
+                <div className="p-2.5 rounded-xl bg-wheat-50/70 border border-wheat-200/80 flex items-center justify-between text-xs font-mono">
+                  <div>
+                    <span className="font-bold text-forest-800 block">Fresh Milk (30L)</span>
+                    <span className="text-[10px] text-forest-800/60">Cold Storage A &bull; Expiry in 18h</span>
                   </div>
-                ))}
+                  <span className="px-2 py-0.5 rounded bg-rose-100 text-rose-800 text-[10px] font-bold">
+                    CRITICAL
+                  </span>
+                </div>
+
+                <div className="p-2.5 rounded-xl bg-wheat-50/70 border border-wheat-200/80 flex items-center justify-between text-xs font-mono">
+                  <div>
+                    <span className="font-bold text-forest-800 block">Bakery Sourdough (15x)</span>
+                    <span className="text-[10px] text-forest-800/60">Bakery Rack &bull; Expiry in 2d</span>
+                  </div>
+                  <span className="px-2 py-0.5 rounded bg-amber-100 text-amber-800 text-[10px] font-bold">
+                    WATCH
+                  </span>
+                </div>
               </div>
 
-              <div className="pt-2 flex items-center justify-between text-xs text-forest-800/60 border-t border-wheat-100 font-mono">
-                <span className="flex items-center gap-1 text-[11px]">
-                  <ShieldCheck className="w-3.5 h-3.5 text-emerald-600" />
-                  QR Handshake Ready
-                </span>
-                <span className="font-semibold text-forest-800 text-[11px]">~325 Meals Potential</span>
+              <div className="pt-2 flex items-center justify-between text-[11px] text-forest-800/60 border-t border-wheat-100 font-mono">
+                <span>Rescue Stream</span>
+                <span className="font-semibold text-forest-800">Zero-Waste Connected</span>
               </div>
             </div>
           </Card3D>
@@ -354,527 +423,251 @@ export default function Landing() {
       </section>
 
       {/* ------------------------------------------------------------- */}
-      {/* LIVE PLATFORM TELEMETRY & IMPACT STATS                        */}
+      {/* 4. PROBLEM SECTION                                            */}
       {/* ------------------------------------------------------------- */}
-      <section className="bg-forest-800 text-wheat-50 py-10 border-y border-forest-700 shadow-inner">
-        <div className="max-w-6xl mx-auto px-4 sm:px-6 lg:px-8">
-          <div className="grid grid-cols-2 lg:grid-cols-4 gap-6 text-center">
-            <div className="space-y-1">
-              <div className="text-2xl sm:text-4xl font-display font-bold text-white tracking-tight">
-                148,500+
+      <section ref={problemRef} className="py-16 sm:py-24 bg-white border-y border-wheat-200 scroll-mt-14">
+        <div className="max-w-6xl mx-auto px-4 sm:px-6 lg:px-8 space-y-12">
+          {/* Heading */}
+          <div className={`text-center max-w-2xl mx-auto space-y-3 transition-all duration-700 ${
+            problemVisible ? "opacity-100 translate-y-0" : "opacity-0 translate-y-6"
+          }`}>
+            <span className="font-mono text-xs uppercase tracking-widest text-tomato-500 font-bold">
+              THE PROBLEM
+            </span>
+            <h2 className="font-display text-3xl sm:text-4xl text-forest-800 font-bold">
+              Good Food Shouldn't Become Waste.
+            </h2>
+            <p className="text-xs sm:text-sm text-forest-800/70 leading-relaxed">
+              Every day, perfectly usable food can become waste simply because it is overlooked, expires before it can be used, or never reaches the people who need it.
+            </p>
+          </div>
+
+          {/* 3 Problem Cards with Staggered Slide In */}
+          <div className="grid md:grid-cols-3 gap-6">
+            {/* Card 1 */}
+            <div className={`p-6 sm:p-7 rounded-2xl bg-wheat-50/60 border border-wheat-200 space-y-3 shadow-2xs hover:shadow-md transition-all duration-700 ${
+              problemVisible ? "opacity-100 translate-x-0" : "opacity-0 -translate-x-6"
+            }`}>
+              <div className="w-10 h-10 rounded-xl bg-rose-100 text-rose-700 flex items-center justify-center font-bold">
+                <Clock className="w-5 h-5" />
               </div>
-              <p className="text-xs sm:text-sm text-wheat-200/80 font-mono uppercase tracking-wider">
-                Nutritious Meals Rescued
+              <h3 className="font-display text-lg font-bold text-forest-800">
+                Food Gets Forgotten
+              </h3>
+              <p className="text-xs sm:text-sm text-forest-800/70 leading-relaxed">
+                Surplus food can sit unnoticed until its expiry date gets dangerously close.
               </p>
             </div>
 
-            <div className="space-y-1">
-              <div className="text-2xl sm:text-4xl font-display font-bold text-emerald-300 tracking-tight">
-                371,250 kg
+            {/* Card 2 */}
+            <div className={`p-6 sm:p-7 rounded-2xl bg-wheat-50/60 border border-wheat-200 space-y-3 shadow-2xs hover:shadow-md transition-all duration-700 delay-100 ${
+              problemVisible ? "opacity-100 translate-y-0" : "opacity-0 translate-y-6"
+            }`}>
+              <div className="w-10 h-10 rounded-xl bg-amber-100 text-amber-800 flex items-center justify-center font-bold">
+                <AlertTriangle className="w-5 h-5" />
               </div>
-              <p className="text-xs sm:text-sm text-wheat-200/80 font-mono uppercase tracking-wider">
-                CO₂e Emissions Prevented
+              <h3 className="font-display text-lg font-bold text-forest-800">
+                Action Comes Too Late
+              </h3>
+              <p className="text-xs sm:text-sm text-forest-800/70 leading-relaxed">
+                Without clear visibility into expiry risk, teams may not know which food needs attention first.
               </p>
             </div>
 
-            <div className="space-y-1">
-              <div className="text-2xl sm:text-4xl font-display font-bold text-gold-300 tracking-tight">
-                ₹1.2 Cr+ / $145K
+            {/* Card 3 */}
+            <div className={`p-6 sm:p-7 rounded-2xl bg-wheat-50/60 border border-wheat-200 space-y-3 shadow-2xs hover:shadow-md transition-all duration-700 delay-200 ${
+              problemVisible ? "opacity-100 translate-x-0" : "opacity-0 translate-x-6"
+            }`}>
+              <div className="w-10 h-10 rounded-xl bg-forest-100 text-forest-800 flex items-center justify-center font-bold">
+                <Truck className="w-5 h-5" />
               </div>
-              <p className="text-xs sm:text-sm text-wheat-200/80 font-mono uppercase tracking-wider">
-                Tax Relief &amp; Waste Savings
+              <h3 className="font-display text-lg font-bold text-forest-800">
+                Rescue Is Disconnected
+              </h3>
+              <p className="text-xs sm:text-sm text-forest-800/70 leading-relaxed">
+                Even when surplus food is available, finding the right pickup or redistribution opportunity can be difficult.
               </p>
             </div>
+          </div>
 
-            <div className="space-y-1">
-              <div className="text-2xl sm:text-4xl font-display font-bold text-white tracking-tight">
-                520+
-              </div>
-              <p className="text-xs sm:text-sm text-wheat-200/80 font-mono uppercase tracking-wider">
-                Verified Donors &amp; Non-Profits
-              </p>
-            </div>
+          {/* Transition Statement */}
+          <div className={`text-center pt-2 transition-all duration-700 delay-300 ${
+            problemVisible ? "opacity-100 translate-y-0" : "opacity-0 translate-y-4"
+          }`}>
+            <p className="text-xs sm:text-sm font-semibold text-forest-800 bg-forest-50 border border-forest-200/80 px-4 py-2.5 rounded-full inline-block">
+              Harvest Ledger brings these steps together in one place.
+            </p>
           </div>
         </div>
       </section>
 
       {/* ------------------------------------------------------------- */}
-      {/* HOW IT WORKS: 4-STEP INTERACTIVE END-TO-END WORKFLOW         */}
+      {/* 5. SOLUTION SECTION                                           */}
       {/* ------------------------------------------------------------- */}
-      <section id="how-it-works" className="py-16 sm:py-24 bg-white border-b border-wheat-200 scroll-mt-14">
+      <section ref={solutionRef} className="py-16 sm:py-24 bg-wheat-50 border-b border-wheat-200 scroll-mt-14">
         <div className="max-w-6xl mx-auto px-4 sm:px-6 lg:px-8 space-y-12">
-          <div className="text-center max-w-2xl mx-auto space-y-2">
-            <span className="font-mono text-xs uppercase tracking-widest text-tomato-500 font-semibold">
-              Step-By-Step Architecture
+          {/* Heading */}
+          <div className={`text-center max-w-2xl mx-auto space-y-3 transition-all duration-700 ${
+            solutionVisible ? "opacity-100 translate-y-0" : "opacity-0 translate-y-6"
+          }`}>
+            <span className="font-mono text-xs uppercase tracking-widest text-emerald-700 font-bold">
+              OUR SOLUTION
             </span>
             <h2 className="font-display text-3xl sm:text-4xl text-forest-800 font-bold">
-              How Harvest Ledger Works
+              From Surplus to Rescue — In One Platform.
             </h2>
-            <p className="text-xs sm:text-sm text-forest-800/70">
-              A frictionless digital bridge connecting commercial kitchens, grocers, and community food rescue operations in real time.
+            <p className="text-xs sm:text-sm text-forest-800/70 leading-relaxed">
+              Harvest Ledger gives food providers a simple way to monitor inventory, identify high-risk items, create listings, coordinate pickups, and understand their impact.
             </p>
           </div>
 
-          {/* 4-Step Interactive Process Navigation Grid */}
-          <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-3 sm:gap-4">
-            {workflowSteps.map((step, idx) => {
-              const Icon = step.icon;
-              const isActive = activeWorkflowTab === idx;
+          {/* Visual Connected Flow: TRACK -> IDENTIFY -> LIST -> RESCUE -> MEASURE */}
+          <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-5 gap-3.5 sm:gap-4">
+            {[
+              {
+                step: "01",
+                label: "TRACK",
+                desc: "Monitor batch quantities, categories & shelf-life.",
+                icon: Package,
+              },
+              {
+                step: "02",
+                label: "IDENTIFY",
+                desc: "Evaluate 0–100 AI waste risk urgency.",
+                icon: Sparkles,
+              },
+              {
+                step: "03",
+                label: "LIST",
+                desc: "Publish near-expiry surplus in 1-click.",
+                icon: Store,
+              },
+              {
+                step: "04",
+                label: "RESCUE",
+                desc: "Coordinate driver QR pass pickup handshakes.",
+                icon: ShieldCheck,
+              },
+              {
+                step: "05",
+                label: "MEASURE",
+                desc: "Track meals saved & ESG environmental telemetry.",
+                icon: BarChart3,
+              },
+            ].map((flow, i) => {
+              const Icon = flow.icon;
               return (
-                <button
-                  key={step.num}
-                  type="button"
-                  onClick={() => setActiveWorkflowTab(idx)}
-                  className={`text-left p-4 sm:p-5 rounded-2xl border transition-all flex flex-col justify-between relative overflow-hidden group active:scale-[0.99] min-h-[140px] ${
-                    isActive
-                      ? "bg-forest-800 text-wheat-50 border-forest-800 shadow-md ring-2 ring-forest-800/20"
-                      : "bg-white text-forest-800 border-wheat-200 hover:border-forest-600/50 hover:bg-wheat-50/70 shadow-2xs"
+                <div
+                  key={flow.label}
+                  style={{ transitionDelay: `${i * 100}ms` }}
+                  className={`bg-white border border-wheat-200 rounded-2xl p-4 sm:p-5 flex flex-col justify-between shadow-2xs hover:shadow-md hover:border-forest-600/50 transition-all duration-500 group ${
+                    solutionVisible ? "opacity-100 translate-y-0 scale-100" : "opacity-0 translate-y-6 scale-95"
                   }`}
                 >
-                  {/* Top Row: Number Badge & Icon */}
-                  <div className="flex items-center justify-between mb-3 w-full">
-                    <span
-                      className={`font-mono text-xs font-bold px-2.5 py-1 rounded-lg ${
-                        isActive
-                          ? "bg-emerald-500 text-forest-950"
-                          : "bg-wheat-100 text-forest-800/80 group-hover:bg-forest-100"
-                      }`}
-                    >
-                      STEP {step.num}
+                  <div className="flex items-center justify-between mb-3">
+                    <span className="font-mono text-[10px] font-bold text-forest-800/50 group-hover:text-forest-800">
+                      STEP {flow.step}
                     </span>
-                    <div
-                      className={`p-2 rounded-xl transition-colors ${
-                        isActive
-                          ? "bg-forest-700 text-gold-400"
-                          : "bg-wheat-100 text-forest-700 group-hover:bg-forest-100"
-                      }`}
-                    >
+                    <div className="w-8 h-8 rounded-lg bg-forest-50 text-forest-700 flex items-center justify-center group-hover:bg-forest-800 group-hover:text-wheat-50 transition-colors">
                       <Icon className="w-4 h-4" />
                     </div>
                   </div>
-
-                  {/* Title & Badge */}
-                  <div className="space-y-1">
-                    <h4 className="font-display font-bold text-sm sm:text-base leading-snug">
-                      {step.title}
-                    </h4>
-                    <p
-                      className={`text-[11px] leading-tight ${
-                        isActive ? "text-wheat-200/80" : "text-forest-800/60"
-                      }`}
-                    >
-                      {step.badge}
+                  <div>
+                    <h3 className="font-mono font-bold text-sm text-forest-800 mb-1">
+                      {flow.label}
+                    </h3>
+                    <p className="text-[11px] text-forest-800/70 leading-relaxed">
+                      {flow.desc}
                     </p>
                   </div>
-
-                  {/* Active Bottom Accent Indicator */}
-                  <div
-                    className={`absolute bottom-0 left-0 right-0 h-1 transition-all ${
-                      isActive ? "bg-emerald-400" : "bg-transparent group-hover:bg-wheat-300"
-                    }`}
-                  />
-                </button>
+                </div>
               );
             })}
           </div>
-
-          {/* Active Step Showcase Card */}
-          {(() => {
-            const current = workflowSteps[activeWorkflowTab];
-            const StepIcon = current.icon;
-            return (
-              <div className="bg-wheat-50/70 border border-wheat-200 rounded-3xl p-6 sm:p-10 grid md:grid-cols-12 gap-8 items-center shadow-sm">
-                <div className="md:col-span-6 space-y-4">
-                  <div className="flex items-center gap-2">
-                    <span className="p-2 rounded-xl bg-forest-800 text-gold-400 shadow-2xs">
-                      <StepIcon className="w-5 h-5" />
-                    </span>
-                    <span className="font-mono text-xs uppercase tracking-wider text-forest-800/60 font-semibold">
-                      {current.badge}
-                    </span>
-                  </div>
-
-                  <h3 className="font-display text-2xl sm:text-3xl text-forest-800 font-bold">
-                    {current.title}
-                  </h3>
-
-                  <p className="text-xs sm:text-sm text-forest-800/75 leading-relaxed">
-                    {current.desc}
-                  </p>
-
-                  <div className="space-y-2 pt-2">
-                    {current.highlights.map((h, i) => (
-                      <div key={i} className="flex items-center gap-2 text-xs text-forest-800/80 font-medium">
-                        <CheckCircle2 className="w-4 h-4 text-emerald-600 shrink-0" />
-                        <span>{h}</span>
-                      </div>
-                    ))}
-                  </div>
-                </div>
-
-                <div className="md:col-span-6">
-                  <div className="bg-white border border-wheat-300/80 rounded-2xl p-6 shadow-md space-y-4 font-mono text-xs">
-                    <div className="flex items-center justify-between border-b border-wheat-100 pb-3">
-                      <span className="font-bold text-forest-800 text-sm">{current.mockup.title}</span>
-                      <span className="px-2 py-0.5 rounded bg-emerald-100 text-emerald-800 text-[10px] font-bold">
-                        VERIFIED
-                      </span>
-                    </div>
-
-                    <div className="p-3 bg-wheat-50 rounded-xl border border-wheat-200 space-y-1">
-                      <p className="text-[11px] text-forest-800/60">{current.mockup.subtitle}</p>
-                      <p className="font-bold text-forest-800 text-sm">{current.mockup.code}</p>
-                    </div>
-
-                    <p className="text-forest-800/70 text-[11px] leading-relaxed">
-                      💡 {current.mockup.detected}
-                    </p>
-
-                    <div className="pt-2 flex items-center justify-between text-[10px] text-forest-800/50 border-t border-wheat-100">
-                      <span>Harvest Ledger Protocol</span>
-                      <span>Secure Handshake ✓</span>
-                    </div>
-                  </div>
-                </div>
-              </div>
-            );
-          })()}
         </div>
       </section>
 
       {/* ------------------------------------------------------------- */}
-      {/* DUAL-SIDED VALUE PROPOSITIONS (BUSINESS VS NGO)               */}
+      {/* 6. HOW IT WORKS (VISUAL TIMELINE PROCESS)                     */}
       {/* ------------------------------------------------------------- */}
-      <section id="benefits" className="py-16 sm:py-24 bg-wheat-50 border-b border-wheat-200 scroll-mt-14">
+      <section id="how-it-works" ref={howItWorksRef} className="py-16 sm:py-24 bg-white border-b border-wheat-200 scroll-mt-14">
         <div className="max-w-6xl mx-auto px-4 sm:px-6 lg:px-8 space-y-12">
-          <div className="text-center max-w-2xl mx-auto space-y-2">
-            <span className="font-mono text-xs uppercase tracking-widest text-tomato-500 font-semibold">
-              Tailored Value Propositions
+          {/* Heading */}
+          <div className={`text-center max-w-2xl mx-auto space-y-3 transition-all duration-700 ${
+            howItWorksVisible ? "opacity-100 translate-y-0" : "opacity-0 translate-y-6"
+          }`}>
+            <span className="font-mono text-xs uppercase tracking-widest text-tomato-500 font-bold">
+              HOW IT WORKS
             </span>
             <h2 className="font-display text-3xl sm:text-4xl text-forest-800 font-bold">
-              Built for Donors &amp; Rescuers
+              Five Simple Steps. One Bigger Impact.
             </h2>
-            <p className="text-xs sm:text-sm text-forest-800/70">
-              Whether you are a commercial grocery chain or a local community food pantry, Harvest Ledger solves your biggest operational challenges.
+            <p className="text-xs sm:text-sm text-forest-800/70 leading-relaxed">
+              A clear, predictable process connecting food providers with verified community non-profits.
             </p>
           </div>
 
-          <div className="grid md:grid-cols-2 gap-8">
-            {/* Donor Side Card */}
-            <div className="bg-white border border-wheat-200 rounded-3xl p-6 sm:p-8 space-y-6 shadow-sm hover:shadow-md transition-shadow">
-              <div className="flex items-center gap-3">
-                <div className="w-12 h-12 rounded-2xl bg-forest-800 text-wheat-50 flex items-center justify-center shadow-2xs">
-                  <Building2 className="w-6 h-6 text-gold-400" />
-                </div>
-                <div>
-                  <h3 className="font-display text-xl font-bold text-forest-800">
-                    For Food Businesses
-                  </h3>
-                  <p className="text-xs font-mono text-forest-800/60 uppercase">
-                    Restaurants, Supermarkets, Bakeries &amp; Hotels
-                  </p>
-                </div>
-              </div>
-
-              <div className="space-y-4 text-xs sm:text-sm text-forest-800/80">
-                <div className="flex items-start gap-3 p-3 rounded-xl bg-wheat-50/50 border border-wheat-100">
-                  <DollarSign className="w-5 h-5 text-emerald-600 shrink-0 mt-0.5" />
-                  <div>
-                    <strong className="text-forest-800 block">ESG Tax Deduction Relief</strong>
-                    <span className="text-forest-800/70 text-xs">
-                      Claim fair-market charitable deductions with automated print-ready audit certificates.
-                    </span>
-                  </div>
-                </div>
-
-                <div className="flex items-start gap-3 p-3 rounded-xl bg-wheat-50/50 border border-wheat-100">
-                  <TrendingUp className="w-5 h-5 text-forest-600 shrink-0 mt-0.5" />
-                  <div>
-                    <strong className="text-forest-800 block">Eliminate Waste Hauling Fees</strong>
-                    <span className="text-forest-800/70 text-xs">
-                      Dramatically reduce expensive commercial landfill tipping charges by donating edible surplus.
-                    </span>
-                  </div>
-                </div>
-
-                <div className="flex items-start gap-3 p-3 rounded-xl bg-wheat-50/50 border border-wheat-100">
-                  <Clock className="w-5 h-5 text-amber-600 shrink-0 mt-0.5" />
-                  <div>
-                    <strong className="text-forest-800 block">Automated Expiry Radar</strong>
-                    <span className="text-forest-800/70 text-xs">
-                      Zero guesswork. AI scores perishables 0–100 and alerts kitchen staff before spoilage occurs.
-                    </span>
-                  </div>
-                </div>
-              </div>
-
-              <Link
-                to="/register"
-                className="w-full inline-flex items-center justify-center gap-2 py-3 bg-forest-800 text-wheat-50 rounded-xl font-semibold text-xs sm:text-sm hover:bg-forest-700 shadow-2xs transition-all"
-              >
-                <span>Register as Food Donor</span>
-                <ArrowRight className="w-4 h-4" />
-              </Link>
-            </div>
-
-            {/* NGO Side Card */}
-            <div className="bg-white border border-wheat-200 rounded-3xl p-6 sm:p-8 space-y-6 shadow-sm hover:shadow-md transition-shadow">
-              <div className="flex items-center gap-3">
-                <div className="w-12 h-12 rounded-2xl bg-emerald-700 text-white flex items-center justify-center shadow-2xs">
-                  <HeartHandshake className="w-6 h-6 text-white" />
-                </div>
-                <div>
-                  <h3 className="font-display text-xl font-bold text-forest-800">
-                    For Non-Profits &amp; Food Banks
-                  </h3>
-                  <p className="text-xs font-mono text-forest-800/60 uppercase">
-                    NGOs, Community Kitchens &amp; Relief Pantries
-                  </p>
-                </div>
-              </div>
-
-              <div className="space-y-4 text-xs sm:text-sm text-forest-800/80">
-                <div className="flex items-start gap-3 p-3 rounded-xl bg-wheat-50/50 border border-wheat-100">
-                  <Utensils className="w-5 h-5 text-emerald-600 shrink-0 mt-0.5" />
-                  <div>
-                    <strong className="text-forest-800 block">Free High-Quality Nutritious Food</strong>
-                    <span className="text-forest-800/70 text-xs">
-                      Access fresh produce, dairy, bakery, and prepared meals daily to feed vulnerable communities.
-                    </span>
-                  </div>
-                </div>
-
-                <div className="flex items-start gap-3 p-3 rounded-xl bg-wheat-50/50 border border-wheat-100">
-                  <Compass className="w-5 h-5 text-forest-600 shrink-0 mt-0.5" />
-                  <div>
-                    <strong className="text-forest-800 block">Live Radar Map with Turn-by-Turn GPS</strong>
-                    <span className="text-forest-800/70 text-xs">
-                      Discover available donations in your immediate neighborhood with distance radius filters.
-                    </span>
-                  </div>
-                </div>
-
-                <div className="flex items-start gap-3 p-3 rounded-xl bg-wheat-50/50 border border-wheat-100">
-                  <ShieldCheck className="w-5 h-5 text-emerald-600 shrink-0 mt-0.5" />
-                  <div>
-                    <strong className="text-forest-800 block">Driver QR Pass Verification</strong>
-                    <span className="text-forest-800/70 text-xs">
-                      Instant mobile digital pass with zero paperwork. Fast storefront verification at pickup.
-                    </span>
-                  </div>
-                </div>
-              </div>
-
-              <Link
-                to="/register"
-                className="w-full inline-flex items-center justify-center gap-2 py-3 bg-emerald-800 text-white rounded-xl font-semibold text-xs sm:text-sm hover:bg-emerald-700 shadow-2xs transition-all"
-              >
-                <span>Register as Non-Profit Partner</span>
-                <ArrowRight className="w-4 h-4" />
-              </Link>
-            </div>
-          </div>
-        </div>
-      </section>
-
-      {/* ------------------------------------------------------------- */}
-      {/* INTERACTIVE IMPACT & TAX ROI CALCULATOR WIDGET               */}
-      {/* ------------------------------------------------------------- */}
-      <section id="calculator" className="py-16 sm:py-24 bg-white border-b border-wheat-200 scroll-mt-14">
-        <div className="max-w-6xl mx-auto px-4 sm:px-6 lg:px-8">
-          <div className="bg-gradient-to-br from-forest-900 via-forest-800 to-forest-900 text-wheat-50 rounded-3xl p-6 sm:p-12 shadow-xl border border-forest-700 grid lg:grid-cols-12 gap-8 items-center">
-            <div className="lg:col-span-6 space-y-6">
-              <div className="inline-flex items-center gap-2 px-3 py-1 rounded-full bg-emerald-500/20 text-emerald-300 font-mono text-xs border border-emerald-400/30">
-                <Calculator className="w-3.5 h-3.5" />
-                <span>Interactive Waste &amp; Tax ROI Simulator</span>
-              </div>
-
-              <h2 className="font-display text-3xl sm:text-4xl font-bold text-white leading-tight">
-                Estimate Your Monthly Food Recovery &amp; Tax Write-Off
-              </h2>
-
-              <p className="text-xs sm:text-sm text-wheat-200/80 leading-relaxed">
-                Slide your organization's estimated monthly surplus volume to visualize the tangible social, environmental, and financial benefits generated by Harvest Ledger.
-              </p>
-
-              {/* Slider Input */}
-              <div className="space-y-3 bg-forest-950/60 p-5 rounded-2xl border border-forest-700/60">
-                <div className="flex items-center justify-between text-xs font-mono">
-                  <span className="text-wheat-300">Estimated Monthly Surplus Volume:</span>
-                  <span className="text-emerald-300 font-bold text-base sm:text-lg">{wasteVolumeKg} kg / month</span>
-                </div>
-
-                <input
-                  type="range"
-                  min="50"
-                  max="2500"
-                  step="25"
-                  value={wasteVolumeKg}
-                  onChange={(e) => setWasteVolumeKg(Number(e.target.value))}
-                  className="w-full h-2 bg-forest-700 rounded-lg appearance-none cursor-pointer accent-emerald-400"
-                />
-
-                <div className="flex justify-between text-[10px] font-mono text-wheat-400">
-                  <span>50 kg (Small Cafe)</span>
-                  <span>1,000 kg (Supermarket)</span>
-                  <span>2,500 kg+ (Hotel/Distributor)</span>
-                </div>
-              </div>
-            </div>
-
-            {/* Dynamic Results Grid */}
-            <div className="lg:col-span-6 grid grid-cols-2 gap-3.5 sm:gap-4">
-              <div className="bg-forest-950/70 p-5 rounded-2xl border border-forest-700/80 space-y-1">
-                <span className="text-[10px] uppercase tracking-wider text-wheat-300/70 font-mono block">
-                  Meals Provided to Community
-                </span>
-                <strong className="text-2xl sm:text-3xl font-display font-bold text-emerald-300 block">
-                  ~{mealsProvided.toLocaleString()}
-                </strong>
-                <p className="text-[10px] text-wheat-400">~2.5 meals per kg food rescued</p>
-              </div>
-
-              <div className="bg-forest-950/70 p-5 rounded-2xl border border-forest-700/80 space-y-1">
-                <span className="text-[10px] uppercase tracking-wider text-wheat-300/70 font-mono block">
-                  CO₂e Emissions Prevented
-                </span>
-                <strong className="text-2xl sm:text-3xl font-display font-bold text-white block">
-                  {co2AvoidedKg.toLocaleString()} kg
-                </strong>
-                <p className="text-[10px] text-wheat-400">Methane prevented from decomposing</p>
-              </div>
-
-              <div className="bg-forest-950/70 p-5 rounded-2xl border border-forest-700/80 space-y-1">
-                <span className="text-[10px] uppercase tracking-wider text-wheat-300/70 font-mono block">
-                  Est. ESG Tax Relief Credits
-                </span>
-                <strong className="text-2xl sm:text-3xl font-display font-bold text-gold-300 block">
-                  ₹{taxReliefEst.toLocaleString()}
-                </strong>
-                <p className="text-[10px] text-wheat-400">Fair-market charitable write-off</p>
-              </div>
-
-              <div className="bg-forest-950/70 p-5 rounded-2xl border border-forest-700/80 space-y-1">
-                <span className="text-[10px] uppercase tracking-wider text-wheat-300/70 font-mono block">
-                  Dumpster Fees Avoided
-                </span>
-                <strong className="text-2xl sm:text-3xl font-display font-bold text-white block">
-                  ₹{landfillSaved.toLocaleString()}
-                </strong>
-                <p className="text-[10px] text-wheat-400">Direct waste management savings</p>
-              </div>
-
-              <div className="col-span-2 pt-2">
-                <Link
-                  to="/register"
-                  className="w-full inline-flex items-center justify-center gap-2 py-3 bg-emerald-500 text-forest-950 rounded-xl font-bold text-xs sm:text-sm hover:bg-emerald-400 shadow-md transition-all active:scale-[0.99]"
-                >
-                  <span>Start Rescuing Food Today &bull; Free Registration</span>
-                  <ArrowRight className="w-4 h-4" />
-                </Link>
-              </div>
-            </div>
-          </div>
-        </div>
-      </section>
-
-      {/* ------------------------------------------------------------- */}
-      {/* ENVIRONMENTAL & PLANET IMPACT BREAKDOWN                       */}
-      {/* ------------------------------------------------------------- */}
-      <section id="environmental-impact" className="py-16 sm:py-24 bg-wheat-50 border-b border-wheat-200 scroll-mt-14">
-        <div className="max-w-6xl mx-auto px-4 sm:px-6 lg:px-8 space-y-12">
-          <div className="text-center max-w-2xl mx-auto space-y-2">
-            <span className="font-mono text-xs uppercase tracking-widest text-tomato-500 font-semibold">
-              Planet &amp; Climate Action
-            </span>
-            <h2 className="font-display text-3xl sm:text-4xl text-forest-800 font-bold">
-              Why Food Waste Prevention Matters
-            </h2>
-            <p className="text-xs sm:text-sm text-forest-800/70">
-              When food is discarded in landfills, it decomposes anaerobically into methane gas—a greenhouse gas 28 times more potent than carbon dioxide.
-            </p>
-          </div>
-
-          <div className="grid md:grid-cols-3 gap-6">
-            <div className="bg-white border border-wheat-200 rounded-2xl p-6 space-y-3 shadow-2xs">
-              <div className="w-10 h-10 rounded-xl bg-rose-100 text-rose-700 flex items-center justify-center font-bold">
-                <Globe2 className="w-5 h-5" />
-              </div>
-              <h3 className="font-display text-lg font-bold text-forest-800">
-                8–10% of Global Emissions
-              </h3>
-              <p className="text-xs text-forest-800/70 leading-relaxed">
-                Global food waste generates more emissions than the entire commercial aviation sector. Harvest Ledger directly closes this loop at the local store level.
-              </p>
-            </div>
-
-            <div className="bg-white border border-wheat-200 rounded-2xl p-6 space-y-3 shadow-2xs">
-              <div className="w-10 h-10 rounded-xl bg-emerald-100 text-emerald-800 flex items-center justify-center font-bold">
-                <Leaf className="w-5 h-5" />
-              </div>
-              <h3 className="font-display text-lg font-bold text-forest-800">
-                100% Edible Surplus Diverted
-              </h3>
-              <p className="text-xs text-forest-800/70 leading-relaxed">
-                By pairing real-time live countdowns with local NGO pickup coordination, edible inventory is consumed before shelf-life expires.
-              </p>
-            </div>
-
-            <div className="bg-white border border-wheat-200 rounded-2xl p-6 space-y-3 shadow-2xs">
-              <div className="w-10 h-10 rounded-xl bg-amber-100 text-amber-800 flex items-center justify-center font-bold">
-                <Award className="w-5 h-5" />
-              </div>
-              <h3 className="font-display text-lg font-bold text-forest-800">
-                UN SDG 12.3 Alignment
-              </h3>
-              <p className="text-xs text-forest-800/70 leading-relaxed">
-                Empowers organizations to achieve United Nations Sustainable Development Goal 12.3: halving per capita global food waste by 2030.
-              </p>
-            </div>
-          </div>
-        </div>
-      </section>
-
-      {/* ------------------------------------------------------------- */}
-      {/* FREQUENTLY ASKED QUESTIONS (INTERACTIVE ACCORDION)            */}
-      {/* ------------------------------------------------------------- */}
-      <section id="faq" className="py-16 sm:py-24 bg-white border-b border-wheat-200 scroll-mt-14">
-        <div className="max-w-4xl mx-auto px-4 sm:px-6 lg:px-8 space-y-10">
-          <div className="text-center space-y-2">
-            <span className="font-mono text-xs uppercase tracking-widest text-tomato-500 font-semibold">
-              Got Questions?
-            </span>
-            <h2 className="font-display text-3xl sm:text-4xl text-forest-800 font-bold">
-              Frequently Asked Questions
-            </h2>
-            <p className="text-xs sm:text-sm text-forest-800/70">
-              Everything you need to know about the Harvest Ledger food rescue ecosystem.
-            </p>
-          </div>
-
-          <div className="space-y-3">
-            {faqs.map((faq, idx) => {
-              const isOpen = openFaq === idx;
+          {/* 5-Step Process Timeline Cards */}
+          <div className="grid grid-cols-1 md:grid-cols-5 gap-4">
+            {[
+              {
+                num: "01",
+                title: "Track Surplus Food",
+                desc: "Add your surplus food inventory and keep important details such as quantity, category, and expiry date in one place.",
+                icon: Package,
+              },
+              {
+                num: "02",
+                title: "Identify What Needs Attention",
+                desc: "Use risk scoring and expiry information to quickly identify food that needs action.",
+                icon: Sparkles,
+              },
+              {
+                num: "03",
+                title: "Create a Rescue Listing",
+                desc: "Turn available surplus into a listing so it can be discovered and collected.",
+                icon: Store,
+              },
+              {
+                num: "04",
+                title: "Coordinate Pickup",
+                desc: "Manage pickup requests and keep the rescue process organized from request to completion.",
+                icon: Truck,
+              },
+              {
+                num: "05",
+                title: "Measure Your Impact",
+                desc: "Track rescued food, completed pickups, and other meaningful indicators of waste reduction.",
+                icon: Award,
+              },
+            ].map((step, idx) => {
+              const StepIcon = step.icon;
               return (
                 <div
-                  key={idx}
-                  className="border border-wheat-200 rounded-2xl overflow-hidden bg-wheat-50/40 transition-colors"
+                  key={step.num}
+                  style={{ transitionDelay: `${idx * 100}ms` }}
+                  className={`bg-wheat-50/60 border border-wheat-200 rounded-2xl p-5 flex flex-col justify-between shadow-2xs hover:shadow-md transition-all duration-700 group ${
+                    howItWorksVisible ? "opacity-100 translate-y-0 scale-100" : "opacity-0 translate-y-8 scale-95"
+                  }`}
                 >
-                  <button
-                    onClick={() => toggleFaq(idx)}
-                    className="w-full flex items-center justify-between p-5 text-left text-sm font-bold text-forest-800 hover:bg-wheat-100/60 transition-colors gap-4"
-                  >
-                    <span>{faq.q}</span>
-                    <span className="p-1 rounded-lg bg-white border border-wheat-200 text-forest-700 shrink-0">
-                      {isOpen ? <ChevronUp className="w-4 h-4" /> : <ChevronDown className="w-4 h-4" />}
-                    </span>
-                  </button>
-
-                  {isOpen && (
-                    <div className="px-5 pb-5 pt-1 text-xs sm:text-sm text-forest-800/75 leading-relaxed border-t border-wheat-200/60 bg-white/70 animate-in fade-in duration-150">
-                      {faq.a}
+                  <div className="space-y-3">
+                    <div className="flex items-center justify-between">
+                      <span className="w-7 h-7 rounded-full bg-forest-800 text-wheat-50 font-mono text-xs font-bold flex items-center justify-center">
+                        {step.num}
+                      </span>
+                      <div className="p-2 rounded-lg bg-white border border-wheat-200 text-forest-700">
+                        <StepIcon className="w-4 h-4" />
+                      </div>
                     </div>
-                  )}
+
+                    <h3 className="font-display font-bold text-sm sm:text-base text-forest-800 leading-snug">
+                      {step.title}
+                    </h3>
+
+                    <p className="text-xs text-forest-800/70 leading-relaxed">
+                      {step.desc}
+                    </p>
+                  </div>
                 </div>
               );
             })}
@@ -883,82 +676,362 @@ export default function Landing() {
       </section>
 
       {/* ------------------------------------------------------------- */}
-      {/* FINAL CALL TO ACTION (CTA BANNER)                             */}
+      {/* 7. AI RISK SCORING SECTION                                    */}
       {/* ------------------------------------------------------------- */}
-      <section className="py-16 sm:py-20 bg-forest-800 text-wheat-50">
-        <div className="max-w-4xl mx-auto px-4 sm:px-6 lg:px-8 text-center space-y-6">
-          <div className="w-12 h-12 rounded-2xl bg-emerald-500/20 text-emerald-300 border border-emerald-400/30 flex items-center justify-center mx-auto shadow-2xs">
-            <Zap className="w-6 h-6" />
-          </div>
+      <section ref={riskScoringRef} className="py-16 sm:py-24 bg-wheat-50 border-b border-wheat-200 scroll-mt-14">
+        <div className="max-w-6xl mx-auto px-4 sm:px-6 lg:px-8">
+          <div className="grid md:grid-cols-12 gap-8 lg:gap-12 items-center">
+            {/* Left Content */}
+            <div className={`md:col-span-6 space-y-5 transition-all duration-700 ${
+              riskScoringVisible ? "opacity-100 translate-x-0" : "opacity-0 -translate-x-6"
+            }`}>
+              <span className="font-mono text-xs uppercase tracking-widest text-tomato-500 font-bold">
+                SMART INSIGHTS
+              </span>
+              <h2 className="font-display text-3xl sm:text-4xl text-forest-800 font-bold leading-tight">
+                Know What Needs Attention Before It's Too Late.
+              </h2>
+              <p className="text-xs sm:text-sm text-forest-800/75 leading-relaxed">
+                Harvest Ledger uses food risk scoring to help prioritize items based on factors such as expiry urgency, so teams can focus their attention where it matters most.
+              </p>
 
-          <h2 className="font-display text-3xl sm:text-5xl font-bold text-white tracking-tight">
-            Ready to Build a Zero-Waste Food Operation?
-          </h2>
+              {/* 4 Example Risk Levels Grid */}
+              <div className="grid grid-cols-2 gap-3 pt-2">
+                <div className="p-3 bg-white border border-wheat-200 rounded-xl space-y-0.5">
+                  <span className="text-[10px] font-mono font-bold text-forest-700 uppercase">LOW</span>
+                  <p className="text-xs text-forest-800/70">Monitor normally</p>
+                </div>
+                <div className="p-3 bg-white border border-wheat-200 rounded-xl space-y-0.5">
+                  <span className="text-[10px] font-mono font-bold text-amber-700 uppercase">MEDIUM</span>
+                  <p className="text-xs text-forest-800/70">Keep an eye on expiry</p>
+                </div>
+                <div className="p-3 bg-white border border-wheat-200 rounded-xl space-y-0.5">
+                  <span className="text-[10px] font-mono font-bold text-tomato-600 uppercase">HIGH</span>
+                  <p className="text-xs text-forest-800/70">Action recommended</p>
+                </div>
+                <div className="p-3 bg-white border border-wheat-200 rounded-xl space-y-0.5">
+                  <span className="text-[10px] font-mono font-bold text-rose-700 uppercase">CRITICAL</span>
+                  <p className="text-xs text-forest-800/70">Immediate attention</p>
+                </div>
+              </div>
+            </div>
 
-          <p className="text-xs sm:text-base text-wheat-200/80 max-w-xl mx-auto leading-relaxed">
-            Join hundreds of forward-thinking supermarkets, bakeries, cloud kitchens, and verified non-profit organizations creating a resilient, waste-free world.
-          </p>
+            {/* Right Card: Premium Risk Score Visualizer Card */}
+            <div className={`md:col-span-6 transition-all duration-700 delay-150 ${
+              riskScoringVisible ? "opacity-100 translate-x-0 scale-100" : "opacity-0 translate-x-6 scale-95"
+            }`}>
+              <div className="bg-white border border-wheat-300 rounded-3xl p-6 sm:p-8 shadow-lg space-y-5 font-mono">
+                <div className="flex items-center justify-between border-b border-wheat-100 pb-3">
+                  <div>
+                    <span className="text-[10px] text-forest-800/50 uppercase block font-semibold">
+                      Automated Risk Engine
+                    </span>
+                    <h3 className="font-bold text-sm text-forest-800">FOOD RISK SCORE</h3>
+                  </div>
+                  <span className="px-2.5 py-1 rounded-full text-[10px] font-bold bg-rose-100 text-rose-800 border border-rose-200">
+                    HIGH PRIORITY
+                  </span>
+                </div>
 
-          <div className="flex flex-col sm:flex-row items-center justify-center gap-3.5 pt-2">
-            <Link
-              to="/register"
-              className="w-full sm:w-auto inline-flex items-center justify-center gap-2 px-8 py-4 bg-emerald-500 text-forest-950 rounded-xl font-bold text-sm sm:text-base hover:bg-emerald-400 shadow-lg transition-all active:scale-[0.99]"
-            >
-              <span>Create Free Account</span>
-              <ArrowRight className="w-4 h-4" />
-            </Link>
-            <Link
-              to="/login"
-              className="w-full sm:w-auto inline-flex items-center justify-center gap-2 px-8 py-4 bg-forest-900 text-white border border-forest-700 rounded-xl font-semibold text-sm sm:text-base hover:bg-forest-950 transition-all shadow-sm active:scale-[0.99]"
-            >
-              <span>Sign In to Dashboard</span>
-            </Link>
+                <div className="flex items-baseline gap-2">
+                  <span className="text-4xl sm:text-5xl font-extrabold text-rose-600 font-display">85</span>
+                  <span className="text-forest-800/40 text-base font-bold">/ 100</span>
+                </div>
+
+                <div className="p-3.5 bg-rose-50/70 border border-rose-200 rounded-2xl space-y-1">
+                  <div className="flex items-center gap-1.5 text-rose-900 font-bold text-xs">
+                    <Flame className="w-4 h-4 text-rose-600 shrink-0" />
+                    <span>Expires Soon</span>
+                  </div>
+                  <p className="text-[11px] text-rose-800/80 leading-relaxed">
+                    Recommended Action: Create a rescue listing and prioritize pickup.
+                  </p>
+                </div>
+
+                <div className="pt-2 flex items-center justify-between text-[11px] text-forest-800/50 border-t border-wheat-100">
+                  <span>Batch #HL-9042</span>
+                  <span>Calculated in Real Time</span>
+                </div>
+              </div>
+            </div>
           </div>
         </div>
       </section>
 
       {/* ------------------------------------------------------------- */}
-      {/* RICH PADDED FOOTER                                            */}
+      {/* 8. FEATURES SECTION                                           */}
       {/* ------------------------------------------------------------- */}
-      <footer className="mt-auto py-12 px-4 sm:px-6 lg:px-8 border-t border-wheat-200 bg-white">
-        <div className="max-w-6xl mx-auto space-y-8">
-          <div className="flex flex-col md:flex-row items-start md:items-center justify-between gap-6 border-b border-wheat-100 pb-8">
-            <div className="space-y-1">
-              <div className="flex items-center gap-2">
-                <div className="w-7 h-7 rounded-md bg-forest-800 text-wheat-50 flex items-center justify-center font-bold text-xs">
-                  HL
+      <section id="features" ref={featuresRef} className="py-16 sm:py-24 bg-white border-b border-wheat-200 scroll-mt-14">
+        <div className="max-w-6xl mx-auto px-4 sm:px-6 lg:px-8 space-y-12">
+          {/* Heading */}
+          <div className={`text-center max-w-2xl mx-auto space-y-3 transition-all duration-700 ${
+            featuresVisible ? "opacity-100 translate-y-0" : "opacity-0 translate-y-6"
+          }`}>
+            <span className="font-mono text-xs uppercase tracking-widest text-tomato-500 font-bold">
+              PLATFORM FEATURES
+            </span>
+            <h2 className="font-display text-3xl sm:text-4xl text-forest-800 font-bold">
+              Everything You Need to Rescue More Food.
+            </h2>
+            <p className="text-xs sm:text-sm text-forest-800/70 leading-relaxed">
+              Designed to minimize waste, maximize rescue velocity, and provide clear operational visibility.
+            </p>
+          </div>
+
+          {/* 6 Feature Cards Grid */}
+          <div className="grid sm:grid-cols-2 lg:grid-cols-3 gap-6">
+            {[
+              {
+                num: "01",
+                title: "Smart Inventory",
+                desc: "Keep surplus food organized with quantities, categories, expiry dates, and status information.",
+                icon: Package,
+              },
+              {
+                num: "02",
+                title: "AI Risk Scoring",
+                desc: "Prioritize food items that need attention using intelligent waste-risk insights.",
+                icon: Sparkles,
+              },
+              {
+                num: "03",
+                title: "Rescue Listings",
+                desc: "Turn available surplus into clear listings that can be discovered and acted upon.",
+                icon: Store,
+              },
+              {
+                num: "04",
+                title: "Pickup Management",
+                desc: "Keep pickup requests, schedules, and completion status organized.",
+                icon: Truck,
+              },
+              {
+                num: "05",
+                title: "Impact Analytics",
+                desc: "Understand your rescue activity through clear dashboards and meaningful analytics.",
+                icon: BarChart3,
+              },
+              {
+                num: "06",
+                title: "Action-Oriented Alerts",
+                desc: "Surface food that needs attention so teams can act before valuable food becomes waste.",
+                icon: Bell,
+              },
+            ].map((feat, idx) => {
+              const FeatIcon = feat.icon;
+              return (
+                <div
+                  key={feat.title}
+                  style={{ transitionDelay: `${idx * 60}ms` }}
+                  className={`bg-wheat-50/50 border border-wheat-200 rounded-2xl p-6 flex flex-col justify-between shadow-2xs hover:shadow-md hover:border-forest-600/40 hover:-translate-y-1 transition-all duration-500 group ${
+                    featuresVisible ? "opacity-100 translate-y-0" : "opacity-0 translate-y-6"
+                  }`}
+                >
+                  <div className="space-y-3">
+                    <div className="flex items-center justify-between">
+                      <span className="font-mono text-xs font-bold text-forest-800/40 group-hover:text-forest-800">
+                        {feat.num}
+                      </span>
+                      <div className="p-2.5 rounded-xl bg-white border border-wheat-200 text-forest-700 group-hover:bg-forest-800 group-hover:text-wheat-50 transition-colors">
+                        <FeatIcon className="w-4 h-4" />
+                      </div>
+                    </div>
+                    <h3 className="font-display font-bold text-base sm:text-lg text-forest-800">
+                      {feat.title}
+                    </h3>
+                    <p className="text-xs sm:text-sm text-forest-800/70 leading-relaxed">
+                      {feat.desc}
+                    </p>
+                  </div>
                 </div>
-                <span className="font-display italic text-xl text-forest-800 font-bold">
-                  Harvest Ledger
-                </span>
+              );
+            })}
+          </div>
+        </div>
+      </section>
+
+      {/* ------------------------------------------------------------- */}
+      {/* 9. IMPACT SECTION                                             */}
+      {/* ------------------------------------------------------------- */}
+      <section id="impact" ref={impactRef} className="py-16 sm:py-24 bg-wheat-50 border-b border-wheat-200 scroll-mt-14">
+        <div className="max-w-6xl mx-auto px-4 sm:px-6 lg:px-8 space-y-12">
+          {/* Heading */}
+          <div className={`text-center max-w-2xl mx-auto space-y-3 transition-all duration-700 ${
+            impactVisible ? "opacity-100 translate-y-0" : "opacity-0 translate-y-6"
+          }`}>
+            <span className="font-mono text-xs uppercase tracking-widest text-emerald-700 font-bold">
+              MEASURE THE DIFFERENCE
+            </span>
+            <h2 className="font-display text-3xl sm:text-4xl text-forest-800 font-bold">
+              Every Rescue Counts.
+            </h2>
+            <p className="text-xs sm:text-sm text-forest-800/70 leading-relaxed">
+              Food rescue becomes more powerful when you can see the impact. Use your platform data to understand what is being saved, rescued, and completed.
+            </p>
+          </div>
+
+          {/* 4 Impact Telemetry Cards */}
+          <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-4 sm:gap-6">
+            <div className={`bg-white border border-wheat-200 rounded-2xl p-6 space-y-2 shadow-2xs hover:shadow-md transition-all duration-700 ${
+              impactVisible ? "opacity-100 translate-y-0" : "opacity-0 translate-y-6"
+            }`}>
+              <div className="w-8 h-8 rounded-lg bg-emerald-50 text-emerald-700 flex items-center justify-center mb-1">
+                <Leaf className="w-4 h-4" />
               </div>
-              <p className="text-xs text-forest-800/60 font-mono">
-                AI-Powered Food Waste Management &amp; Redistribution Platform
+              <span className="text-[10px] uppercase font-mono tracking-wider text-forest-800/50 block font-semibold">
+                Food Rescued
+              </span>
+              <p className="font-display font-bold text-2xl sm:text-3xl text-forest-800">
+                {platformMetrics?.total_food_rescued_kg ? `${platformMetrics.total_food_rescued_kg} kg` : "Track Impact"}
+              </p>
+              <p className="text-xs text-forest-800/60 leading-relaxed">
+                Total surplus food successfully collected &amp; redistributed.
               </p>
             </div>
 
-            <div className="flex flex-wrap items-center gap-6 text-xs font-semibold text-forest-800/70">
-              <Link to="/register" className="hover:text-forest-900 transition-colors">
-                Register Organization
-              </Link>
-              <Link to="/login" className="hover:text-forest-900 transition-colors">
-                Sign In
-              </Link>
-              <a href="#how-it-works" className="hover:text-forest-900 transition-colors">
-                Architecture
-              </a>
-              <a href="#calculator" className="hover:text-forest-900 transition-colors">
-                ROI Calculator
-              </a>
-              <a href="#faq" className="hover:text-forest-900 transition-colors">
-                FAQs
-              </a>
+            <div className={`bg-white border border-wheat-200 rounded-2xl p-6 space-y-2 shadow-2xs hover:shadow-md transition-all duration-700 delay-100 ${
+              impactVisible ? "opacity-100 translate-y-0" : "opacity-0 translate-y-6"
+            }`}>
+              <div className="w-8 h-8 rounded-lg bg-forest-50 text-forest-700 flex items-center justify-center mb-1">
+                <Truck className="w-4 h-4" />
+              </div>
+              <span className="text-[10px] uppercase font-mono tracking-wider text-forest-800/50 block font-semibold">
+                Pickups Completed
+              </span>
+              <p className="font-display font-bold text-2xl sm:text-3xl text-forest-800">
+                {platformMetrics?.completed_pickups_count ? `${platformMetrics.completed_pickups_count}` : "Verified Handshakes"}
+              </p>
+              <p className="text-xs text-forest-800/60 leading-relaxed">
+                Coordinated donor-to-NGO handoffs completed with digital pass verification.
+              </p>
+            </div>
+
+            <div className={`bg-white border border-wheat-200 rounded-2xl p-6 space-y-2 shadow-2xs hover:shadow-md transition-all duration-700 delay-200 ${
+              impactVisible ? "opacity-100 translate-y-0" : "opacity-0 translate-y-6"
+            }`}>
+              <div className="w-8 h-8 rounded-lg bg-amber-50 text-amber-700 flex items-center justify-center mb-1">
+                <Activity className="w-4 h-4" />
+              </div>
+              <span className="text-[10px] uppercase font-mono tracking-wider text-forest-800/50 block font-semibold">
+                Food At Risk Monitored
+              </span>
+              <p className="font-display font-bold text-2xl sm:text-3xl text-forest-800">
+                {platformMetrics?.items_at_risk_count ? `${platformMetrics.items_at_risk_count} Items` : "Live Telemetry"}
+              </p>
+              <p className="text-xs text-forest-800/60 leading-relaxed">
+                Active perishable batches tracked with automated risk scoring.
+              </p>
+            </div>
+
+            <div className={`bg-white border border-wheat-200 rounded-2xl p-6 space-y-2 shadow-2xs hover:shadow-md transition-all duration-700 delay-300 ${
+              impactVisible ? "opacity-100 translate-y-0" : "opacity-0 translate-y-6"
+            }`}>
+              <div className="w-8 h-8 rounded-lg bg-gold-50 text-gold-700 flex items-center justify-center mb-1">
+                <TrendingUp className="w-4 h-4" />
+              </div>
+              <span className="text-[10px] uppercase font-mono tracking-wider text-forest-800/50 block font-semibold">
+                Waste Reduction
+              </span>
+              <p className="font-display font-bold text-2xl sm:text-3xl text-forest-800">
+                {platformMetrics?.waste_reduction_rate ? `${platformMetrics.waste_reduction_rate}%` : "100% Goal"}
+              </p>
+              <p className="text-xs text-forest-800/60 leading-relaxed">
+                Measurable reduction in commercial landfill disposal.
+              </p>
             </div>
           </div>
+        </div>
+      </section>
 
-          <div className="text-center text-xs text-forest-800/50 font-mono">
+      {/* ------------------------------------------------------------- */}
+      {/* 10. VISUAL IMPACT STATEMENT                                   */}
+      {/* ------------------------------------------------------------- */}
+      <section ref={statementRef} className="py-20 sm:py-28 bg-forest-900 text-wheat-50 text-center relative overflow-hidden border-y border-forest-800">
+        <div className={`max-w-4xl mx-auto px-4 sm:px-6 lg:px-8 space-y-4 relative z-10 transition-all duration-700 ${
+          statementVisible ? "opacity-100 scale-100" : "opacity-0 scale-95"
+        }`}>
+          <div className="w-10 h-10 rounded-full bg-emerald-500/20 text-emerald-300 border border-emerald-400/30 flex items-center justify-center mx-auto mb-2">
+            <Leaf className="w-5 h-5" />
+          </div>
+
+          <h2 className="font-display text-3xl sm:text-5xl font-bold tracking-tight text-white leading-tight">
+            Less Waste. More Rescue. Greater Impact.
+          </h2>
+
+          <p className="text-sm sm:text-base text-wheat-200/80 max-w-xl mx-auto leading-relaxed">
+            Small actions across kitchens, businesses, organizations, and communities can create a meaningful difference.
+          </p>
+        </div>
+      </section>
+
+      {/* ------------------------------------------------------------- */}
+      {/* 11. FINAL CTA                                                 */}
+      {/* ------------------------------------------------------------- */}
+      <section ref={ctaRef} className="py-16 sm:py-24 bg-white border-b border-wheat-200">
+        <div className={`max-w-3xl mx-auto px-4 sm:px-6 lg:px-8 text-center space-y-6 transition-all duration-700 ${
+          ctaVisible ? "opacity-100 translate-y-0" : "opacity-0 translate-y-6"
+        }`}>
+          <h2 className="font-display text-3xl sm:text-4xl lg:text-5xl font-bold text-forest-800 tracking-tight">
+            Ready to Rescue More Food?
+          </h2>
+
+          <p className="text-xs sm:text-base text-forest-800/70 max-w-lg mx-auto leading-relaxed">
+            Start tracking surplus food, prioritize what needs attention, and turn potential waste into meaningful impact.
+          </p>
+
+          <div className="pt-2">
+            <Link
+              to="/register"
+              className="inline-flex items-center justify-center gap-2 px-8 py-4 bg-forest-800 text-wheat-50 font-bold text-sm sm:text-base rounded-xl hover:bg-forest-700 shadow-md transition-all active:scale-[0.99]"
+            >
+              <span>Get Started</span>
+              <ArrowRight className="w-4 h-4" />
+            </Link>
+          </div>
+
+          <p className="text-xs font-mono text-forest-800/50 pt-1">
+            Make every surplus count.
+          </p>
+        </div>
+      </section>
+
+      {/* ------------------------------------------------------------- */}
+      {/* 12. FOOTER                                                    */}
+      {/* ------------------------------------------------------------- */}
+      <footer className="py-12 px-4 sm:px-6 lg:px-8 bg-wheat-50 border-t border-wheat-200">
+        <div className="max-w-6xl mx-auto space-y-8">
+          <div className="flex flex-col md:flex-row items-start md:items-center justify-between gap-6 border-b border-wheat-200/80 pb-8">
+            <div className="space-y-1">
+              <span className="font-display italic text-lg font-bold text-forest-800 block">
+                HARVEST LEDGER
+              </span>
+              <p className="text-xs text-forest-800/60 font-mono">
+                Smart food rescue for a more sustainable future.
+              </p>
+            </div>
+
+            <nav className="flex flex-wrap items-center gap-6 text-xs font-semibold text-forest-800/70">
+              <Link to="/register" className="hover:text-forest-950 transition-colors">
+                Platform
+              </Link>
+              <a href="#how-it-works" className="hover:text-forest-950 transition-colors">
+                How It Works
+              </a>
+              <a href="#features" className="hover:text-forest-950 transition-colors">
+                Features
+              </a>
+              <a href="#impact" className="hover:text-forest-950 transition-colors">
+                Impact
+              </a>
+            </nav>
+          </div>
+
+          <div className="flex flex-col sm:flex-row items-center justify-between gap-4 text-xs text-forest-800/50 font-mono">
             <p>
-              &copy; {new Date().getFullYear()} Harvest Ledger &bull; Empowering Zero-Waste Communities Worldwide
+              &copy; {new Date().getFullYear()} HARVEST LEDGER &bull; Built to help turn surplus into impact.
+            </p>
+            <p className="text-[11px] text-forest-800/40">
+              Food Waste Management &bull; Community Redistribution
             </p>
           </div>
         </div>
