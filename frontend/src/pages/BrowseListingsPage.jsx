@@ -572,6 +572,7 @@ export default function BrowseListingsPage() {
                       placeholder="e.g. 25"
                       value={mealsEstimate}
                       onChange={(e) => setMealsEstimate(e.target.value)}
+                      style={{ textAlign: "center" }}
                       className="w-[150px] h-8 max-w-full mx-auto block box-border border border-wheat-200 rounded-xl px-2.5 text-xs text-center focus:outline-none focus:ring-2 focus:ring-forest-400 bg-white shadow-xs"
                     />
                     <p className="text-[10px] text-forest-800/50 mt-0.5 text-center">
@@ -591,6 +592,7 @@ export default function BrowseListingsPage() {
                         required
                         value={pickupDate}
                         onChange={(e) => setPickupDate(e.target.value)}
+                        style={{ textAlign: "center" }}
                         className="w-full h-8 block box-border bg-white border border-wheat-200 rounded-xl px-2 text-xs text-forest-900 focus:outline-none focus:ring-2 focus:ring-forest-400 font-mono text-center shadow-xs"
                       />
                     </div>
@@ -604,21 +606,22 @@ export default function BrowseListingsPage() {
                         required
                         value={pickupTime}
                         onChange={(e) => setPickupTime(e.target.value)}
+                        style={{ textAlign: "center", textAlignLast: "center" }}
                         className="w-full h-8 block box-border bg-white border border-wheat-200 rounded-xl px-2 py-0 text-xs text-forest-900 focus:outline-none focus:ring-2 focus:ring-forest-400 font-mono text-center cursor-pointer shadow-xs"
                       >
-                        <option value="08:00">08:00 AM</option>
-                        <option value="09:00">09:00 AM</option>
-                        <option value="10:00">10:00 AM (Rec.)</option>
-                        <option value="11:00">11:00 AM</option>
-                        <option value="12:00">12:00 PM</option>
-                        <option value="13:00">01:00 PM</option>
-                        <option value="14:00">02:00 PM</option>
-                        <option value="15:00">03:00 PM</option>
-                        <option value="16:00">04:00 PM</option>
-                        <option value="17:00">05:00 PM</option>
-                        <option value="18:00">06:00 PM</option>
-                        <option value="19:00">07:00 PM</option>
-                        <option value="20:00">08:00 PM</option>
+                        <option value="08:00" style={{ textAlign: "center" }}>08:00 AM</option>
+                        <option value="09:00" style={{ textAlign: "center" }}>09:00 AM</option>
+                        <option value="10:00" style={{ textAlign: "center" }}>10:00 AM (Rec.)</option>
+                        <option value="11:00" style={{ textAlign: "center" }}>11:00 AM</option>
+                        <option value="12:00" style={{ textAlign: "center" }}>12:00 PM</option>
+                        <option value="13:00" style={{ textAlign: "center" }}>01:00 PM</option>
+                        <option value="14:00" style={{ textAlign: "center" }}>02:00 PM</option>
+                        <option value="15:00" style={{ textAlign: "center" }}>03:00 PM</option>
+                        <option value="16:00" style={{ textAlign: "center" }}>04:00 PM</option>
+                        <option value="17:00" style={{ textAlign: "center" }}>05:00 PM</option>
+                        <option value="18:00" style={{ textAlign: "center" }}>06:00 PM</option>
+                        <option value="19:00" style={{ textAlign: "center" }}>07:00 PM</option>
+                        <option value="20:00" style={{ textAlign: "center" }}>08:00 PM</option>
                       </select>
                     </div>
                   </div>

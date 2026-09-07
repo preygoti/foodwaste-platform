@@ -44,6 +44,31 @@ select {
   box-sizing: border-box !important;
 }
 
+/* Center alignment normalization for date/time/number inputs & select dropdowns across iOS & Chrome */
+.text-center,
+input.text-center,
+select.text-center {
+  text-align: center !important;
+  text-align-last: center !important;
+  -webkit-text-align-last: center !important;
+  -moz-text-align-last: center !important;
+}
+
+input[type="date"].text-center::-webkit-date-and-time-value {
+  text-align: center !important;
+}
+
+input[type="date"].text-center::-webkit-datetime-edit,
+input[type="date"].text-center::-webkit-datetime-edit-fields-wrapper {
+  text-align: center !important;
+  margin: 0 auto !important;
+  justify-content: center !important;
+}
+
+select.text-center option {
+  text-align: center !important;
+}
+
 /* Hide scrollbars across the entire application on both mobile and desktop */
 ::-webkit-scrollbar {
   display: none !important;
