@@ -576,9 +576,9 @@ export default function BrowseListingsPage() {
                     </p>
                   </div>
 
-                  {/* Field 2: Proposed Pickup Date (Dedicated Full-Width Block) */}
-                  <div className="w-full">
-                    <label className="block text-xs uppercase tracking-wide text-forest-800/70 font-semibold mb-1.5">
+                  {/* Field 2: Proposed Pickup Date (Centered & Proportional) */}
+                  <div className="w-full max-w-xs mx-auto text-center">
+                    <label className="block text-xs uppercase tracking-wide text-forest-800/70 font-semibold mb-1.5 text-center">
                       Proposed Pickup Date *
                     </label>
                     <input
@@ -586,41 +586,39 @@ export default function BrowseListingsPage() {
                       required
                       value={pickupDate}
                       onChange={(e) => setPickupDate(e.target.value)}
-                      className="w-full bg-white border border-wheat-200 rounded-lg px-3.5 py-2.5 text-sm text-forest-900 focus:outline-none focus:ring-2 focus:ring-forest-400 font-mono shadow-2xs box-border"
+                      className="w-full bg-white border border-wheat-200 rounded-lg px-3.5 py-2.5 text-sm text-forest-900 focus:outline-none focus:ring-2 focus:ring-forest-400 font-mono shadow-2xs box-border text-center"
                     />
                   </div>
 
-                  {/* Field 3: Proposed Pickup Time Window (Dedicated Full-Width Dropdown Block) */}
-                  <div className="w-full">
-                    <label className="block text-xs uppercase tracking-wide text-forest-800/70 font-semibold mb-1.5">
-                      Proposed Pickup Time Window *
+                  {/* Field 3: Proposed Pickup Time (Centered & Proportional Width) */}
+                  <div className="w-full max-w-xs mx-auto text-center">
+                    <label className="block text-xs uppercase tracking-wide text-forest-800/70 font-semibold mb-1.5 text-center">
+                      Proposed Pickup Time *
                     </label>
                     <select
                       required
                       value={pickupTime}
                       onChange={(e) => setPickupTime(e.target.value)}
-                      className="w-full bg-white border border-wheat-200 rounded-lg px-3.5 py-2.5 text-sm text-forest-900 focus:outline-none focus:ring-2 focus:ring-forest-400 font-mono shadow-2xs box-border cursor-pointer"
+                      className="w-full bg-white border border-wheat-200 rounded-lg px-3.5 py-2.5 text-sm text-forest-900 focus:outline-none focus:ring-2 focus:ring-forest-400 font-mono shadow-2xs box-border cursor-pointer text-center text-center-last"
                     >
-                      <option value="07:00">07:00 AM — Early Morning Pickup</option>
-                      <option value="08:00">08:00 AM — Morning Dispatch</option>
-                      <option value="09:00">09:00 AM — Morning Window</option>
-                      <option value="10:00">10:00 AM — Standard Morning (Recommended)</option>
-                      <option value="11:00">11:00 AM — Late Morning</option>
-                      <option value="12:00">12:00 PM — Noon / Lunch Window</option>
-                      <option value="13:00">01:00 PM — Early Afternoon</option>
-                      <option value="14:00">02:00 PM — Afternoon Window</option>
-                      <option value="15:00">03:00 PM — Mid-Afternoon</option>
-                      <option value="16:00">04:00 PM — Late Afternoon</option>
-                      <option value="17:00">05:00 PM — Evening Dispatch</option>
-                      <option value="18:00">06:00 PM — Evening Window</option>
-                      <option value="19:00">07:00 PM — Late Evening</option>
-                      <option value="20:00">08:00 PM — Night Window</option>
-                      <option value="21:00">09:00 PM — Late Night Emergency Pickup</option>
+                      <option value="08:00">08:00 AM</option>
+                      <option value="09:00">09:00 AM</option>
+                      <option value="10:00">10:00 AM (Recommended)</option>
+                      <option value="11:00">11:00 AM</option>
+                      <option value="12:00">12:00 PM (Noon)</option>
+                      <option value="13:00">01:00 PM</option>
+                      <option value="14:00">02:00 PM</option>
+                      <option value="15:00">03:00 PM</option>
+                      <option value="16:00">04:00 PM</option>
+                      <option value="17:00">05:00 PM</option>
+                      <option value="18:00">06:00 PM</option>
+                      <option value="19:00">07:00 PM</option>
+                      <option value="20:00">08:00 PM</option>
                     </select>
                   </div>
 
                   {/* Action Buttons */}
-                  <div className="flex flex-col-reverse sm:flex-row items-stretch sm:items-center justify-end gap-2.5 sm:gap-3 pt-4 border-t border-wheat-200">
+                  <div className="flex flex-col-reverse sm:flex-row items-stretch sm:items-center justify-center gap-2.5 sm:gap-3 pt-4 border-t border-wheat-200">
                     <button
                       type="button"
                       onClick={() => setSelectedListing(null)}
