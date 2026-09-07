@@ -50,19 +50,20 @@ function authHeaders() {
 }
 
 async function safeFetch(url, options = {}) {
-  try {
-    return await fetch(url, options);
-  } catch (err) {
-    // If the network request failed (e.g. Render free tier cold-start wake-up or transient timeout), retry once
+  let lastErr;
+  for (let attempt = 1; attempt <= 3; attempt++) {
     try {
-      await new Promise((resolve) => setTimeout(resolve, 1500));
       return await fetch(url, options);
-    } catch (secondErr) {
-      throw new Error(
-        "Cannot reach backend server. The cloud service may be waking up from sleep (Render free tier cold start, ~30s) or you are offline. Please try again in a moment."
-      );
+    } catch (err) {
+      lastErr = err;
+      if (attempt < 3) {
+        await new Promise((resolve) => setTimeout(resolve, attempt * 1200));
+      }
     }
   }
+  throw new Error(
+    "Cannot reach backend server. The cloud backend may be waking up from sleep (Render cold start) or network was interrupted. Please try again in a moment."
+  );
 }
 
 async function handle(res) {
