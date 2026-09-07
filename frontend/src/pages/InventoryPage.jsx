@@ -917,24 +917,24 @@ export default function InventoryPage() {
       {/* MODAL 1: ADD ITEM DIALOG                                      */}
       {/* ------------------------------------------------------------- */}
       {showAddModal && (
-        <div className="fixed inset-0 z-50 flex items-center justify-center p-4 bg-black/60 backdrop-blur-sm overflow-y-auto">
-          <div className="relative w-full max-w-lg bg-white border border-wheat-200 rounded-xl shadow-2xl overflow-hidden my-8 animate-in fade-in zoom-in-95 duration-150">
-            <div className="flex items-center justify-between px-6 py-5 border-b border-wheat-200 bg-wheat-50">
+        <div className="fixed inset-0 z-50 flex items-center justify-center p-3 sm:p-4 bg-black/60 backdrop-blur-sm overflow-y-auto">
+          <div className="relative w-full max-w-lg bg-white border border-wheat-200 rounded-xl sm:rounded-2xl shadow-2xl overflow-hidden my-auto max-h-[92vh] flex flex-col animate-in fade-in zoom-in-95 duration-150">
+            <div className="flex items-center justify-between px-4 sm:px-6 py-4 sm:py-5 border-b border-wheat-200 bg-wheat-50 shrink-0">
               <div className="flex items-center gap-2">
                 <span className="p-1.5 rounded-md bg-forest-800 text-wheat-50">
                   <Plus className="w-4 h-4" />
                 </span>
-                <h2 className="font-display text-xl text-forest-800">Add Inventory Item</h2>
+                <h2 className="font-display text-lg sm:text-xl text-forest-800 font-semibold">Add Inventory Item</h2>
               </div>
               <button
                 onClick={() => setShowAddModal(false)}
-                className="p-2 text-forest-800/50 hover:text-forest-800 rounded-lg hover:bg-wheat-200/50 transition-colors"
+                className="p-1.5 text-forest-800/50 hover:text-forest-800 rounded-lg hover:bg-wheat-200/50 transition-colors"
               >
                 <X className="w-5 h-5" />
               </button>
             </div>
 
-            <form onSubmit={handleCreateItem} className="p-6 space-y-4 max-h-[75vh] overflow-y-auto">
+            <form onSubmit={handleCreateItem} className="p-4 sm:p-6 space-y-4 overflow-y-auto flex-1">
               {addError && (
                 <div className="p-3 rounded-lg bg-tomato-500/10 border border-tomato-500/30 text-tomato-600 text-xs font-medium">
                   {addError}
@@ -951,11 +951,11 @@ export default function InventoryPage() {
                   placeholder="e.g. Fresh Milk, Sourdough Loaf"
                   value={form.name}
                   onChange={updateForm("name")}
-                  className="w-full border border-wheat-200 rounded-lg px-3 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-forest-400 bg-white"
+                  className="w-full border border-wheat-200 rounded-lg px-3 py-2 text-xs sm:text-sm focus:outline-none focus:ring-2 focus:ring-forest-400 bg-white"
                 />
               </div>
 
-              <div className="grid grid-cols-2 gap-3">
+              <div className="grid grid-cols-1 sm:grid-cols-2 gap-3">
                 <div>
                   <label className="block text-xs uppercase tracking-wide text-forest-800/70 font-semibold mb-1">
                     Category
@@ -963,7 +963,7 @@ export default function InventoryPage() {
                   <select
                     value={form.category}
                     onChange={updateForm("category")}
-                    className="w-full border border-wheat-200 rounded-lg px-3 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-forest-400 bg-white capitalize"
+                    className="w-full border border-wheat-200 rounded-lg px-3 py-2 text-xs sm:text-sm focus:outline-none focus:ring-2 focus:ring-forest-400 bg-white capitalize"
                   >
                     {CATEGORIES.map((c) => (
                       <option key={c} value={c}>
@@ -982,12 +982,12 @@ export default function InventoryPage() {
                     placeholder="e.g. Walk-in Fridge #2"
                     value={form.storage_location}
                     onChange={updateForm("storage_location")}
-                    className="w-full border border-wheat-200 rounded-lg px-3 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-forest-400 bg-white"
+                    className="w-full border border-wheat-200 rounded-lg px-3 py-2 text-xs sm:text-sm focus:outline-none focus:ring-2 focus:ring-forest-400 bg-white"
                   />
                 </div>
               </div>
 
-              <div className="grid grid-cols-2 gap-3">
+              <div className="grid grid-cols-1 sm:grid-cols-2 gap-3">
                 <div>
                   <label className="block text-xs uppercase tracking-wide text-forest-800/70 font-semibold mb-1">
                     Quantity *
@@ -1000,7 +1000,7 @@ export default function InventoryPage() {
                     placeholder="e.g. 10"
                     value={form.quantity}
                     onChange={updateForm("quantity")}
-                    className="w-full border border-wheat-200 rounded-lg px-3 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-forest-400 bg-white"
+                    className="w-full border border-wheat-200 rounded-lg px-3 py-2 text-xs sm:text-sm focus:outline-none focus:ring-2 focus:ring-forest-400 bg-white"
                   />
                 </div>
 
@@ -1011,7 +1011,7 @@ export default function InventoryPage() {
                   <select
                     value={form.unit}
                     onChange={updateForm("unit")}
-                    className="w-full border border-wheat-200 rounded-lg px-3 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-forest-400 bg-white"
+                    className="w-full border border-wheat-200 rounded-lg px-3 py-2 text-xs sm:text-sm focus:outline-none focus:ring-2 focus:ring-forest-400 bg-white"
                   >
                     <option value="kg">kg</option>
                     <option value="liters">liters</option>
@@ -1022,7 +1022,7 @@ export default function InventoryPage() {
                 </div>
               </div>
 
-              <div className="grid grid-cols-2 gap-3">
+              <div className="grid grid-cols-1 sm:grid-cols-2 gap-3">
                 <div>
                   <label className="block text-xs uppercase tracking-wide text-forest-800/70 font-semibold mb-1">
                     Expiry Date *
@@ -1032,7 +1032,7 @@ export default function InventoryPage() {
                     required
                     value={form.expiry_date}
                     onChange={updateForm("expiry_date")}
-                    className="w-full border border-wheat-200 rounded-lg px-3 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-forest-400 bg-white"
+                    className="w-full border border-wheat-200 rounded-lg px-3 py-2 text-xs sm:text-sm focus:outline-none focus:ring-2 focus:ring-forest-400 bg-white font-mono"
                   />
                 </div>
 
@@ -1047,23 +1047,23 @@ export default function InventoryPage() {
                     placeholder="e.g. 2.5"
                     value={form.avg_daily_usage}
                     onChange={updateForm("avg_daily_usage")}
-                    className="w-full border border-wheat-200 rounded-lg px-3 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-forest-400 bg-white"
+                    className="w-full border border-wheat-200 rounded-lg px-3 py-2 text-xs sm:text-sm focus:outline-none focus:ring-2 focus:ring-forest-400 bg-white"
                   />
                 </div>
               </div>
 
-              <div className="flex items-center justify-end gap-3 pt-4 border-t border-wheat-200">
+              <div className="flex flex-col-reverse sm:flex-row items-stretch sm:items-center justify-end gap-2.5 sm:gap-3 pt-4 border-t border-wheat-200">
                 <button
                   type="button"
                   onClick={() => setShowAddModal(false)}
-                  className="px-4 py-2 text-xs sm:text-sm font-medium text-forest-800/70 hover:text-forest-800"
+                  className="w-full sm:w-auto px-4 py-2.5 text-xs sm:text-sm font-medium text-forest-800/70 hover:text-forest-800 rounded-lg hover:bg-wheat-100 transition-colors text-center"
                 >
                   Cancel
                 </button>
                 <button
                   type="submit"
                   disabled={submittingAdd}
-                  className="inline-flex items-center gap-2 px-5 py-2 rounded-lg text-xs sm:text-sm font-semibold bg-forest-800 text-wheat-50 hover:bg-forest-700 disabled:opacity-50 shadow-sm"
+                  className="w-full sm:w-auto inline-flex items-center justify-center gap-2 px-5 py-2.5 rounded-lg text-xs sm:text-sm font-semibold bg-forest-800 text-wheat-50 hover:bg-forest-700 disabled:opacity-50 shadow-sm transition-all"
                 >
                   {submittingAdd ? "Saving..." : "Add to Inventory"}
                 </button>
@@ -1077,18 +1077,18 @@ export default function InventoryPage() {
       {/* MODAL 2: ADD TO SURPLUS DIALOG                                */}
       {/* ------------------------------------------------------------- */}
       {listingModalItem && (
-        <div className="fixed inset-0 z-50 flex items-center justify-center p-4 bg-black/60 backdrop-blur-md overflow-y-auto animate-in fade-in duration-200">
-          <div className="relative w-full max-w-md bg-white border border-wheat-200 rounded-2xl shadow-2xl overflow-hidden animate-in fade-in zoom-in-95 duration-150 my-8">
-            <div className="flex items-center justify-between px-6 py-5 border-b border-wheat-200 bg-gradient-to-r from-forest-900 via-forest-800 to-forest-800 text-wheat-50">
+        <div className="fixed inset-0 z-50 flex items-center justify-center p-3 sm:p-4 bg-black/60 backdrop-blur-md overflow-y-auto animate-in fade-in duration-200">
+          <div className="relative w-full max-w-md bg-white border border-wheat-200 rounded-xl sm:rounded-2xl shadow-2xl overflow-hidden animate-in fade-in zoom-in-95 duration-150 my-auto max-h-[92vh] flex flex-col">
+            <div className="flex items-center justify-between px-4 sm:px-6 py-4 sm:py-5 border-b border-wheat-200 bg-gradient-to-r from-forest-900 via-forest-800 to-forest-800 text-wheat-50 shrink-0">
               <div>
                 <span className="text-[10px] font-mono tracking-widest uppercase text-emerald-300 font-semibold block mb-0.5">
                   Redistribution Marketplace · Module 03
                 </span>
-                <h2 className="font-display text-lg sm:text-xl font-bold text-white flex items-center gap-2">
-                  <Share2 className="w-5 h-5 text-emerald-300" />
+                <h2 className="font-display text-base sm:text-xl font-bold text-white flex items-center gap-2">
+                  <Share2 className="w-4 sm:w-5 h-4 sm:h-5 text-emerald-300 shrink-0" />
                   <span>Add to Surplus Marketplace</span>
                 </h2>
-                <p className="text-xs text-wheat-200/80 mt-0.5">
+                <p className="text-[11px] sm:text-xs text-wheat-200/80 mt-0.5">
                   Post near-expiry inventory for verified NGOs and food banks.
                 </p>
               </div>
@@ -1101,7 +1101,7 @@ export default function InventoryPage() {
               </button>
             </div>
 
-            <form onSubmit={handleCreateListing} className="p-6 space-y-4">
+            <form onSubmit={handleCreateListing} className="p-4 sm:p-6 space-y-4 overflow-y-auto flex-1">
               {listingSuccessMsg ? (
                 <div className="p-4 rounded-xl bg-forest-500/10 border border-forest-500/30 text-forest-700 text-sm font-medium flex items-center gap-2">
                   <CheckCircle2 className="w-5 h-5 text-forest-600 shrink-0" />
@@ -1128,7 +1128,7 @@ export default function InventoryPage() {
                       max={listingModalItem.quantity}
                       value={listingForm.quantity}
                       onChange={(e) => setListingForm({ ...listingForm, quantity: e.target.value })}
-                      className="w-full border border-wheat-200 rounded-lg px-3 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-forest-400 bg-white"
+                      className="w-full border border-wheat-200 rounded-lg px-3 py-2 text-xs sm:text-sm focus:outline-none focus:ring-2 focus:ring-forest-400 bg-white"
                     />
                     <p className="text-[11px] text-forest-800/50 mt-1">
                       Available in inventory: {listingModalItem.quantity} {listingModalItem.unit}
@@ -1147,22 +1147,22 @@ export default function InventoryPage() {
                       onChange={(e) =>
                         setListingForm({ ...listingForm, pickup_location: e.target.value })
                       }
-                      className="w-full border border-wheat-200 rounded-lg px-3 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-forest-400 bg-white"
+                      className="w-full border border-wheat-200 rounded-lg px-3 py-2 text-xs sm:text-sm focus:outline-none focus:ring-2 focus:ring-forest-400 bg-white"
                     />
                   </div>
 
-                  <div className="flex items-center justify-end gap-3 pt-4 border-t border-wheat-200">
+                  <div className="flex flex-col-reverse sm:flex-row items-stretch sm:items-center justify-end gap-2.5 sm:gap-3 pt-4 border-t border-wheat-200">
                     <button
                       type="button"
                       onClick={() => setListingModalItem(null)}
-                      className="px-4 py-2 text-xs sm:text-sm font-medium text-forest-800/70 hover:text-forest-800"
+                      className="w-full sm:w-auto px-4 py-2.5 text-xs sm:text-sm font-medium text-forest-800/70 hover:text-forest-800 rounded-lg hover:bg-wheat-100 transition-colors text-center"
                     >
                       Cancel
                     </button>
                     <button
                       type="submit"
                       disabled={listingSubmitting}
-                      className="inline-flex items-center gap-2 px-5 py-2 rounded-lg text-xs sm:text-sm font-semibold bg-forest-800 text-wheat-50 hover:bg-forest-700 disabled:opacity-50 shadow-sm"
+                      className="w-full sm:w-auto inline-flex items-center justify-center gap-2 px-5 py-2.5 rounded-lg text-xs sm:text-sm font-semibold bg-forest-800 text-wheat-50 hover:bg-forest-700 disabled:opacity-50 shadow-sm transition-all"
                     >
                       {listingSubmitting ? "Publishing..." : "Publish to Marketplace"}
                     </button>

@@ -487,43 +487,45 @@ export default function BrowseListingsPage() {
       )}
 
       {/* ------------------------------------------------------------- */}
+      {/* ------------------------------------------------------------- */}
       {/* CLAIM SURPLUS MODAL                                           */}
       {/* ------------------------------------------------------------- */}
       {selectedListing && (
-        <div className="fixed inset-0 z-50 flex items-center justify-center p-4 bg-black/60 backdrop-blur-sm overflow-y-auto">
-          <div className="relative w-full max-w-md bg-white border border-wheat-200 rounded-xl shadow-2xl overflow-hidden my-8 animate-in fade-in zoom-in-95 duration-150">
-            <div className="flex items-center justify-between px-6 py-5 border-b border-wheat-200 bg-wheat-50">
+        <div className="fixed inset-0 z-50 flex items-center justify-center p-3 sm:p-4 bg-black/60 backdrop-blur-sm overflow-y-auto animate-in fade-in duration-150">
+          <div className="relative w-full max-w-md bg-white border border-wheat-200 rounded-2xl shadow-2xl overflow-hidden my-auto max-h-[92vh] flex flex-col animate-in fade-in zoom-in-95 duration-150">
+            <div className="flex items-center justify-between px-5 sm:px-6 py-4 border-b border-wheat-200 bg-wheat-50 shrink-0">
               <div className="flex items-center gap-2">
                 <span className="p-1.5 rounded-md bg-forest-800 text-wheat-50">
                   <Utensils className="w-4 h-4" />
                 </span>
-                <h2 className="font-display text-xl text-forest-800">Claim Surplus Food</h2>
+                <h2 className="font-display text-lg sm:text-xl text-forest-800 font-semibold">Claim Surplus Food</h2>
               </div>
               <button
                 onClick={() => setSelectedListing(null)}
-                className="p-2 text-forest-800/50 hover:text-forest-800 rounded-lg hover:bg-wheat-200/50 transition-colors"
+                className="p-1.5 text-forest-800/50 hover:text-forest-800 rounded-lg hover:bg-wheat-200/50 transition-colors"
+                title="Close"
               >
                 <X className="w-5 h-5" />
               </button>
             </div>
 
-            <form onSubmit={handleClaimSubmit} className="p-6 space-y-4">
-              <div className="p-3.5 bg-forest-50 border border-forest-100 rounded-lg space-y-1">
+            <form onSubmit={handleClaimSubmit} className="p-4 sm:p-6 space-y-4 overflow-y-auto flex-1">
+              <div className="p-3.5 bg-forest-50 border border-forest-100 rounded-xl space-y-1">
                 <p className="text-sm font-semibold text-forest-800">{selectedListing.title}</p>
                 <div className="flex items-center justify-between pt-1">
-                  <span className="text-xs text-forest-800/70">
+                  <span className="text-xs text-forest-800/70 font-mono">
                     {selectedListing.quantity} {selectedListing.unit}
                   </span>
                   <LiveCountdownBadge expiryDateStr={selectedListing.expiry_date} now={now} />
                 </div>
                 <p className="text-xs text-forest-800/60 flex items-center gap-1 pt-1">
-                  <MapPin className="w-3 h-3 text-forest-600 shrink-0" />
-                  {selectedListing.pickup_location}
+                  <MapPin className="w-3.5 h-3.5 text-forest-600 shrink-0" />
+                  <span className="truncate">{selectedListing.pickup_location}</span>
                 </p>
               </div>
 
               {claimError && (
-                <div className="p-3 rounded-lg bg-tomato-500/10 border border-tomato-500/30 text-tomato-600 text-xs font-medium">
+                <div className="p-3 rounded-xl bg-tomato-500/10 border border-tomato-500/30 text-tomato-600 text-xs font-medium">
                   {claimError}
                 </div>
               )}
@@ -536,8 +538,8 @@ export default function BrowseListingsPage() {
               ) : (
                 <>
                   <div>
-                    <label className="block text-xs uppercase tracking-wide text-forest-800/70 font-semibold mb-1">
-                      Estimated Meal Portions
+                    <label className="block text-xs uppercase tracking-wide text-forest-800/70 font-semibold mb-1.5">
+                      Estimated Meal Portions *
                     </label>
                     <input
                       type="number"
@@ -546,38 +548,60 @@ export default function BrowseListingsPage() {
                       placeholder="e.g. 50"
                       value={mealsEstimate}
                       onChange={(e) => setMealsEstimate(e.target.value)}
-                      className="w-full border border-wheat-200 rounded-lg px-3 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-forest-400 bg-white"
+                      className="w-full border border-wheat-200 rounded-xl px-3.5 py-2.5 text-xs sm:text-sm text-forest-800 focus:outline-none focus:ring-2 focus:ring-forest-400 bg-white"
                     />
                     <p className="text-[11px] text-forest-800/50 mt-1">
                       Based on standard portion multiplier (~2.5 meals/kg)
                     </p>
                   </div>
 
-                  <div>
-                    <label className="block text-xs uppercase tracking-wide text-forest-800/70 font-semibold mb-1">
-                      Proposed Pickup Time
-                    </label>
-                    <input
-                      type="datetime-local"
-                      required
-                      value={scheduledTime}
-                      onChange={(e) => setScheduledTime(e.target.value)}
-                      className="w-full border border-wheat-200 rounded-lg px-3 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-forest-400 bg-white"
-                    />
+                  {/* Responsive Split Date & Time Inputs */}
+                  <div className="grid grid-cols-1 sm:grid-cols-2 gap-3">
+                    <div>
+                      <label className="block text-xs uppercase tracking-wide text-forest-800/70 font-semibold mb-1.5">
+                        Pickup Date *
+                      </label>
+                      <input
+                        type="date"
+                        required
+                        value={scheduledTime ? scheduledTime.split("T")[0] : ""}
+                        onChange={(e) => {
+                          const timePart = scheduledTime.includes("T") ? scheduledTime.split("T")[1] : "10:00";
+                          setScheduledTime(`${e.target.value}T${timePart}`);
+                        }}
+                        className="w-full border border-wheat-200 rounded-xl px-3.5 py-2.5 text-xs sm:text-sm text-forest-800 focus:outline-none focus:ring-2 focus:ring-forest-400 bg-white font-mono"
+                      />
+                    </div>
+
+                    <div>
+                      <label className="block text-xs uppercase tracking-wide text-forest-800/70 font-semibold mb-1.5">
+                        Pickup Time *
+                      </label>
+                      <input
+                        type="time"
+                        required
+                        value={scheduledTime.includes("T") ? scheduledTime.split("T")[1].slice(0, 5) : "10:00"}
+                        onChange={(e) => {
+                          const datePart = scheduledTime.includes("T") ? scheduledTime.split("T")[0] : new Date().toISOString().slice(0, 10);
+                          setScheduledTime(`${datePart}T${e.target.value}`);
+                        }}
+                        className="w-full border border-wheat-200 rounded-xl px-3.5 py-2.5 text-xs sm:text-sm text-forest-800 focus:outline-none focus:ring-2 focus:ring-forest-400 bg-white font-mono"
+                      />
+                    </div>
                   </div>
 
-                  <div className="flex items-center justify-end gap-3 pt-4 border-t border-wheat-200">
+                  <div className="flex flex-col-reverse sm:flex-row items-stretch sm:items-center justify-end gap-2.5 sm:gap-3 pt-4 border-t border-wheat-200">
                     <button
                       type="button"
                       onClick={() => setSelectedListing(null)}
-                      className="px-4 py-2 text-xs sm:text-sm font-medium text-forest-800/70 hover:text-forest-800"
+                      className="w-full sm:w-auto px-4 py-2.5 text-xs sm:text-sm font-medium text-forest-800/70 hover:text-forest-800 rounded-xl hover:bg-wheat-100/60 transition-colors text-center"
                     >
                       Cancel
                     </button>
                     <button
                       type="submit"
                       disabled={claiming}
-                      className="inline-flex items-center gap-2 px-5 py-2 rounded-lg text-xs sm:text-sm font-semibold bg-forest-800 text-wheat-50 hover:bg-forest-700 disabled:opacity-50 shadow-sm"
+                      className="w-full sm:w-auto inline-flex items-center justify-center gap-2 px-6 py-2.5 rounded-xl text-xs sm:text-sm font-semibold bg-forest-800 text-wheat-50 hover:bg-forest-700 disabled:opacity-50 shadow-sm transition-all"
                     >
                       {claiming ? "Submitting..." : "Confirm Claim"}
                     </button>

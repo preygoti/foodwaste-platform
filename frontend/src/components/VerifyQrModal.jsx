@@ -162,19 +162,19 @@ export default function VerifyQrModal({ isOpen, onClose, onVerified }) {
   };
 
   return (
-    <div className="fixed inset-0 z-50 flex items-center justify-center p-4 bg-black/60 backdrop-blur-md overflow-y-auto animate-in fade-in duration-200">
-      <div className="bg-white border border-wheat-200 rounded-2xl w-full max-w-md shadow-2xl overflow-hidden animate-in fade-in zoom-in-95 duration-200 flex flex-col my-8">
+    <div className="fixed inset-0 z-50 flex items-center justify-center p-3 sm:p-4 bg-black/60 backdrop-blur-md overflow-y-auto animate-in fade-in duration-200">
+      <div className="bg-white border border-wheat-200 rounded-xl sm:rounded-2xl w-full max-w-md shadow-2xl overflow-hidden animate-in fade-in zoom-in-95 duration-200 flex flex-col my-auto max-h-[92vh]">
         {/* Header */}
-        <div className="p-4 sm:p-5 border-b border-wheat-100 flex items-center justify-between bg-wheat-50/50">
+        <div className="p-4 sm:p-5 border-b border-wheat-100 flex items-center justify-between bg-wheat-50/50 shrink-0">
           <div className="flex items-center gap-2.5">
-            <div className="w-9 h-9 rounded-xl bg-forest-800 text-gold-400 flex items-center justify-center shadow-2xs">
+            <div className="w-9 h-9 rounded-xl bg-forest-800 text-gold-400 flex items-center justify-center shadow-2xs shrink-0">
               <Scan className="w-5 h-5" />
             </div>
             <div>
               <h3 className="font-display font-semibold text-forest-800 text-base sm:text-lg">
                 Verify Pickup Handshake
               </h3>
-              <p className="text-[11px] text-forest-800/60 font-mono">
+              <p className="text-[10px] sm:text-[11px] text-forest-800/60 font-mono">
                 Scan Driver's QR Pass to confirm food donation
               </p>
             </div>
@@ -188,7 +188,7 @@ export default function VerifyQrModal({ isOpen, onClose, onVerified }) {
         </div>
 
         {/* Body Content */}
-        <div className="p-5 space-y-4">
+        <div className="p-4 sm:p-5 space-y-4 overflow-y-auto flex-1">
           {error && (
             <div className="p-3 rounded-xl bg-tomato-500/10 border border-tomato-500/30 text-tomato-600 text-xs flex items-center gap-2">
               <AlertCircle className="w-4 h-4 shrink-0" />

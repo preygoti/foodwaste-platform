@@ -294,24 +294,24 @@ export default function BarcodeScannerModal({ isOpen, open, onClose, onSuccess, 
   if (!show) return null;
 
   return (
-    <div className="fixed inset-0 z-50 flex items-center justify-center p-4 bg-black/60 backdrop-blur-sm overflow-y-auto">
-      <div className="relative w-full max-w-xl bg-white border border-wheat-200 rounded-xl shadow-2xl overflow-hidden my-8 animate-in fade-in zoom-in-95 duration-150">
+    <div className="fixed inset-0 z-50 flex items-center justify-center p-3 sm:p-4 bg-black/60 backdrop-blur-sm overflow-y-auto">
+      <div className="relative w-full max-w-xl bg-white border border-wheat-200 rounded-xl sm:rounded-2xl shadow-2xl overflow-hidden my-auto max-h-[92vh] flex flex-col animate-in fade-in zoom-in-95 duration-150">
         {/* Header */}
-        <div className="flex items-center justify-between px-6 py-5 border-b border-wheat-200 bg-wheat-50">
+        <div className="flex items-center justify-between px-4 sm:px-6 py-4 sm:py-5 border-b border-wheat-200 bg-wheat-50 shrink-0">
           <div>
             <div className="flex items-center gap-2">
               <span className="p-1.5 rounded-md bg-forest-800 text-wheat-50">
                 <Scan className="w-4 h-4" />
               </span>
-              <h2 className="font-display text-xl text-forest-800">Scan Barcode / QR</h2>
+              <h2 className="font-display text-lg sm:text-xl text-forest-800 font-semibold">Scan Barcode / QR</h2>
             </div>
-            <p className="text-xs text-forest-800/60 mt-1">
+            <p className="text-[11px] sm:text-xs text-forest-800/60 mt-1">
               Quickly scan packaged items or QR codes to add to your inventory ledger.
             </p>
           </div>
           <button
             onClick={handleModalClose}
-            className="p-2 text-forest-800/50 hover:text-forest-800 rounded-lg hover:bg-wheat-200/50 transition-colors"
+            className="p-1.5 text-forest-800/50 hover:text-forest-800 rounded-lg hover:bg-wheat-200/50 transition-colors"
             aria-label="Close"
           >
             <X className="w-5 h-5" />
@@ -319,7 +319,7 @@ export default function BarcodeScannerModal({ isOpen, open, onClose, onSuccess, 
         </div>
 
         {/* Modal Body */}
-        <div className="p-6 space-y-6 max-h-[78vh] overflow-y-auto">
+        <div className="p-4 sm:p-6 space-y-5 overflow-y-auto flex-1">
           {/* Mode Switcher Tabs (when code not yet confirmed) */}
           {!scannedCode && (
             <div className="grid grid-cols-2 gap-2 p-1 bg-wheat-100/70 rounded-lg border border-wheat-200">
@@ -581,18 +581,18 @@ export default function BarcodeScannerModal({ isOpen, open, onClose, onSuccess, 
               )}
 
               {/* Action Buttons */}
-              <div className="flex items-center justify-end gap-3 pt-3 border-t border-wheat-200">
+              <div className="flex flex-col-reverse sm:flex-row items-stretch sm:items-center justify-end gap-2.5 sm:gap-3 pt-4 border-t border-wheat-200">
                 <button
                   type="button"
                   onClick={handleScanAnother}
-                  className="px-4 py-2 text-sm font-medium text-forest-800 hover:bg-wheat-200/50 rounded-lg transition-colors"
+                  className="w-full sm:w-auto px-4 py-2.5 text-xs sm:text-sm font-medium text-forest-800 hover:bg-wheat-200/50 rounded-lg transition-colors text-center"
                 >
                   Scan Another
                 </button>
                 <button
                   type="submit"
                   disabled={saving || saveSuccess}
-                  className="inline-flex items-center gap-2 px-5 py-2 text-sm font-medium bg-forest-800 text-wheat-50 rounded-lg hover:bg-forest-600 disabled:opacity-50 transition-all shadow-sm"
+                  className="w-full sm:w-auto inline-flex items-center justify-center gap-2 px-5 py-2.5 text-xs sm:text-sm font-medium bg-forest-800 text-wheat-50 rounded-lg hover:bg-forest-600 disabled:opacity-50 transition-all shadow-sm"
                 >
                   {saving ? (
                     <>

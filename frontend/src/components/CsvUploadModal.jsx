@@ -314,24 +314,24 @@ export default function CsvUploadModal({ isOpen, open, onClose, onSuccess }) {
   };
 
   return (
-    <div className="fixed inset-0 z-50 flex items-center justify-center p-4 bg-black/60 backdrop-blur-sm overflow-y-auto">
-      <div className="relative w-full max-w-2xl bg-white border border-wheat-200 rounded-xl shadow-2xl overflow-hidden my-8 animate-in fade-in zoom-in-95 duration-150">
+    <div className="fixed inset-0 z-50 flex items-center justify-center p-3 sm:p-4 bg-black/60 backdrop-blur-sm overflow-y-auto">
+      <div className="relative w-full max-w-2xl bg-white border border-wheat-200 rounded-xl sm:rounded-2xl shadow-2xl overflow-hidden my-auto max-h-[92vh] flex flex-col animate-in fade-in zoom-in-95 duration-150">
         {/* Header */}
-        <div className="flex items-center justify-between px-6 py-5 border-b border-wheat-200 bg-wheat-50">
+        <div className="flex items-center justify-between px-4 sm:px-6 py-4 sm:py-5 border-b border-wheat-200 bg-wheat-50 shrink-0">
           <div>
             <div className="flex items-center gap-2">
               <span className="p-1.5 rounded-md bg-forest-800 text-wheat-50">
                 <Upload className="w-4 h-4" />
               </span>
-              <h2 className="font-display text-xl text-forest-800">Upload Inventory CSV</h2>
+              <h2 className="font-display text-lg sm:text-xl text-forest-800 font-semibold">Upload Inventory CSV</h2>
             </div>
-            <p className="text-xs text-forest-800/60 mt-1">
+            <p className="text-[11px] sm:text-xs text-forest-800/60 mt-1">
               Import multiple items at once using a comma-separated values file.
             </p>
           </div>
           <button
             onClick={handleClose}
-            className="p-2 text-forest-800/50 hover:text-forest-800 rounded-lg hover:bg-wheat-200/50 transition-colors"
+            className="p-1.5 text-forest-800/50 hover:text-forest-800 rounded-lg hover:bg-wheat-200/50 transition-colors"
             aria-label="Close"
           >
             <X className="w-5 h-5" />
@@ -339,7 +339,7 @@ export default function CsvUploadModal({ isOpen, open, onClose, onSuccess }) {
         </div>
 
         {/* Content */}
-        <div className="p-6 space-y-6 max-h-[75vh] overflow-y-auto">
+        <div className="p-4 sm:p-6 space-y-4 sm:space-y-6 overflow-y-auto flex-1">
           {/* Sample template banner */}
           <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-3 p-4 rounded-lg bg-forest-50 border border-forest-100 text-forest-800">
             <div className="flex items-start gap-3">

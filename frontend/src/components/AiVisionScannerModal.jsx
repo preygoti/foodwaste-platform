@@ -122,19 +122,19 @@ export default function AiVisionScannerModal({ isOpen, onClose, onAutofill }) {
   };
 
   return (
-    <div className="fixed inset-0 z-50 flex items-center justify-center p-4 bg-black/60 backdrop-blur-md overflow-y-auto animate-in fade-in duration-200">
-      <div className="bg-white border border-wheat-200 rounded-2xl w-full max-w-lg shadow-xl overflow-hidden animate-in fade-in zoom-in-95 duration-200 flex flex-col max-h-[90vh] my-8">
+    <div className="fixed inset-0 z-50 flex items-center justify-center p-3 sm:p-4 bg-black/60 backdrop-blur-md overflow-y-auto animate-in fade-in duration-200">
+      <div className="bg-white border border-wheat-200 rounded-xl sm:rounded-2xl w-full max-w-lg shadow-xl overflow-hidden animate-in fade-in zoom-in-95 duration-200 flex flex-col max-h-[92vh] my-auto">
         {/* Header */}
-        <div className="p-4 sm:p-5 border-b border-wheat-100 flex items-center justify-between bg-wheat-50/50">
+        <div className="p-4 sm:p-5 border-b border-wheat-100 flex items-center justify-between bg-wheat-50/50 shrink-0">
           <div className="flex items-center gap-2.5">
-            <div className="w-9 h-9 rounded-xl bg-forest-800 text-gold-400 flex items-center justify-center shadow-2xs">
+            <div className="w-9 h-9 rounded-xl bg-forest-800 text-gold-400 flex items-center justify-center shadow-2xs shrink-0">
               <Sparkles className="w-5 h-5" />
             </div>
             <div>
               <h3 className="font-display font-semibold text-forest-800 text-base sm:text-lg">
                 AI Freshness &amp; Spoilage Inspector
               </h3>
-              <p className="text-[11px] text-forest-800/60 font-mono">
+              <p className="text-[10px] sm:text-[11px] text-forest-800/60 font-mono">
                 Computer Vision Food Quality Grading &amp; Shelf-Life Predictor
               </p>
             </div>
@@ -305,7 +305,7 @@ export default function AiVisionScannerModal({ isOpen, onClose, onAutofill }) {
                   </div>
 
                   {/* AI Shelf Life & Storage Advice */}
-                  <div className="grid grid-cols-2 gap-2 text-xs font-mono">
+                  <div className="grid grid-cols-1 sm:grid-cols-2 gap-2 text-xs font-mono">
                     <div className="bg-wheat-50 p-2.5 rounded-xl border border-wheat-200/80">
                       <span className="text-[10px] text-forest-800/50 uppercase block flex items-center gap-1">
                         <Calendar className="w-3 h-3 text-forest-600" />
@@ -337,13 +337,13 @@ export default function AiVisionScannerModal({ isOpen, onClose, onAutofill }) {
         </div>
 
         {/* Modal Footer Actions */}
-        <div className="p-4 sm:p-5 border-t border-wheat-100 bg-wheat-50/30 flex items-center justify-between gap-3">
+        <div className="p-4 sm:p-5 border-t border-wheat-100 bg-wheat-50/30 flex flex-col-reverse sm:flex-row items-stretch sm:items-center justify-between gap-3 shrink-0">
           {imagePreview ? (
             <>
               <button
                 type="button"
                 onClick={handleReset}
-                className="px-3.5 py-2 border border-wheat-200 rounded-xl text-xs font-medium text-forest-800 hover:bg-wheat-100"
+                className="w-full sm:w-auto px-3.5 py-2.5 sm:py-2 border border-wheat-200 rounded-xl text-xs font-medium text-forest-800 hover:bg-wheat-100 text-center"
               >
                 Scan Another
               </button>
@@ -352,7 +352,7 @@ export default function AiVisionScannerModal({ isOpen, onClose, onAutofill }) {
                 <button
                   type="button"
                   onClick={handleApplyAutofill}
-                  className="inline-flex items-center gap-2 px-5 py-2.5 bg-forest-800 text-wheat-50 rounded-xl text-xs sm:text-sm font-semibold hover:bg-forest-700 shadow-sm transition-all active:scale-[0.98]"
+                  className="w-full sm:w-auto inline-flex items-center justify-center gap-2 px-5 py-2.5 bg-forest-800 text-wheat-50 rounded-xl text-xs sm:text-sm font-semibold hover:bg-forest-700 shadow-sm transition-all active:scale-[0.98]"
                 >
                   <CheckCircle2 className="w-4 h-4 text-gold-400" />
                   <span>Autofill into Inventory Form</span>
@@ -363,7 +363,7 @@ export default function AiVisionScannerModal({ isOpen, onClose, onAutofill }) {
             <button
               type="button"
               onClick={onClose}
-              className="w-full py-2.5 border border-wheat-200 rounded-xl text-xs font-semibold text-forest-800 hover:bg-wheat-100"
+              className="w-full py-2.5 border border-wheat-200 rounded-xl text-xs font-semibold text-forest-800 hover:bg-wheat-100 text-center"
             >
               Cancel
             </button>

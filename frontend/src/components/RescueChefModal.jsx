@@ -148,35 +148,35 @@ Yield: ${recipe.yieldPerKg}`;
   };
 
   return (
-    <div className="fixed inset-0 z-50 flex items-center justify-center p-4 bg-black/60 backdrop-blur-sm overflow-y-auto">
-      <div className="relative w-full max-w-2xl bg-white border border-wheat-200 rounded-2xl shadow-2xl overflow-hidden my-8 animate-in fade-in zoom-in-95 duration-150 flex flex-col max-h-[90vh]">
+    <div className="fixed inset-0 z-50 flex items-center justify-center p-3 sm:p-4 bg-black/60 backdrop-blur-sm overflow-y-auto">
+      <div className="relative w-full max-w-2xl bg-white border border-wheat-200 rounded-xl sm:rounded-2xl shadow-2xl overflow-hidden my-auto max-h-[92vh] flex flex-col animate-in fade-in zoom-in-95 duration-150">
         {/* Modal Header */}
-        <div className="flex items-center justify-between px-6 py-4 border-b border-wheat-200 bg-gradient-to-r from-forest-800 to-forest-700 text-wheat-50">
-          <div className="flex items-center gap-3">
-            <div className="p-2 rounded-xl bg-tomato-500 text-white shadow-sm">
-              <Sparkles className="w-5 h-5" />
+        <div className="flex items-center justify-between px-4 sm:px-6 py-3.5 sm:py-4 border-b border-wheat-200 bg-gradient-to-r from-forest-800 to-forest-700 text-wheat-50 shrink-0">
+          <div className="flex items-center gap-2.5 sm:gap-3">
+            <div className="p-1.5 sm:p-2 rounded-xl bg-tomato-500 text-white shadow-sm shrink-0">
+              <Sparkles className="w-4 sm:w-5 h-4 sm:h-5" />
             </div>
             <div>
-              <h2 className="font-display text-xl font-bold tracking-tight text-wheat-50 flex items-center gap-2">
+              <h2 className="font-display text-base sm:text-xl font-bold tracking-tight text-wheat-50 flex items-center gap-2">
                 Rescue Chef &bull; Zero-Waste Recipes
               </h2>
-              <p className="text-xs text-wheat-100/70">
+              <p className="text-[11px] sm:text-xs text-wheat-100/70">
                 AI Culinary Intelligence for <span className="font-semibold text-wheat-50">{item.name}</span> ({item.quantity} {item.unit})
               </p>
             </div>
           </div>
           <button
             onClick={onClose}
-            className="p-2 text-wheat-100/70 hover:text-white rounded-lg hover:bg-white/10 transition-colors"
+            className="p-1.5 text-wheat-100/70 hover:text-white rounded-lg hover:bg-white/10 transition-colors"
           >
             <X className="w-5 h-5" />
           </button>
         </div>
 
         {/* Modal Content */}
-        <div className="p-6 overflow-y-auto space-y-6">
+        <div className="p-4 sm:p-6 overflow-y-auto space-y-4 sm:space-y-6 flex-1">
           {/* Quick Ingredient Card */}
-          <div className="bg-wheat-50/70 border border-wheat-200 rounded-xl p-4 flex flex-wrap items-center justify-between gap-3 text-xs">
+          <div className="bg-wheat-50/70 border border-wheat-200 rounded-xl p-3.5 sm:p-4 flex flex-wrap items-center justify-between gap-3 text-xs">
             <div className="flex items-center gap-2">
               <span className="font-mono uppercase text-[10px] tracking-wider font-semibold px-2 py-0.5 rounded bg-forest-800 text-wheat-50">
                 {item.category}
@@ -252,7 +252,7 @@ Yield: ${recipe.yieldPerKg}`;
         </div>
 
         {/* Modal Footer */}
-        <div className="px-5 sm:px-6 py-3.5 border-t border-wheat-200 bg-wheat-50 flex flex-col sm:flex-row items-center justify-between gap-3 text-xs text-forest-800/60 text-center sm:text-left">
+        <div className="px-4 sm:px-6 py-3.5 border-t border-wheat-200 bg-wheat-50 flex flex-col sm:flex-row items-center justify-between gap-3 text-xs text-forest-800/60 text-center sm:text-left shrink-0">
           <span>💡 Zero-waste culinary algorithms prevent commercial kitchen spoilage.</span>
           <button
             onClick={onClose}
