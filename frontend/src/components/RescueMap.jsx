@@ -13,24 +13,15 @@ import {
   Layers,
   X,
   ArrowRight,
-  AlertTriangle,
   LocateFixed,
   Maximize2,
-  Compass,
   ExternalLink,
-  Search,
-  ChevronDown,
-  Building2,
-  Target,
   Shield,
   Utensils,
   Store,
   Check,
-  Edit3,
 } from "lucide-react";
 import {
-  CITY_COORDINATES,
-  POPULAR_MAP_CITIES,
   DEFAULT_FALLBACK_COORDINATES,
   resolveInitialListingCoordinates,
   geocodeWithNominatim,
@@ -94,31 +85,26 @@ export default function RescueMap({
   const [showRouteDrawer, setShowRouteDrawer] = useState(false);
   const [tileStyle, setTileStyle] = useState("voyager");
 
-  // NGO Hub Identity & Base Coordinates
+  // NGO Hub Identity & Fixed Base Coordinates (From Registration)
   const ngoOrgName = currentUser?.org_name || "Food Rescue NGO Headquarters";
   const [ngoLocation, setNgoLocation] = useState(DEFAULT_FALLBACK_COORDINATES);
   const [ngoAddressLabel, setNgoAddressLabel] = useState(
-    currentUser?.address || "Surat Headquarters (Default Hub)"
+    currentUser?.address || "Registered Headquarters (Surat Hub)"
   );
-  const [locationSource, setLocationSource] = useState("profile"); // "profile" | "live" | "custom" | "fallback"
 
   const [geocodedCoordsMap, setGeocodedCoordsMap] = useState({});
-  const [searchAddressInput, setSearchAddressInput] = useState("");
-  const [isSearchingAddress, setIsSearchingAddress] = useState(false);
-  const [searchFeedback, setSearchFeedback] = useState("");
 
-  // 1. Resolve NGO Base Location (from Profile Address, GPS, or Fallback)
+  // 1. Resolve NGO Base Location strictly from Registered Account Address
   useEffect(() => {
     let isMounted = true;
 
     async function initializeNgoLocation() {
-      // 1. Try NGO's registered profile address first if available
-      if (currentUser?.address && currentUser.address.trim().length >= 3) {
-        const coords = await geocodeWithNominatim(currentUser.address);
+      const registeredAddress = currentUser?.address?.trim();
+      if (registeredAddress && registeredAddress.length >= 2) {
+        const coords = await geocodeWithNominatim(registeredAddress);
         if (coords && isMounted) {
           setNgoLocation(coords);
-          setNgoAddressLabel(currentUser.address);
-          setLocationSource("profile");
+          setNgoAddressLabel(registeredAddress);
           if (mapInstanceRef.current) {
             mapInstanceRef.current.setView(coords, 13);
           }
@@ -126,37 +112,13 @@ export default function RescueMap({
         }
       }
 
-      // 2. Otherwise try browser Live GPS
-      if ("geolocation" in navigator) {
-        navigator.geolocation.getCurrentPosition(
-          (pos) => {
-            if (!isMounted) return;
-            const coords = [pos.coords.latitude, pos.coords.longitude];
-            setNgoLocation(coords);
-            setNgoAddressLabel("Live GPS Location");
-            setLocationSource("live");
-            if (mapInstanceRef.current) {
-              mapInstanceRef.current.setView(coords, 13);
-            }
-          },
-          () => {
-            if (!isMounted) return;
-            setLocationSource("fallback");
-            if (listings.length > 0) {
-              const firstCoords = resolveInitialListingCoordinates(
-                listings[0],
-                DEFAULT_FALLBACK_COORDINATES,
-                0
-              );
-              setNgoLocation(firstCoords);
-              setNgoAddressLabel(listings[0].pickup_location || "Regional Donor Center");
-              if (mapInstanceRef.current) {
-                mapInstanceRef.current.setView(firstCoords, 13);
-              }
-            }
-          },
-          { enableHighAccuracy: true, timeout: 6000 }
-        );
+      // Default fallback
+      if (isMounted) {
+        setNgoLocation(DEFAULT_FALLBACK_COORDINATES);
+        setNgoAddressLabel(registeredAddress || "Registered Headquarters (Surat Hub)");
+        if (mapInstanceRef.current) {
+          mapInstanceRef.current.setView(DEFAULT_FALLBACK_COORDINATES, 13);
+        }
       }
     }
 
@@ -165,7 +127,7 @@ export default function RescueMap({
     return () => {
       isMounted = false;
     };
-  }, [currentUser]);
+  }, [currentUser?.address]);
 
   // 2. Geocode Donor Pickup Locations with OpenStreetMap Nominatim
   useEffect(() => {
@@ -261,14 +223,6 @@ export default function RescueMap({
     const markersGroup = L.layerGroup().addTo(map);
     markersGroupRef.current = markersGroup;
 
-    // Click anywhere on map to set NGO Base Location
-    map.on("click", (e) => {
-      const clickedCoords = [e.latlng.lat, e.latlng.lng];
-      setNgoLocation(clickedCoords);
-      setNgoAddressLabel(`Custom Station (${e.latlng.lat.toFixed(3)}, ${e.latlng.lng.toFixed(3)})`);
-      setLocationSource("custom");
-    });
-
     setTimeout(() => map.invalidateSize(), 150);
     setTimeout(() => map.invalidateSize(), 500);
 
@@ -316,14 +270,10 @@ export default function RescueMap({
       radarCircleRef.current = null;
     }
 
-    const isLive = locationSource === "live";
-
     // Prominent NGO Headquarters Shield Pin
     const ngoPinHtml = `
       <div style="position: relative; width: 46px; height: 46px; display: flex; align-items: center; justify-content: center; cursor: pointer;">
-        <div style="position: absolute; inset: -6px; border-radius: 50%; background: ${
-          isLive ? "rgba(16, 185, 129, 0.45)" : "rgba(31, 58, 46, 0.35)"
-        }; animation: ping 2.5s cubic-bezier(0, 0, 0.2, 1) infinite;"></div>
+        <div style="position: absolute; inset: -6px; border-radius: 50%; background: rgba(16, 185, 129, 0.35); animation: ping 2.5s cubic-bezier(0, 0, 0.2, 1) infinite;"></div>
         
         <div style="position: relative; background: #0f291e; color: #fbf0d9; width: 40px; height: 40px; border-radius: 12px; display: flex; flex-direction: column; align-items: center; justify-content: center; box-shadow: 0 6px 16px rgba(0,0,0,0.45); border: 3px solid #10b981; transform: rotate(45deg);">
           <div style="transform: rotate(-45deg); display: flex; flex-direction: column; align-items: center; justify-content: center;">
@@ -371,7 +321,7 @@ export default function RescueMap({
 
       radarCircleRef.current = circle;
     }
-  }, [ngoLocation, locationSource, selectedRadius, ngoAddressLabel, ngoOrgName]);
+  }, [ngoLocation, selectedRadius, ngoAddressLabel, ngoOrgName]);
 
   // 8. Render 🏪 Item Donor Markers
   useEffect(() => {
@@ -473,71 +423,11 @@ export default function RescueMap({
   }, [ngoLocation, filteredListings]);
 
   // 11. GPS Locate Button
-  const handleLocateMe = useCallback(() => {
-    setSearchFeedback("");
-    if ("geolocation" in navigator) {
-      navigator.geolocation.getCurrentPosition(
-        (pos) => {
-          const coords = [pos.coords.latitude, pos.coords.longitude];
-          setNgoLocation(coords);
-          setNgoAddressLabel("Live GPS Location");
-          setLocationSource("live");
-          if (mapInstanceRef.current) {
-            mapInstanceRef.current.flyTo(coords, 14, { duration: 1.2 });
-          }
-        },
-        () => {
-          setSearchFeedback("GPS permission denied. Pick a city from the list or type address.");
-          if (mapInstanceRef.current) {
-            mapInstanceRef.current.flyTo(ngoLocation, 14, { duration: 1.2 });
-          }
-        },
-        { enableHighAccuracy: true, timeout: 6000 }
-      );
-    } else if (mapInstanceRef.current) {
+  const handleCenterNgo = useCallback(() => {
+    if (mapInstanceRef.current && ngoLocation) {
       mapInstanceRef.current.flyTo(ngoLocation, 14, { duration: 1.2 });
     }
   }, [ngoLocation]);
-
-  // 12. Quick Select City
-  const handleSelectCity = (city) => {
-    setSearchFeedback("");
-    setNgoLocation(city.coords);
-    setNgoAddressLabel(city.name);
-    setLocationSource("custom");
-    if (mapInstanceRef.current) {
-      mapInstanceRef.current.flyTo(city.coords, 13, { duration: 1.2 });
-    }
-  };
-
-  // 13. Search and Move NGO Base Location
-  const handleSearchAddress = async (e) => {
-    e?.preventDefault?.();
-    const query = searchAddressInput.trim();
-    if (!query) return;
-
-    setSearchFeedback("");
-    setIsSearchingAddress(true);
-
-    try {
-      const coords = await geocodeWithNominatim(query);
-      if (coords) {
-        setNgoLocation(coords);
-        setNgoAddressLabel(query);
-        setLocationSource("custom");
-        setSearchAddressInput("");
-        if (mapInstanceRef.current) {
-          mapInstanceRef.current.flyTo(coords, 13, { duration: 1.2 });
-        }
-      } else {
-        setSearchFeedback(`Could not locate "${query}". Try adding city name.`);
-      }
-    } catch {
-      setSearchFeedback("Network timeout during geocode search.");
-    } finally {
-      setIsSearchingAddress(false);
-    }
-  };
 
   const toggleRouteStop = (item) => {
     setRouteStops((prev) => {
@@ -592,9 +482,9 @@ export default function RescueMap({
 
   return (
     <div className="space-y-2.5">
-      {/* 📍 NGO Base Station & Donor Discovery Header */}
-      <div className="bg-white border border-wheat-200 rounded-xl p-3 sm:p-4 shadow-2xs space-y-2.5 text-xs">
-        <div className="flex flex-col lg:flex-row items-stretch lg:items-center justify-between gap-3">
+      {/* 📍 Fixed Registered NGO Base Station Header */}
+      <div className="bg-white border border-wheat-200 rounded-xl p-3.5 sm:p-4 shadow-2xs text-xs">
+        <div className="flex flex-col sm:flex-row items-start sm:items-center justify-between gap-3">
           {/* NGO Base Headquarters Info */}
           <div className="flex items-start sm:items-center gap-2.5 text-forest-800">
             <div className="p-2 rounded-xl bg-forest-900 text-gold-400 shrink-0 shadow-2xs">
@@ -606,90 +496,43 @@ export default function RescueMap({
                   {ngoOrgName}
                 </span>
                 <span className="px-2 py-0.5 rounded-full text-[10px] font-mono font-bold bg-emerald-100 text-emerald-800 border border-emerald-200 uppercase">
-                  🏛️ Your NGO Base
+                  🏛️ Registered NGO Base
+                </span>
+                <span className="px-2 py-0.5 rounded-full text-[10px] font-mono font-semibold bg-wheat-100 text-forest-800/70 border border-wheat-200">
+                  🔒 Fixed Location
                 </span>
               </div>
               <p className="text-xs text-forest-800/70 mt-0.5 flex items-center gap-1.5 flex-wrap">
-                <span className="font-semibold text-forest-800">Location:</span>
-                <span className="underline decoration-dotted">{ngoAddressLabel}</span>
+                <span className="font-semibold text-forest-800">Fixed Location:</span>
+                <span className="font-medium text-forest-900 underline decoration-dotted">{ngoAddressLabel}</span>
                 <span className="text-[11px] text-forest-800/50">
-                  &bull; Calculating distances to {filteredListings.length} donor locations
+                  &bull; Calculating distances to {filteredListings.length} donor locations from your registered base
                 </span>
               </p>
             </div>
           </div>
 
-          {/* Quick Action Controls */}
+          {/* Action Controls */}
           <div className="flex items-center gap-2 flex-wrap shrink-0">
             <button
-              onClick={handleLocateMe}
-              className="inline-flex items-center gap-1.5 px-3 py-1.5 bg-emerald-50 text-emerald-800 hover:bg-emerald-100 border border-emerald-200 rounded-lg font-semibold text-xs transition-colors shadow-2xs"
-              title="Set NGO base to your current device GPS"
+              onClick={handleCenterNgo}
+              className="inline-flex items-center gap-1.5 px-3 py-1.5 bg-forest-50 text-forest-800 hover:bg-forest-100 border border-forest-200 rounded-lg font-semibold text-xs transition-colors shadow-2xs cursor-pointer"
+              title="Center map on your fixed registered headquarters"
             >
-              <LocateFixed className="w-3.5 h-3.5 text-emerald-600" />
-              <span>Use Live GPS</span>
+              <LocateFixed className="w-3.5 h-3.5 text-forest-700" />
+              <span>Center HQ</span>
             </button>
 
             <button
               onClick={handleFitAll}
-              className="inline-flex items-center gap-1.5 px-3 py-1.5 bg-wheat-100 hover:bg-wheat-200 text-forest-800 rounded-lg font-semibold text-xs transition-colors border border-wheat-300/60 shadow-2xs"
-              title="Fit NGO Hub + All Donor Pins in view"
+              className="inline-flex items-center gap-1.5 px-3 py-1.5 bg-wheat-100 hover:bg-wheat-200 text-forest-800 rounded-lg font-semibold text-xs transition-colors border border-wheat-300/60 shadow-2xs cursor-pointer"
+              title="Fit Registered Base + All Donor Pins in view"
             >
               <Maximize2 className="w-3.5 h-3.5 text-forest-600" />
               <span>Fit All ({filteredListings.length} Donors)</span>
             </button>
           </div>
         </div>
-
-        {/* Change NGO Base / Search Location */}
-        <div className="flex flex-col sm:flex-row items-stretch sm:items-center gap-2 pt-2.5 border-t border-wheat-100">
-          <span className="text-forest-800/60 font-mono text-[11px] uppercase tracking-wider shrink-0 flex items-center gap-1">
-            <Building2 className="w-3 h-3" /> Quick Cities:
-          </span>
-
-          <div className="flex items-center gap-1.5 overflow-x-auto pb-1 sm:pb-0 flex-1 no-scrollbar">
-            {POPULAR_MAP_CITIES.map((city) => (
-              <button
-                key={city.name}
-                onClick={() => handleSelectCity(city)}
-                className={`px-2.5 py-1 rounded-lg text-xs font-semibold whitespace-nowrap transition-all border ${
-                  ngoAddressLabel.toLowerCase().includes(city.name.toLowerCase())
-                    ? "bg-forest-800 text-wheat-50 border-forest-800 shadow-2xs"
-                    : "bg-white text-forest-800/80 border-wheat-200 hover:bg-wheat-50"
-                }`}
-              >
-                {city.name}
-              </button>
-            ))}
-          </div>
-
-          <form onSubmit={handleSearchAddress} className="flex items-center gap-1.5 shrink-0 w-full sm:w-auto">
-            <div className="relative flex-1 sm:w-52">
-              <input
-                type="text"
-                placeholder="Search NGO Base Address..."
-                value={searchAddressInput}
-                onChange={(e) => setSearchAddressInput(e.target.value)}
-                className="w-full pl-7 pr-2.5 py-1 text-xs border border-wheat-200 rounded-lg focus:outline-none focus:ring-1 focus:ring-forest-400 bg-white"
-              />
-              <Search className="w-3.5 h-3.5 text-forest-800/40 absolute left-2 top-1/2 -translate-y-1/2" />
-            </div>
-            <button
-              type="submit"
-              disabled={isSearchingAddress}
-              className="px-3 py-1 bg-forest-800 text-wheat-50 rounded-lg text-xs font-semibold hover:bg-forest-700 disabled:opacity-50"
-            >
-              {isSearchingAddress ? "..." : "Set Base"}
-            </button>
-          </form>
-        </div>
-
-        {searchFeedback && (
-          <div className="text-[11px] text-rose-600 bg-rose-50 px-2.5 py-1 rounded-md border border-rose-200 flex items-center gap-1.5">
-            <AlertTriangle className="w-3.5 h-3.5 shrink-0" />
-            <span>{searchFeedback}</span>
-          </div>
-        )}
       </div>
 
       {/* 🗺️ Main Map Canvas */}
