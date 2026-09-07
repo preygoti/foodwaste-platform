@@ -206,6 +206,9 @@ export const api = {
     }
     return fetchCached(`${API_URL}/inventory`, "inventory");
   },
+  async getInventory(forceFresh = false) {
+    return this.listInventory(forceFresh);
+  },
   async createInventoryItem(data) {
     const res = await safeFetch(`${API_URL}/inventory`, {
       method: "POST",

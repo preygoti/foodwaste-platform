@@ -185,11 +185,15 @@ export default function InventoryPage() {
 
   const load = async (silent = false) => {
     if (!silent) setLoading(true);
+    setError("");
     try {
-      const data = await api.getInventory();
-      setItems(data);
+      const data = await api.listInventory(true);
+      if (Array.isArray(data)) {
+        setItems(data.sort((a, b) => a.days_to_expiry - b.days_to_expiry));
+      }
     } catch (err) {
       console.error(err);
+      setError(err.message || "Failed to load inventory");
     } finally {
       if (!silent) setLoading(false);
     }
@@ -197,7 +201,9 @@ export default function InventoryPage() {
 
   useEffect(() => {
     if (user?.role === "business") {
-      load();
+      const cached = api.getCached("inventory");
+      const hasCached = Array.isArray(cached) && cached.length > 0;
+      load(hasCached);
     } else {
       setLoading(false);
     }
@@ -616,7 +622,10 @@ export default function InventoryPage() {
       {loading ? (
         <div className="bg-white border border-wheat-200 rounded-xl p-12 text-center shadow-2xs">
           <RefreshCw className="w-6 h-6 animate-spin text-forest-600 mx-auto mb-3" />
-          <p className="text-sm font-medium text-forest-800">Loading inventory records...</p>
+          <p className="text-sm font-semibold text-forest-800">Connecting to server &amp; loading inventory...</p>
+          <p className="text-xs text-forest-800/60 mt-1 max-w-sm mx-auto">
+            Syncing real-time shelf life countdowns and AI waste predictions.
+          </p>
         </div>
       ) : filtered.length === 0 ? (
         <div className="bg-white border border-wheat-200 rounded-xl p-8 sm:p-12 text-center shadow-2xs">
