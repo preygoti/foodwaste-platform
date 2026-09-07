@@ -22,6 +22,11 @@ import {
   ChevronDown,
   Building2,
   Target,
+  Shield,
+  Utensils,
+  Store,
+  Check,
+  Edit3,
 } from "lucide-react";
 import {
   CITY_COORDINATES,
@@ -70,74 +75,103 @@ function getUrgencyLevel(expiryDateStr) {
   return "fresh";
 }
 
-export default function RescueMap({ listings = [], onClaimListing, selectedRadius = 25 }) {
+export default function RescueMap({
+  listings = [],
+  onClaimListing,
+  selectedRadius = 25,
+  currentUser = null,
+}) {
   const mapContainerRef = useRef(null);
   const mapInstanceRef = useRef(null);
   const tileLayerRef = useRef(null);
   const markersGroupRef = useRef(null);
   const routePolylineRef = useRef(null);
   const radarCircleRef = useRef(null);
-  const userMarkerRef = useRef(null);
+  const ngoMarkerRef = useRef(null);
 
   const [activeListing, setActiveListing] = useState(null);
   const [routeStops, setRouteStops] = useState([]);
   const [showRouteDrawer, setShowRouteDrawer] = useState(false);
-  const [tileStyle, setTileStyle] = useState("voyager"); // Default to clean Voyager
-  const [userLocation, setUserLocation] = useState(DEFAULT_FALLBACK_COORDINATES);
-  const [locationLabel, setLocationLabel] = useState("Surat Hub (Default)");
-  const [gpsStatus, setGpsStatus] = useState("detecting"); // "detecting" | "live" | "custom" | "fallback"
-  const [geocodedCoordsMap, setGeocodedCoordsMap] = useState({});
-  const [searchLocationQuery, setSearchLocationQuery] = useState("");
-  const [isSearchingLocation, setIsSearchingLocation] = useState(false);
-  const [locationSearchError, setLocationSearchError] = useState("");
-  const [isClickToSetBaseMode, setIsClickToSetBaseMode] = useState(false);
+  const [tileStyle, setTileStyle] = useState("voyager");
 
-  // 1. Initial Live GPS Detection on Mount
+  // NGO Hub Identity & Base Coordinates
+  const ngoOrgName = currentUser?.org_name || "Food Rescue NGO Headquarters";
+  const [ngoLocation, setNgoLocation] = useState(DEFAULT_FALLBACK_COORDINATES);
+  const [ngoAddressLabel, setNgoAddressLabel] = useState(
+    currentUser?.address || "Surat Headquarters (Default Hub)"
+  );
+  const [locationSource, setLocationSource] = useState("profile"); // "profile" | "live" | "custom" | "fallback"
+
+  const [geocodedCoordsMap, setGeocodedCoordsMap] = useState({});
+  const [searchAddressInput, setSearchAddressInput] = useState("");
+  const [isSearchingAddress, setIsSearchingAddress] = useState(false);
+  const [searchFeedback, setSearchFeedback] = useState("");
+
+  // 1. Resolve NGO Base Location (from Profile Address, GPS, or Fallback)
   useEffect(() => {
     let isMounted = true;
 
-    if ("geolocation" in navigator) {
-      navigator.geolocation.getCurrentPosition(
-        (pos) => {
-          if (!isMounted) return;
-          const coords = [pos.coords.latitude, pos.coords.longitude];
-          setUserLocation(coords);
-          setLocationLabel("Your Live GPS Location");
-          setGpsStatus("live");
+    async function initializeNgoLocation() {
+      // 1. Try NGO's registered profile address first if available
+      if (currentUser?.address && currentUser.address.trim().length >= 3) {
+        const coords = await geocodeWithNominatim(currentUser.address);
+        if (coords && isMounted) {
+          setNgoLocation(coords);
+          setNgoAddressLabel(currentUser.address);
+          setLocationSource("profile");
           if (mapInstanceRef.current) {
             mapInstanceRef.current.setView(coords, 13);
           }
-        },
-        (err) => {
-          console.warn("Live GPS unavailable, using smart city default:", err.message);
-          if (!isMounted) return;
-          setGpsStatus("fallback");
-          // If listings exist, center near the first listing
-          if (listings.length > 0) {
-            const firstCoords = resolveInitialListingCoordinates(listings[0], DEFAULT_FALLBACK_COORDINATES, 0);
-            setUserLocation(firstCoords);
-            setLocationLabel(listings[0].pickup_location || "Near Listing Hub");
+          return;
+        }
+      }
+
+      // 2. Otherwise try browser Live GPS
+      if ("geolocation" in navigator) {
+        navigator.geolocation.getCurrentPosition(
+          (pos) => {
+            if (!isMounted) return;
+            const coords = [pos.coords.latitude, pos.coords.longitude];
+            setNgoLocation(coords);
+            setNgoAddressLabel("Live GPS Location");
+            setLocationSource("live");
             if (mapInstanceRef.current) {
-              mapInstanceRef.current.setView(firstCoords, 13);
+              mapInstanceRef.current.setView(coords, 13);
             }
-          }
-        },
-        { enableHighAccuracy: true, timeout: 6000, maximumAge: 300000 }
-      );
-    } else {
-      setGpsStatus("fallback");
+          },
+          () => {
+            if (!isMounted) return;
+            setLocationSource("fallback");
+            if (listings.length > 0) {
+              const firstCoords = resolveInitialListingCoordinates(
+                listings[0],
+                DEFAULT_FALLBACK_COORDINATES,
+                0
+              );
+              setNgoLocation(firstCoords);
+              setNgoAddressLabel(listings[0].pickup_location || "Regional Donor Center");
+              if (mapInstanceRef.current) {
+                mapInstanceRef.current.setView(firstCoords, 13);
+              }
+            }
+          },
+          { enableHighAccuracy: true, timeout: 6000 }
+        );
+      }
     }
+
+    initializeNgoLocation();
 
     return () => {
       isMounted = false;
     };
-  }, []);
+  }, [currentUser]);
 
-  // 2. Asynchronously Geocode custom addresses with OpenStreetMap Nominatim API
+  // 2. Geocode Donor Pickup Locations with OpenStreetMap Nominatim
   useEffect(() => {
     let isCancelled = false;
 
-    async function runGeocoding() {
+    async function geocodeDonorLocations() {
       const newMap = { ...geocodedCoordsMap };
       let hasUpdates = false;
 
@@ -161,7 +195,7 @@ export default function RescueMap({ listings = [], onClaimListing, selectedRadiu
     }
 
     if (listings.length > 0) {
-      runGeocoding();
+      geocodeDonorLocations();
     }
 
     return () => {
@@ -169,11 +203,18 @@ export default function RescueMap({ listings = [], onClaimListing, selectedRadiu
     };
   }, [listings]);
 
-  // 3. Map Listings with accurate coordinates and calculated distances
+  // 3. Map Donor Listings relative to the NGO Base
   const mappedListings = useMemo(() => {
     return listings.map((l, idx) => {
-      const coords = geocodedCoordsMap[l.id] || resolveInitialListingCoordinates(l, userLocation, idx);
-      const distKm = calculateDistanceKm(userLocation[0], userLocation[1], coords[0], coords[1]);
+      const coords =
+        geocodedCoordsMap[l.id] ||
+        resolveInitialListingCoordinates(l, ngoLocation, idx);
+      const distKm = calculateDistanceKm(
+        ngoLocation[0],
+        ngoLocation[1],
+        coords[0],
+        coords[1]
+      );
 
       return {
         ...l,
@@ -181,11 +222,12 @@ export default function RescueMap({ listings = [], onClaimListing, selectedRadiu
         urgency: getUrgencyLevel(l.expiry_date),
         distKm,
         distFormatted: formatDistance(distKm),
+        donorName: l.business_name || "Surplus Food Donor",
       };
     });
-  }, [listings, userLocation, geocodedCoordsMap]);
+  }, [listings, ngoLocation, geocodedCoordsMap]);
 
-  // 4. Filter Listings within Radar Radius
+  // 4. Filter Listings within Radar Radius from NGO Base
   const filteredListings = useMemo(() => {
     return mappedListings.filter((l) => {
       if (selectedRadius >= 50) return true;
@@ -193,21 +235,19 @@ export default function RescueMap({ listings = [], onClaimListing, selectedRadiu
     });
   }, [mappedListings, selectedRadius]);
 
-  // 5. Initialize Leaflet Map Instance
+  // 5. Initialize Leaflet Map
   useEffect(() => {
     if (!mapContainerRef.current || mapInstanceRef.current) return;
 
     const map = L.map(mapContainerRef.current, {
-      center: userLocation,
+      center: ngoLocation,
       zoom: 13,
-      zoomControl: false, // Custom position control
+      zoomControl: false,
       attributionControl: false,
     });
 
-    // Add zoom controls to bottom-right
     L.control.zoom({ position: "bottomright" }).addTo(map);
 
-    // Add Tile Layer
     const provider = MAP_TILE_PROVIDERS[tileStyle] || MAP_TILE_PROVIDERS.voyager;
     const tileLayer = L.tileLayer(provider.url, {
       maxZoom: provider.maxZoom,
@@ -218,19 +258,17 @@ export default function RescueMap({ listings = [], onClaimListing, selectedRadiu
     tileLayerRef.current = tileLayer;
     mapInstanceRef.current = map;
 
-    // Create Marker Layer Group
     const markersGroup = L.layerGroup().addTo(map);
     markersGroupRef.current = markersGroup;
 
-    // Click handler on map to set custom base pin
+    // Click anywhere on map to set NGO Base Location
     map.on("click", (e) => {
       const clickedCoords = [e.latlng.lat, e.latlng.lng];
-      setUserLocation(clickedCoords);
-      setLocationLabel(`Custom Location (${e.latlng.lat.toFixed(3)}, ${e.latlng.lng.toFixed(3)})`);
-      setGpsStatus("custom");
+      setNgoLocation(clickedCoords);
+      setNgoAddressLabel(`Custom Station (${e.latlng.lat.toFixed(3)}, ${e.latlng.lng.toFixed(3)})`);
+      setLocationSource("custom");
     });
 
-    // Invalidate size on load
     setTimeout(() => map.invalidateSize(), 150);
     setTimeout(() => map.invalidateSize(), 500);
 
@@ -248,7 +286,7 @@ export default function RescueMap({ listings = [], onClaimListing, selectedRadiu
     };
   }, []);
 
-  // 6. Handle Tile Style Switching
+  // 6. Handle Tile Style
   useEffect(() => {
     const map = mapInstanceRef.current;
     if (!map || !tileLayerRef.current) return;
@@ -264,71 +302,78 @@ export default function RescueMap({ listings = [], onClaimListing, selectedRadiu
     tileLayerRef.current = newLayer;
   }, [tileStyle]);
 
-  // 7. Update User / NGO Base Marker and Radar Coverage Circle
+  // 7. Render 🏛️ NGO Base Station Marker & Radar Search Circle
   useEffect(() => {
     const map = mapInstanceRef.current;
     if (!map) return;
 
-    // Remove previous user marker and radar circle
-    if (userMarkerRef.current) {
-      map.removeLayer(userMarkerRef.current);
-      userMarkerRef.current = null;
+    if (ngoMarkerRef.current) {
+      map.removeLayer(ngoMarkerRef.current);
+      ngoMarkerRef.current = null;
     }
     if (radarCircleRef.current) {
       map.removeLayer(radarCircleRef.current);
       radarCircleRef.current = null;
     }
 
-    // User Base Pin DivIcon
-    const isLiveGps = gpsStatus === "live";
-    const userPinHtml = `
-      <div style="position: relative; width: 42px; height: 42px; display: flex; align-items: center; justify-content: center; cursor: pointer;">
-        <div style="position: absolute; inset: -4px; border-radius: 50%; background: ${
-          isLiveGps ? "rgba(34, 197, 94, 0.4)" : "rgba(31, 58, 46, 0.3)"
+    const isLive = locationSource === "live";
+
+    // Prominent NGO Headquarters Shield Pin
+    const ngoPinHtml = `
+      <div style="position: relative; width: 46px; height: 46px; display: flex; align-items: center; justify-content: center; cursor: pointer;">
+        <div style="position: absolute; inset: -6px; border-radius: 50%; background: ${
+          isLive ? "rgba(16, 185, 129, 0.45)" : "rgba(31, 58, 46, 0.35)"
         }; animation: ping 2.5s cubic-bezier(0, 0, 0.2, 1) infinite;"></div>
-        <div style="position: relative; background: #1a3325; color: #ffffff; width: 34px; height: 34px; border-radius: 50%; display: flex; align-items: center; justify-content: center; box-shadow: 0 4px 14px rgba(0,0,0,0.4); border: 2.5px solid ${
-          isLiveGps ? "#22c55e" : "#fbf0d9"
-        };">
-          <svg width="17" height="17" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><path d="M20 10c0 6-8 12-8 12s-8-6-8-12a8 8 0 0 1 16 0Z"/><circle cx="12" cy="10" r="3"/></svg>
+        
+        <div style="position: relative; background: #0f291e; color: #fbf0d9; width: 40px; height: 40px; border-radius: 12px; display: flex; flex-direction: column; align-items: center; justify-content: center; box-shadow: 0 6px 16px rgba(0,0,0,0.45); border: 3px solid #10b981; transform: rotate(45deg);">
+          <div style="transform: rotate(-45deg); display: flex; flex-direction: column; align-items: center; justify-content: center;">
+            <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="#fbf0d9" stroke-width="2.5"><path d="M12 22s8-4 8-10V5l-8-3-8 3v7c0 6 8 10 8 10z"/></svg>
+          </div>
+        </div>
+
+        <div style="position: absolute; -bottom: 2px; background: #10b981; color: #ffffff; font-size: 8px; font-weight: 800; font-family: monospace; padding: 1px 4px; border-radius: 4px; box-shadow: 0 2px 4px rgba(0,0,0,0.3); text-transform: uppercase;">
+          NGO HQ
         </div>
       </div>
     `;
 
-    const userIcon = L.divIcon({
-      className: "custom-user-hub-pin",
-      html: userPinHtml,
-      iconSize: [42, 42],
-      iconAnchor: [21, 21],
+    const ngoIcon = L.divIcon({
+      className: "ngo-base-hub-marker",
+      html: ngoPinHtml,
+      iconSize: [46, 46],
+      iconAnchor: [23, 23],
     });
 
-    const userMarker = L.marker(userLocation, { icon: userIcon })
+    const ngoMarker = L.marker(ngoLocation, { icon: ngoIcon })
       .addTo(map)
       .bindTooltip(
-        `<div style="font-family: inherit; font-size: 11px; font-weight: bold; color: #1a3325;">
-          ${isLiveGps ? "🎯 Live GPS Base" : "📍 " + locationLabel}
+        `<div style="font-family: inherit; font-size: 11px; padding: 2px;">
+          <strong style="color: #0f291e; display: block; font-size: 12px;">🏛️ ${ngoOrgName}</strong>
+          <span style="color: #10b981; font-weight: 600; font-size: 10px;">[ Rescue Dispatch Headquarters ]</span>
+          <div style="color: #666; font-size: 10px; margin-top: 2px;">📍 ${ngoAddressLabel}</div>
         </div>`,
-        { permanent: false, direction: "top", offset: [0, -18] }
+        { permanent: false, direction: "top", offset: [0, -22] }
       );
 
-    userMarkerRef.current = userMarker;
+    ngoMarkerRef.current = ngoMarker;
 
-    // Draw Radar Search Radius Circle
+    // Draw Radar Radius Circle from NGO Base
     if (selectedRadius && selectedRadius < 50) {
-      const circle = L.circle(userLocation, {
+      const circle = L.circle(ngoLocation, {
         radius: selectedRadius * 1000,
-        color: "#22c55e",
+        color: "#10b981",
         weight: 1.5,
-        opacity: 0.85,
+        opacity: 0.9,
         dashArray: "6, 6",
-        fillColor: "#15803d",
-        fillOpacity: 0.06,
+        fillColor: "#059669",
+        fillOpacity: 0.05,
       }).addTo(map);
 
       radarCircleRef.current = circle;
     }
-  }, [userLocation, gpsStatus, selectedRadius, locationLabel]);
+  }, [ngoLocation, locationSource, selectedRadius, ngoAddressLabel, ngoOrgName]);
 
-  // 8. Render Food Surplus Listing Markers
+  // 8. Render 🏪 Item Donor Markers
   useEffect(() => {
     const map = mapInstanceRef.current;
     const markersGroup = markersGroupRef.current;
@@ -340,7 +385,7 @@ export default function RescueMap({ listings = [], onClaimListing, selectedRadiu
       const isCritical = item.urgency === "critical";
       const isWarning = item.urgency === "warning";
 
-      const bgColor = isCritical ? "#dc2626" : isWarning ? "#d97706" : "#16a34a";
+      const bgColor = isCritical ? "#dc2626" : isWarning ? "#d97706" : "#059669";
       const pulseHtml = isCritical
         ? `<div style="position: absolute; inset: -4px; border-radius: 50%; background: rgba(220, 38, 38, 0.45); animation: pulse 1.5s cubic-bezier(0.4, 0, 0.6, 1) infinite;"></div>`
         : "";
@@ -350,13 +395,16 @@ export default function RescueMap({ listings = [], onClaimListing, selectedRadiu
           ${pulseHtml}
           <div style="position: relative; background: ${bgColor}; color: white; width: 36px; height: 36px; border-radius: 50%; display: flex; flex-direction: column; align-items: center; justify-content: center; box-shadow: 0 4px 12px rgba(0,0,0,0.35); border: 2.5px solid #ffffff; font-weight: bold; font-size: 11px; line-height: 1;">
             <span>${item.quantity > 99 ? "99+" : Math.round(item.quantity)}</span>
-            <span style="font-size: 7px; opacity: 0.9; text-transform: uppercase;">${item.unit || "kg"}</span>
+            <span style="font-size: 7px; opacity: 0.95; text-transform: uppercase;">${item.unit || "kg"}</span>
+          </div>
+          <div style="position: absolute; -top: 6px; -right: 6px; background: #ffffff; color: #1f3a2e; border: 1.5px solid ${bgColor}; width: 16px; height: 16px; border-radius: 50%; display: flex; align-items: center; justify-content: center; font-size: 8px; box-shadow: 0 2px 4px rgba(0,0,0,0.2);">
+            🏪
           </div>
         </div>
       `;
 
       const markerIcon = L.divIcon({
-        className: `rescue-pin-${item.id}`,
+        className: `donor-pin-${item.id}`,
         html: iconHtml,
         iconSize: [36, 36],
         iconAnchor: [18, 18],
@@ -366,8 +414,9 @@ export default function RescueMap({ listings = [], onClaimListing, selectedRadiu
 
       marker.bindTooltip(
         `<div style="font-family: inherit; font-size: 11px; line-height: 1.3;">
-          <strong style="color: #1a3325; display: block;">${item.title}</strong>
-          <span style="color: #666;">${item.business_name || "Food Donor"} &bull; ${item.distFormatted || "Nearby"}</span>
+          <strong style="color: #0f291e; display: block; font-size: 12px;">🏪 ${item.donorName}</strong>
+          <span style="color: #4b5563; font-weight: 500;">📦 ${item.title} (${item.quantity} ${item.unit})</span>
+          <div style="color: #059669; font-weight: 600; margin-top: 2px;">📏 ${item.distFormatted || "Nearby"} from your NGO HQ</div>
         </div>`,
         { direction: "top", offset: [0, -18] }
       );
@@ -378,7 +427,7 @@ export default function RescueMap({ listings = [], onClaimListing, selectedRadiu
     });
   }, [filteredListings]);
 
-  // 9. Handle Multi-Stop Route Polyline
+  // 9. Multi-Stop Rescue Route from NGO Base Station to Donors
   useEffect(() => {
     const map = mapInstanceRef.current;
     if (!map) return;
@@ -394,10 +443,10 @@ export default function RescueMap({ listings = [], onClaimListing, selectedRadiu
         return (order[a.urgency] || 3) - (order[b.urgency] || 3);
       });
 
-      const routePoints = [userLocation, ...sortedStops.map((s) => s.coords)];
+      const routePoints = [ngoLocation, ...sortedStops.map((s) => s.coords)];
 
       const polyline = L.polyline(routePoints, {
-        color: "#1a3325",
+        color: "#0f291e",
         weight: 4,
         dashArray: "8, 8",
         lineCap: "round",
@@ -407,86 +456,86 @@ export default function RescueMap({ listings = [], onClaimListing, selectedRadiu
       routePolylineRef.current = polyline;
       map.fitBounds(polyline.getBounds(), { padding: [50, 50] });
     }
-  }, [routeStops, userLocation]);
+  }, [routeStops, ngoLocation]);
 
-  // 10. Fit Bounds to Show All Listings & User Base
+  // 10. Fit All: Centers Viewport to show NGO Base + all Donors
   const handleFitAll = useCallback(() => {
     const map = mapInstanceRef.current;
     if (!map) return;
 
-    const points = [userLocation, ...filteredListings.map((l) => l.coords)];
+    const points = [ngoLocation, ...filteredListings.map((l) => l.coords)];
     if (points.length === 1) {
-      map.setView(userLocation, 13);
+      map.setView(ngoLocation, 13);
     } else {
       const bounds = L.latLngBounds(points);
       map.fitBounds(bounds, { padding: [40, 40], maxZoom: 15 });
     }
-  }, [userLocation, filteredListings]);
+  }, [ngoLocation, filteredListings]);
 
-  // 11. Recenter to User's GPS Location
+  // 11. GPS Locate Button
   const handleLocateMe = useCallback(() => {
-    setLocationSearchError("");
+    setSearchFeedback("");
     if ("geolocation" in navigator) {
       navigator.geolocation.getCurrentPosition(
         (pos) => {
           const coords = [pos.coords.latitude, pos.coords.longitude];
-          setUserLocation(coords);
-          setLocationLabel("Your Live GPS Location");
-          setGpsStatus("live");
+          setNgoLocation(coords);
+          setNgoAddressLabel("Live GPS Location");
+          setLocationSource("live");
           if (mapInstanceRef.current) {
             mapInstanceRef.current.flyTo(coords, 14, { duration: 1.2 });
           }
         },
-        (err) => {
-          setLocationSearchError("GPS access denied. Pick a city from the list.");
+        () => {
+          setSearchFeedback("GPS permission denied. Pick a city from the list or type address.");
           if (mapInstanceRef.current) {
-            mapInstanceRef.current.flyTo(userLocation, 14, { duration: 1.2 });
+            mapInstanceRef.current.flyTo(ngoLocation, 14, { duration: 1.2 });
           }
         },
         { enableHighAccuracy: true, timeout: 6000 }
       );
     } else if (mapInstanceRef.current) {
-      mapInstanceRef.current.flyTo(userLocation, 14, { duration: 1.2 });
+      mapInstanceRef.current.flyTo(ngoLocation, 14, { duration: 1.2 });
     }
-  }, [userLocation]);
+  }, [ngoLocation]);
 
   // 12. Quick Select City
   const handleSelectCity = (city) => {
-    setLocationSearchError("");
-    setUserLocation(city.coords);
-    setLocationLabel(city.name);
-    setGpsStatus("custom");
+    setSearchFeedback("");
+    setNgoLocation(city.coords);
+    setNgoAddressLabel(city.name);
+    setLocationSource("custom");
     if (mapInstanceRef.current) {
       mapInstanceRef.current.flyTo(city.coords, 13, { duration: 1.2 });
     }
   };
 
-  // 13. Search Custom Location
-  const handleSearchLocation = async (e) => {
+  // 13. Search and Move NGO Base Location
+  const handleSearchAddress = async (e) => {
     e?.preventDefault?.();
-    const query = searchLocationQuery.trim();
+    const query = searchAddressInput.trim();
     if (!query) return;
 
-    setLocationSearchError("");
-    setIsSearchingLocation(true);
+    setSearchFeedback("");
+    setIsSearchingAddress(true);
 
     try {
       const coords = await geocodeWithNominatim(query);
       if (coords) {
-        setUserLocation(coords);
-        setLocationLabel(query);
-        setGpsStatus("custom");
-        setSearchLocationQuery("");
+        setNgoLocation(coords);
+        setNgoAddressLabel(query);
+        setLocationSource("custom");
+        setSearchAddressInput("");
         if (mapInstanceRef.current) {
           mapInstanceRef.current.flyTo(coords, 13, { duration: 1.2 });
         }
       } else {
-        setLocationSearchError(`Could not find coordinates for "${query}". Try adding city name.`);
+        setSearchFeedback(`Could not locate "${query}". Try adding city name.`);
       }
     } catch {
-      setLocationSearchError("Network timeout during geocode search.");
+      setSearchFeedback("Network timeout during geocode search.");
     } finally {
-      setIsSearchingLocation(false);
+      setIsSearchingAddress(false);
     }
   };
 
@@ -503,9 +552,10 @@ export default function RescueMap({ listings = [], onClaimListing, selectedRadiu
 
   // Compute Route Metrics
   const routeStats = useMemo(() => {
-    if (routeStops.length === 0) return { totalDistKm: 0, totalMeals: 0, totalQty: 0, estMins: 0 };
+    if (routeStops.length === 0)
+      return { totalDistKm: 0, totalMeals: 0, totalQty: 0, estMins: 0 };
     let totalDist = 0;
-    let curr = userLocation;
+    let curr = ngoLocation;
     let totalQty = 0;
 
     routeStops.forEach((s) => {
@@ -522,12 +572,12 @@ export default function RescueMap({ listings = [], onClaimListing, selectedRadiu
       totalMeals: Math.round(totalQty * 2.5),
       estMins,
     };
-  }, [routeStops, userLocation]);
+  }, [routeStops, ngoLocation]);
 
-  // Generate Google Maps Turn-by-Turn GPS Navigation URL
+  // Google Maps Turn-by-Turn GPS Navigation URL from NGO Base ➔ Donors
   const googleMapsRouteUrl = useMemo(() => {
     if (routeStops.length === 0) return "";
-    const origin = `${userLocation[0]},${userLocation[1]}`;
+    const origin = `${ngoLocation[0]},${ngoLocation[1]}`;
     const destination = `${routeStops[routeStops.length - 1].coords[0]},${routeStops[routeStops.length - 1].coords[1]}`;
     const waypoints = routeStops
       .slice(0, -1)
@@ -538,40 +588,43 @@ export default function RescueMap({ listings = [], onClaimListing, selectedRadiu
       return `https://www.google.com/maps/dir/?api=1&origin=${origin}&destination=${destination}&waypoints=${encodeURIComponent(waypoints)}&travelmode=driving`;
     }
     return `https://www.google.com/maps/dir/?api=1&origin=${origin}&destination=${destination}&travelmode=driving`;
-  }, [routeStops, userLocation]);
+  }, [routeStops, ngoLocation]);
 
   return (
     <div className="space-y-2.5">
-      {/* 📍 Interactive Location Control Bar */}
-      <div className="bg-white border border-wheat-200 rounded-xl p-2.5 sm:p-3 shadow-2xs space-y-2 text-xs">
-        <div className="flex flex-col lg:flex-row items-stretch lg:items-center justify-between gap-2.5">
-          {/* Active Center Hub Indicator */}
-          <div className="flex items-center gap-2 text-forest-800">
-            <div className={`p-1.5 rounded-lg ${gpsStatus === "live" ? "bg-emerald-100 text-emerald-700" : "bg-forest-100 text-forest-800"}`}>
-              <Target className="w-4 h-4" />
+      {/* 📍 NGO Base Station & Donor Discovery Header */}
+      <div className="bg-white border border-wheat-200 rounded-xl p-3 sm:p-4 shadow-2xs space-y-2.5 text-xs">
+        <div className="flex flex-col lg:flex-row items-stretch lg:items-center justify-between gap-3">
+          {/* NGO Base Headquarters Info */}
+          <div className="flex items-start sm:items-center gap-2.5 text-forest-800">
+            <div className="p-2 rounded-xl bg-forest-900 text-gold-400 shrink-0 shadow-2xs">
+              <Shield className="w-5 h-5" />
             </div>
             <div>
-              <div className="flex items-center gap-1.5 font-semibold text-xs sm:text-sm">
-                <span>Center Location:</span>
-                <span className="text-forest-700 underline decoration-dotted">{locationLabel}</span>
-                <span className={`text-[10px] font-mono px-1.5 py-0.5 rounded-full ${
-                  gpsStatus === "live" ? "bg-emerald-100 text-emerald-800 font-bold" : "bg-wheat-200 text-forest-800"
-                }`}>
-                  {gpsStatus === "live" ? "GPS Active" : "Custom Hub"}
+              <div className="flex items-center gap-2 flex-wrap">
+                <span className="font-display font-semibold text-sm sm:text-base text-forest-900">
+                  {ngoOrgName}
+                </span>
+                <span className="px-2 py-0.5 rounded-full text-[10px] font-mono font-bold bg-emerald-100 text-emerald-800 border border-emerald-200 uppercase">
+                  🏛️ Your NGO Base
                 </span>
               </div>
-              <p className="text-[11px] text-forest-800/60">
-                Click anywhere on map to move your radar center & recalculate nearby food distances.
+              <p className="text-xs text-forest-800/70 mt-0.5 flex items-center gap-1.5 flex-wrap">
+                <span className="font-semibold text-forest-800">Location:</span>
+                <span className="underline decoration-dotted">{ngoAddressLabel}</span>
+                <span className="text-[11px] text-forest-800/50">
+                  &bull; Calculating distances to {filteredListings.length} donor locations
+                </span>
               </p>
             </div>
           </div>
 
-          {/* Quick Action Buttons */}
-          <div className="flex items-center gap-1.5 flex-wrap shrink-0">
+          {/* Quick Action Controls */}
+          <div className="flex items-center gap-2 flex-wrap shrink-0">
             <button
               onClick={handleLocateMe}
               className="inline-flex items-center gap-1.5 px-3 py-1.5 bg-emerald-50 text-emerald-800 hover:bg-emerald-100 border border-emerald-200 rounded-lg font-semibold text-xs transition-colors shadow-2xs"
-              title="Detect live GPS location"
+              title="Set NGO base to your current device GPS"
             >
               <LocateFixed className="w-3.5 h-3.5 text-emerald-600" />
               <span>Use Live GPS</span>
@@ -580,16 +633,16 @@ export default function RescueMap({ listings = [], onClaimListing, selectedRadiu
             <button
               onClick={handleFitAll}
               className="inline-flex items-center gap-1.5 px-3 py-1.5 bg-wheat-100 hover:bg-wheat-200 text-forest-800 rounded-lg font-semibold text-xs transition-colors border border-wheat-300/60 shadow-2xs"
-              title="Show all food pins on screen"
+              title="Fit NGO Hub + All Donor Pins in view"
             >
               <Maximize2 className="w-3.5 h-3.5 text-forest-600" />
-              <span>Fit All ({filteredListings.length})</span>
+              <span>Fit All ({filteredListings.length} Donors)</span>
             </button>
           </div>
         </div>
 
-        {/* City Quick Pills & Address Search */}
-        <div className="flex flex-col sm:flex-row items-stretch sm:items-center gap-2 pt-2 border-t border-wheat-100">
+        {/* Change NGO Base / Search Location */}
+        <div className="flex flex-col sm:flex-row items-stretch sm:items-center gap-2 pt-2.5 border-t border-wheat-100">
           <span className="text-forest-800/60 font-mono text-[11px] uppercase tracking-wider shrink-0 flex items-center gap-1">
             <Building2 className="w-3 h-3" /> Quick Cities:
           </span>
@@ -600,7 +653,7 @@ export default function RescueMap({ listings = [], onClaimListing, selectedRadiu
                 key={city.name}
                 onClick={() => handleSelectCity(city)}
                 className={`px-2.5 py-1 rounded-lg text-xs font-semibold whitespace-nowrap transition-all border ${
-                  locationLabel.toLowerCase().includes(city.name.toLowerCase())
+                  ngoAddressLabel.toLowerCase().includes(city.name.toLowerCase())
                     ? "bg-forest-800 text-wheat-50 border-forest-800 shadow-2xs"
                     : "bg-white text-forest-800/80 border-wheat-200 hover:bg-wheat-50"
                 }`}
@@ -610,64 +663,66 @@ export default function RescueMap({ listings = [], onClaimListing, selectedRadiu
             ))}
           </div>
 
-          {/* Search Location Input */}
-          <form onSubmit={handleSearchLocation} className="flex items-center gap-1.5 shrink-0 w-full sm:w-auto">
-            <div className="relative flex-1 sm:w-48">
+          <form onSubmit={handleSearchAddress} className="flex items-center gap-1.5 shrink-0 w-full sm:w-auto">
+            <div className="relative flex-1 sm:w-52">
               <input
                 type="text"
-                placeholder="Type any city/area..."
-                value={searchLocationQuery}
-                onChange={(e) => setSearchLocationQuery(e.target.value)}
+                placeholder="Search NGO Base Address..."
+                value={searchAddressInput}
+                onChange={(e) => setSearchAddressInput(e.target.value)}
                 className="w-full pl-7 pr-2.5 py-1 text-xs border border-wheat-200 rounded-lg focus:outline-none focus:ring-1 focus:ring-forest-400 bg-white"
               />
               <Search className="w-3.5 h-3.5 text-forest-800/40 absolute left-2 top-1/2 -translate-y-1/2" />
             </div>
             <button
               type="submit"
-              disabled={isSearchingLocation}
-              className="px-2.5 py-1 bg-forest-800 text-wheat-50 rounded-lg text-xs font-semibold hover:bg-forest-700 disabled:opacity-50"
+              disabled={isSearchingAddress}
+              className="px-3 py-1 bg-forest-800 text-wheat-50 rounded-lg text-xs font-semibold hover:bg-forest-700 disabled:opacity-50"
             >
-              {isSearchingLocation ? "..." : "Go"}
+              {isSearchingAddress ? "..." : "Set Base"}
             </button>
           </form>
         </div>
 
-        {locationSearchError && (
+        {searchFeedback && (
           <div className="text-[11px] text-rose-600 bg-rose-50 px-2.5 py-1 rounded-md border border-rose-200 flex items-center gap-1.5">
             <AlertTriangle className="w-3.5 h-3.5 shrink-0" />
-            <span>{locationSearchError}</span>
+            <span>{searchFeedback}</span>
           </div>
         )}
       </div>
 
-      {/* 🗺️ Main Map Canvas Container */}
+      {/* 🗺️ Main Map Canvas */}
       <div className="relative w-full h-[540px] sm:h-[620px] rounded-2xl overflow-hidden border border-wheat-200 shadow-sm bg-wheat-100">
         <div ref={mapContainerRef} className="w-full h-full z-0" />
 
-        {/* Top Left: Legend */}
-        <div className="absolute top-3 left-3 z-[1000] bg-white/95 backdrop-blur-md border border-wheat-200 p-2.5 rounded-xl shadow-sm text-xs font-mono space-y-1 pointer-events-auto">
-          <div className="font-semibold text-forest-800 text-[11px] uppercase tracking-wider mb-1 flex items-center justify-between gap-2">
-            <div className="flex items-center gap-1.5">
-              <Layers className="w-3.5 h-3.5 text-forest-600" />
-              <span>Radar ({filteredListings.length} Active)</span>
-            </div>
-            <span className={`w-2 h-2 rounded-full ${gpsStatus === "live" ? "bg-emerald-500 animate-pulse" : "bg-forest-600"}`} />
+        {/* Top Left: Map Legend (NGO vs Donors) */}
+        <div className="absolute top-3 left-3 z-[1000] bg-white/95 backdrop-blur-md border border-wheat-200 p-2.5 rounded-xl shadow-sm text-xs font-mono space-y-1.5 pointer-events-auto">
+          <div className="font-semibold text-forest-800 text-[11px] uppercase tracking-wider mb-1 flex items-center gap-1.5 border-b border-wheat-100 pb-1">
+            <Layers className="w-3.5 h-3.5 text-forest-600" />
+            <span>Redistribution Map</span>
           </div>
+
+          <div className="flex items-center gap-2 text-[11px]">
+            <span className="w-3 h-3 rounded-sm bg-forest-900 border border-emerald-500 flex items-center justify-center text-[7px] text-white">🏛️</span>
+            <span className="font-semibold text-forest-900">Your NGO Station (1)</span>
+          </div>
+
           <div className="flex items-center gap-2 text-[11px]">
             <span className="w-2.5 h-2.5 rounded-full bg-rose-600 animate-pulse"></span>
-            <span className="text-forest-800">Critical (&lt;24h)</span>
+            <span className="text-forest-800">Donor: Critical (&lt;24h)</span>
           </div>
           <div className="flex items-center gap-2 text-[11px]">
             <span className="w-2.5 h-2.5 rounded-full bg-amber-500"></span>
-            <span className="text-forest-800">Watch (&lt;72h)</span>
+            <span className="text-forest-800">Donor: Watch (&lt;72h)</span>
           </div>
           <div className="flex items-center gap-2 text-[11px]">
-            <span className="w-2.5 h-2.5 rounded-full bg-forest-600"></span>
-            <span className="text-forest-800">Fresh Stock</span>
+            <span className="w-2.5 h-2.5 rounded-full bg-emerald-600"></span>
+            <span className="text-forest-800">Donor: Fresh Stock</span>
           </div>
         </div>
 
-        {/* Top Right: Tile Style Switcher */}
+        {/* Top Right: Tile Switcher */}
         <div className="absolute top-3 right-3 z-[1000] flex flex-col gap-1.5 pointer-events-auto">
           <div className="bg-white/95 backdrop-blur-md rounded-xl border border-wheat-200 shadow-sm p-1 flex gap-1">
             {Object.entries(MAP_TILE_PROVIDERS).map(([key, prov]) => (
@@ -693,13 +748,13 @@ export default function RescueMap({ listings = [], onClaimListing, selectedRadiu
             className="absolute bottom-4 left-4 z-[1000] bg-forest-800 text-wheat-50 px-4 py-2.5 rounded-xl text-xs font-semibold shadow-md flex items-center gap-2 hover:bg-forest-700 transition-all animate-bounce"
           >
             <Route className="w-4 h-4 text-gold-400" />
-            <span>Active Route ({routeStops.length} stops &bull; {routeStats.totalDistKm} km)</span>
+            <span>Rescue Route ({routeStops.length} stops &bull; {routeStats.totalDistKm} km from NGO)</span>
           </button>
         )}
 
-        {/* Selected Listing Popover Card */}
+        {/* Selected Donor Popover Card */}
         {activeListing && (
-          <div className="absolute bottom-4 right-4 max-w-sm w-[90%] sm:w-80 z-[1000] bg-white border border-wheat-200 rounded-2xl p-4 shadow-lg animate-in fade-in slide-in-from-bottom-2 duration-200">
+          <div className="absolute bottom-4 right-4 max-w-sm w-[90%] sm:w-88 z-[1000] bg-white border border-wheat-200 rounded-2xl p-4 shadow-lg animate-in fade-in slide-in-from-bottom-2 duration-200">
             <div className="flex items-start justify-between gap-2">
               <div>
                 <div className="flex items-center gap-1.5 mb-1 flex-wrap">
@@ -722,16 +777,23 @@ export default function RescueMap({ listings = [], onClaimListing, selectedRadiu
                       </>
                     )}
                   </span>
+
                   {activeListing.distFormatted && (
                     <span className="text-[10px] font-mono font-semibold px-2 py-0.5 rounded-full bg-emerald-50 text-emerald-800 border border-emerald-200">
-                      📍 {activeListing.distFormatted}
+                      📍 {activeListing.distFormatted} from NGO Base
                     </span>
                   )}
                 </div>
 
-                <h4 className="font-display font-semibold text-forest-800 text-base">
+                <div className="flex items-center gap-1.5 text-xs text-forest-800 font-semibold mb-0.5">
+                  <Store className="w-3.5 h-3.5 text-forest-600" />
+                  <span>Donor: {activeListing.donorName}</span>
+                </div>
+
+                <h4 className="font-display font-semibold text-forest-900 text-base">
                   {activeListing.title}
                 </h4>
+
                 <p className="text-xs text-forest-800/60 flex items-center gap-1 mt-0.5">
                   <MapPin className="w-3.5 h-3.5 text-forest-600 shrink-0" />
                   <span className="truncate">{activeListing.pickup_location || "Storefront Location"}</span>
@@ -747,24 +809,25 @@ export default function RescueMap({ listings = [], onClaimListing, selectedRadiu
             </div>
 
             <div className="mt-3 pt-3 border-t border-wheat-100 flex items-center justify-between text-xs font-mono">
-              <span className="text-forest-800 font-bold text-sm">
+              <span className="text-forest-900 font-bold text-sm">
                 {activeListing.quantity} {activeListing.unit}
               </span>
-              <span className="text-forest-800/60 capitalize">
+              <span className="text-forest-800/70 capitalize">
                 Category: {activeListing.category}
               </span>
             </div>
 
+            {/* Action Buttons */}
             <div className="mt-3 grid grid-cols-2 gap-2">
-              <a
-                href={`https://www.google.com/maps/dir/?api=1&destination=${activeListing.coords[0]},${activeListing.coords[1]}`}
-                target="_blank"
-                rel="noreferrer"
-                className="inline-flex items-center justify-center gap-1.5 px-3 py-2 rounded-xl text-xs font-semibold bg-wheat-100 hover:bg-wheat-200 text-forest-800 transition-all border border-wheat-300/60"
+              <button
+                onClick={() => {
+                  onClaimListing?.(activeListing);
+                }}
+                className="inline-flex items-center justify-center gap-1.5 px-3 py-2 rounded-xl text-xs font-semibold bg-emerald-700 text-white hover:bg-emerald-800 transition-all shadow-2xs"
               >
-                <ExternalLink className="w-3.5 h-3.5" />
-                <span>Directions</span>
-              </a>
+                <Check className="w-3.5 h-3.5" />
+                <span>Claim Food</span>
+              </button>
 
               <button
                 onClick={() => {
@@ -782,6 +845,18 @@ export default function RescueMap({ listings = [], onClaimListing, selectedRadiu
                 </span>
               </button>
             </div>
+
+            <div className="mt-2">
+              <a
+                href={`https://www.google.com/maps/dir/?api=1&origin=${ngoLocation[0]},${ngoLocation[1]}&destination=${activeListing.coords[0]},${activeListing.coords[1]}`}
+                target="_blank"
+                rel="noreferrer"
+                className="w-full inline-flex items-center justify-center gap-1.5 px-3 py-1.5 rounded-xl text-xs font-medium bg-wheat-100 hover:bg-wheat-200 text-forest-800 transition-all border border-wheat-300/60"
+              >
+                <ExternalLink className="w-3 h-3" />
+                <span>Directions from NGO Base (Google Maps)</span>
+              </a>
+            </div>
           </div>
         )}
 
@@ -792,8 +867,8 @@ export default function RescueMap({ listings = [], onClaimListing, selectedRadiu
               <div className="flex items-center gap-2">
                 <Route className="w-5 h-5 text-gold-400" />
                 <div>
-                  <h3 className="font-semibold text-sm">Rescue Route Dispatch</h3>
-                  <p className="text-[11px] text-wheat-200/70">{routeStops.length} Stops Planned</p>
+                  <h3 className="font-semibold text-sm">Rescue Dispatch Route</h3>
+                  <p className="text-[11px] text-wheat-200/70">From: {ngoOrgName}</p>
                 </div>
               </div>
               <button
@@ -804,7 +879,7 @@ export default function RescueMap({ listings = [], onClaimListing, selectedRadiu
               </button>
             </div>
 
-            {/* Route Stats Summary */}
+            {/* Route Stats */}
             <div className="p-4 bg-wheat-50/50 border-b border-wheat-200 grid grid-cols-3 gap-2 text-center">
               <div className="bg-white p-2 rounded-xl border border-wheat-200">
                 <span className="block text-[10px] font-mono text-forest-800/60 uppercase">Distance</span>
@@ -820,11 +895,14 @@ export default function RescueMap({ listings = [], onClaimListing, selectedRadiu
               </div>
             </div>
 
-            {/* Stop Sequence List */}
+            {/* Route Stops Sequence */}
             <div className="flex-1 overflow-y-auto p-4 space-y-2.5">
-              <div className="flex items-center gap-2 text-xs font-semibold text-forest-800">
-                <span className="w-5 h-5 rounded-full bg-forest-800 text-wheat-50 flex items-center justify-center text-[10px] font-mono">0</span>
-                <span>Base Hub ({locationLabel})</span>
+              <div className="flex items-center gap-2 text-xs font-semibold text-forest-800 bg-forest-50 p-2.5 rounded-xl border border-forest-100">
+                <span className="w-6 h-6 rounded-full bg-forest-900 text-gold-400 flex items-center justify-center text-[10px] font-mono font-bold shrink-0">0</span>
+                <div>
+                  <span className="block font-bold">🏛️ {ngoOrgName} (Start HQ)</span>
+                  <span className="text-[11px] text-forest-800/60 font-normal">{ngoAddressLabel}</span>
+                </div>
               </div>
 
               {routeStops.map((stop, idx) => (
@@ -837,7 +915,10 @@ export default function RescueMap({ listings = [], onClaimListing, selectedRadiu
                       <span className="w-5 h-5 rounded-full bg-emerald-600 text-white flex items-center justify-center text-[10px] font-mono font-bold shrink-0">
                         {idx + 1}
                       </span>
-                      <span className="font-semibold text-xs text-forest-800">{stop.title}</span>
+                      <div>
+                        <span className="font-semibold text-xs text-forest-800 block">🏪 {stop.donorName}</span>
+                        <span className="text-[11px] text-forest-800/70 font-medium">{stop.title} ({stop.quantity} {stop.unit})</span>
+                      </div>
                     </div>
                     <button
                       onClick={() => toggleRouteStop(stop)}
@@ -861,13 +942,13 @@ export default function RescueMap({ listings = [], onClaimListing, selectedRadiu
                 className="w-full inline-flex items-center justify-center gap-2 px-4 py-3 rounded-xl text-xs sm:text-sm font-semibold bg-emerald-700 text-white hover:bg-emerald-800 transition-all shadow-sm"
               >
                 <Navigation className="w-4 h-4" />
-                <span>Launch Turn-by-Turn GPS</span>
+                <span>Launch GPS Route from NGO HQ</span>
               </a>
               <button
                 onClick={() => setRouteStops([])}
                 className="w-full text-center text-xs text-forest-800/50 hover:text-forest-800 py-1"
               >
-                Clear Entire Route
+                Clear Route
               </button>
             </div>
           </div>

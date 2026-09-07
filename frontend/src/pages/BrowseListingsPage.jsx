@@ -440,6 +440,7 @@ export default function BrowseListingsPage() {
           listings={activeUnexpiredListings}
           onClaimListing={openClaimModal}
           selectedRadius={selectedRadius}
+          currentUser={user}
         />
       ) : (
         /* CARD GRID VIEW */
