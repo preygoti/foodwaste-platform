@@ -980,11 +980,10 @@ export default function InventoryPage() {
 
                 <div>
                   <LocationAutocompleteInput
-                    label="Storage Location / City"
-                    placeholder="e.g. Surat, Gujarat or Walk-in Refrigerator"
+                    label="Storage Location"
+                    placeholder="e.g. Adajan, Surat or Mumbai"
                     value={form.storage_location}
                     onChange={(val) => setForm((prev) => ({ ...prev, storage_location: val }))}
-                    showStoragePresets={true}
                   />
                 </div>
               </div>
@@ -1141,10 +1140,9 @@ export default function InventoryPage() {
                     <LocationAutocompleteInput
                       label="Pickup Location Address"
                       required={true}
-                      placeholder="e.g. Adajan, Surat, India or Front Counter"
+                      placeholder="e.g. Adajan, Surat or Mumbai"
                       value={listingForm.pickup_location}
                       onChange={(val) => setListingForm((prev) => ({ ...prev, pickup_location: val }))}
-                      showStoragePresets={true}
                     />
                   </div>
 

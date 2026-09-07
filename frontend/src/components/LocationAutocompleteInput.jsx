@@ -1,12 +1,12 @@
 import { useState, useRef, useEffect } from "react";
-import { MapPin, Building2, ChevronDown, Check, X, Search } from "lucide-react";
+import { MapPin, Building2, ChevronDown, Check, X } from "lucide-react";
 import { GLOBAL_LOCATION_SUGGESTIONS } from "../utils/geocoding";
 
 export default function LocationAutocompleteInput({
   value = "",
   onChange,
-  placeholder = "e.g. Adajan, Surat or Bandra, Mumbai",
-  label = "Pickup / Branch Location",
+  placeholder = "e.g. Adajan, Surat or Mumbai",
+  label = "Storage Location",
   required = false,
   className = "",
 }) {
@@ -52,15 +52,14 @@ export default function LocationAutocompleteInput({
           c.country.toLowerCase().includes(q) ||
           (c.state && c.state.toLowerCase().includes(q))
         );
-      }).slice(0, 10)
-    : GLOBAL_LOCATION_SUGGESTIONS.slice(0, 8);
+      }).slice(0, 8)
+    : GLOBAL_LOCATION_SUGGESTIONS.slice(0, 6);
 
   return (
-    <div ref={containerRef} className={`relative ${className}`}>
+    <div ref={containerRef} className={`relative w-full ${className}`}>
       {label && (
-        <label className="block text-xs uppercase tracking-wide text-forest-800/70 font-semibold mb-1 flex items-center justify-between">
-          <span>{label} {required && "*"}</span>
-          <span className="text-[10px] text-forest-800/50 font-normal font-mono">Real City &amp; Country</span>
+        <label className="block text-xs uppercase tracking-wide text-forest-800/70 font-semibold mb-1 whitespace-nowrap overflow-hidden text-ellipsis">
+          {label} {required && <span className="text-rose-600">*</span>}
         </label>
       )}
 
@@ -72,7 +71,7 @@ export default function LocationAutocompleteInput({
           onFocus={() => setIsOpen(true)}
           onChange={handleChange}
           placeholder={placeholder}
-          className="w-full border border-wheat-200 rounded-lg pl-8 pr-7 py-2 text-xs sm:text-sm focus:outline-none focus:ring-2 focus:ring-forest-400 bg-white"
+          className="w-full border border-wheat-200 rounded-lg pl-8 pr-7 py-2 text-xs sm:text-sm focus:outline-none focus:ring-2 focus:ring-forest-400 bg-white h-[38px] leading-tight"
         />
 
         <MapPin className="w-3.5 h-3.5 text-forest-800/40 absolute left-2.5 top-1/2 -translate-y-1/2 pointer-events-none" />
@@ -92,37 +91,39 @@ export default function LocationAutocompleteInput({
 
       {/* Autocomplete Dropdown Menu for Real Cities & Countries */}
       {isOpen && (
-        <div className="absolute left-0 right-0 top-full mt-1 z-50 bg-white border border-wheat-200 rounded-xl shadow-xl max-h-60 overflow-y-auto divide-y divide-wheat-100 animate-in fade-in zoom-in-95 duration-150">
+        <div className="absolute left-0 right-0 top-full mt-1 z-50 bg-white border border-wheat-200 rounded-xl shadow-xl max-h-56 overflow-y-auto divide-y divide-wheat-100 animate-in fade-in zoom-in-95 duration-150">
           <div className="p-1.5">
             <div className="px-2 py-1 text-[10px] font-mono uppercase tracking-wider text-forest-800/60 font-semibold flex items-center gap-1">
               <Building2 className="w-3 h-3 text-forest-600" />
-              <span>Select City &amp; Locality for Radar Map</span>
+              <span>Select City / Area for Radar Map</span>
             </div>
 
             {filteredLocations.map((loc) => {
               const fullAddressString = `${loc.label}, ${loc.country}`;
-              const isSelected = query.toLowerCase() === fullAddressString.toLowerCase() || query.toLowerCase() === loc.label.toLowerCase();
+              const isSelected =
+                query.toLowerCase() === fullAddressString.toLowerCase() ||
+                query.toLowerCase() === loc.label.toLowerCase();
 
               return (
                 <button
                   key={loc.label}
                   type="button"
                   onClick={() => handleSelect(fullAddressString)}
-                  className={`w-full text-left px-2.5 py-2 rounded-lg text-xs flex items-center justify-between hover:bg-wheat-50 transition-colors ${
+                  className={`w-full text-left px-2.5 py-1.5 rounded-lg text-xs flex items-center justify-between hover:bg-wheat-50 transition-colors ${
                     isSelected ? "bg-forest-50 text-forest-900 font-semibold" : "text-forest-800"
                   }`}
                 >
-                  <div className="flex items-center gap-2.5">
-                    <span className="text-lg shrink-0">{loc.flag}</span>
+                  <div className="flex items-center gap-2">
+                    <span className="text-base shrink-0">{loc.flag}</span>
                     <div>
-                      <span className="block font-semibold text-forest-900">{loc.label}</span>
+                      <span className="block font-semibold text-forest-900 leading-snug">{loc.label}</span>
                       <span className="text-[10px] text-forest-800/55 block">
                         {loc.state ? `${loc.state}, ` : ""}{loc.country}
                       </span>
                     </div>
                   </div>
 
-                  <div className="flex items-center gap-1.5 shrink-0">
+                  <div className="flex items-center gap-1 shrink-0">
                     <span className="text-[10px] font-mono text-forest-800/50 bg-wheat-100/70 px-1.5 py-0.5 rounded">
                       {loc.country}
                     </span>
@@ -134,10 +135,10 @@ export default function LocationAutocompleteInput({
           </div>
 
           {filteredLocations.length === 0 && (
-            <div className="p-3 text-center text-xs text-forest-800/70">
-              <p className="font-medium">Using custom address: &ldquo;{query}&rdquo;</p>
-              <p className="text-[11px] text-forest-800/50 mt-0.5">
-                Will be geocoded automatically on the NGO Radar Map.
+            <div className="p-2.5 text-center text-xs text-forest-800/70">
+              <p className="font-medium text-[11px]">Using custom location: &ldquo;{query}&rdquo;</p>
+              <p className="text-[10px] text-forest-800/50 mt-0.5">
+                Will be plotted automatically on the NGO Radar Map.
               </p>
             </div>
           )}
