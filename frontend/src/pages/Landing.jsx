@@ -221,18 +221,23 @@ export default function Landing() {
           onClick={() => setMobileMenuOpen(false)}
         >
           <div
-            className="fixed inset-y-0 right-0 w-72 max-w-[85vw] bg-white border-l border-wheat-200 shadow-2xl p-6 flex flex-col justify-between animate-in slide-in-from-right duration-250"
+            className="fixed inset-y-0 left-0 w-72 max-w-[80vw] bg-white border-r border-wheat-200 shadow-2xl p-5 sm:p-6 flex flex-col justify-between box-border h-full max-h-[100dvh] overflow-y-auto pb-safe animate-in slide-in-from-left duration-250"
             onClick={(e) => e.stopPropagation()}
           >
             <div className="space-y-6">
               <div className="flex items-center justify-between pb-4 border-b border-wheat-100">
-                <div>
-                  <span className="font-display italic text-lg font-bold text-forest-800 block">
-                    HARVEST LEDGER
-                  </span>
-                  <span className="text-[10px] font-mono text-forest-800/60">
-                    Turn Surplus Into Impact
-                  </span>
+                <div className="flex items-center gap-2">
+                  <div className="w-7 h-7 rounded-lg bg-forest-800 text-wheat-50 flex items-center justify-center font-display italic font-bold text-xs shadow-2xs">
+                    HL
+                  </div>
+                  <div>
+                    <span className="font-display italic text-base font-bold text-forest-800 block leading-tight">
+                      HARVEST LEDGER
+                    </span>
+                    <span className="text-[10px] font-mono text-forest-800/60 block">
+                      Turn Surplus Into Impact
+                    </span>
+                  </div>
                 </div>
                 <button
                   type="button"
@@ -244,7 +249,7 @@ export default function Landing() {
                 </button>
               </div>
 
-              <nav className="space-y-2 text-sm font-semibold text-forest-800">
+              <nav className="space-y-1.5 text-sm font-semibold text-forest-800">
                 <a
                   href="#hero"
                   onClick={() => setMobileMenuOpen(false)}
@@ -276,7 +281,7 @@ export default function Landing() {
               </nav>
             </div>
 
-            <div className="space-y-2.5 pt-6 border-t border-wheat-100">
+            <div className="space-y-2.5 pt-4 border-t border-wheat-100 mt-auto">
               <Link
                 to="/login"
                 onClick={() => setMobileMenuOpen(false)}
