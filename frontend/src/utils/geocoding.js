@@ -247,6 +247,82 @@ export const POPULAR_MAP_CITIES = [
   { name: "Chandigarh", coords: [30.7333, 76.7794], tag: "Punjab" },
 ];
 
+// Rich location suggestions with Country, Flag, and City
+export const GLOBAL_LOCATION_SUGGESTIONS = [
+  // Gujarat, India
+  { label: "Surat, Gujarat", country: "India", flag: "🇮🇳", city: "Surat", state: "Gujarat", coords: [21.1702, 72.8311] },
+  { label: "Adajan, Surat", country: "India", flag: "🇮🇳", city: "Surat", state: "Gujarat", coords: [21.1926, 72.7997] },
+  { label: "Vesu, Surat", country: "India", flag: "🇮🇳", city: "Surat", state: "Gujarat", coords: [21.1418, 72.7709] },
+  { label: "Pal, Surat", country: "India", flag: "🇮🇳", city: "Surat", state: "Gujarat", coords: [21.1805, 72.7758] },
+  { label: "Piplod, Surat", country: "India", flag: "🇮🇳", city: "Surat", state: "Gujarat", coords: [21.1627, 72.7794] },
+  { label: "Varachha, Surat", country: "India", flag: "🇮🇳", city: "Surat", state: "Gujarat", coords: [21.2185, 72.8540] },
+  { label: "Katargam, Surat", country: "India", flag: "🇮🇳", city: "Surat", state: "Gujarat", coords: [21.2266, 72.8277] },
+  { label: "Rander, Surat", country: "India", flag: "🇮🇳", city: "Surat", state: "Gujarat", coords: [21.2167, 72.7958] },
+  { label: "Dumas Road, Surat", country: "India", flag: "🇮🇳", city: "Surat", state: "Gujarat", coords: [21.1294, 72.7533] },
+  { label: "Ahmedabad, Gujarat", country: "India", flag: "🇮🇳", city: "Ahmedabad", state: "Gujarat", coords: [23.0225, 72.5714] },
+  { label: "Navrangpura, Ahmedabad", country: "India", flag: "🇮🇳", city: "Ahmedabad", state: "Gujarat", coords: [23.0373, 72.5564] },
+  { label: "SG Highway, Ahmedabad", country: "India", flag: "🇮🇳", city: "Ahmedabad", state: "Gujarat", coords: [23.0645, 72.5074] },
+  { label: "Vadodara, Gujarat", country: "India", flag: "🇮🇳", city: "Vadodara", state: "Gujarat", coords: [22.3072, 73.1812] },
+  { label: "Rajkot, Gujarat", country: "India", flag: "🇮🇳", city: "Rajkot", state: "Gujarat", coords: [22.3039, 70.8022] },
+  { label: "Gandhinagar, Gujarat", country: "India", flag: "🇮🇳", city: "Gandhinagar", state: "Gujarat", coords: [23.2156, 72.6369] },
+  { label: "Bhavnagar, Gujarat", country: "India", flag: "🇮🇳", city: "Bhavnagar", state: "Gujarat", coords: [21.7645, 72.1519] },
+  { label: "Vapi, Gujarat", country: "India", flag: "🇮🇳", city: "Vapi", state: "Gujarat", coords: [20.3712, 72.9048] },
+  { label: "Navsari, Gujarat", country: "India", flag: "🇮🇳", city: "Navsari", state: "Gujarat", coords: [20.9467, 72.9520] },
+  { label: "Valsad, Gujarat", country: "India", flag: "🇮🇳", city: "Valsad", state: "Gujarat", coords: [20.5992, 72.9342] },
+  { label: "Bharuch, Gujarat", country: "India", flag: "🇮🇳", city: "Bharuch", state: "Gujarat", coords: [21.7051, 72.9959] },
+
+  // Maharashtra, India
+  { label: "Mumbai, Maharashtra", country: "India", flag: "🇮🇳", city: "Mumbai", state: "Maharashtra", coords: [19.0760, 72.8777] },
+  { label: "Andheri, Mumbai", country: "India", flag: "🇮🇳", city: "Mumbai", state: "Maharashtra", coords: [19.1136, 72.8697] },
+  { label: "Bandra, Mumbai", country: "India", flag: "🇮🇳", city: "Mumbai", state: "Maharashtra", coords: [19.0596, 72.8295] },
+  { label: "BKC, Mumbai", country: "India", flag: "🇮🇳", city: "Mumbai", state: "Maharashtra", coords: [19.0657, 72.8687] },
+  { label: "Pune, Maharashtra", country: "India", flag: "🇮🇳", city: "Pune", state: "Maharashtra", coords: [18.5204, 73.8567] },
+  { label: "Hinjewadi, Pune", country: "India", flag: "🇮🇳", city: "Pune", state: "Maharashtra", coords: [18.5913, 73.7389] },
+  { label: "Nagpur, Maharashtra", country: "India", flag: "🇮🇳", city: "Nagpur", state: "Maharashtra", coords: [21.1458, 79.0882] },
+  { label: "Nashik, Maharashtra", country: "India", flag: "🇮🇳", city: "Nashik", state: "Maharashtra", coords: [19.9975, 73.7898] },
+  { label: "Thane, Maharashtra", country: "India", flag: "🇮🇳", city: "Thane", state: "Maharashtra", coords: [19.2183, 72.9781] },
+  { label: "Navi Mumbai, Maharashtra", country: "India", flag: "🇮🇳", city: "Navi Mumbai", state: "Maharashtra", coords: [19.0330, 73.0297] },
+
+  // Delhi NCR, India
+  { label: "Delhi NCR", country: "India", flag: "🇮🇳", city: "Delhi", state: "Delhi", coords: [28.6139, 77.2090] },
+  { label: "Connaught Place, New Delhi", country: "India", flag: "🇮🇳", city: "New Delhi", state: "Delhi", coords: [28.6315, 77.2167] },
+  { label: "Noida, Uttar Pradesh", country: "India", flag: "🇮🇳", city: "Noida", state: "Uttar Pradesh", coords: [28.5355, 77.3910] },
+  { label: "Gurugram / Gurgaon, Haryana", country: "India", flag: "🇮🇳", city: "Gurgaon", state: "Haryana", coords: [28.4595, 77.0266] },
+
+  // Karnataka, India
+  { label: "Bengaluru / Bangalore", country: "India", flag: "🇮🇳", city: "Bengaluru", state: "Karnataka", coords: [12.9716, 77.5946] },
+  { label: "Koramangala, Bengaluru", country: "India", flag: "🇮🇳", city: "Bengaluru", state: "Karnataka", coords: [12.9352, 77.6245] },
+  { label: "Indiranagar, Bengaluru", country: "India", flag: "🇮🇳", city: "Bengaluru", state: "Karnataka", coords: [12.9784, 77.6408] },
+  { label: "Whitefield, Bengaluru", country: "India", flag: "🇮🇳", city: "Bengaluru", state: "Karnataka", coords: [12.9698, 77.7500] },
+
+  // Other Top Metros
+  { label: "Hyderabad, Telangana", country: "India", flag: "🇮🇳", city: "Hyderabad", state: "Telangana", coords: [17.3850, 78.4867] },
+  { label: "Chennai, Tamil Nadu", country: "India", flag: "🇮🇳", city: "Chennai", state: "Tamil Nadu", coords: [13.0827, 80.2707] },
+  { label: "Kolkata, West Bengal", country: "India", flag: "🇮🇳", city: "Kolkata", state: "West Bengal", coords: [22.5726, 88.3639] },
+  { label: "Jaipur, Rajasthan", country: "India", flag: "🇮🇳", city: "Jaipur", state: "Rajasthan", coords: [26.9124, 75.7873] },
+  { label: "Lucknow, Uttar Pradesh", country: "India", flag: "🇮🇳", city: "Lucknow", state: "Uttar Pradesh", coords: [26.8467, 80.9462] },
+  { label: "Indore, Madhya Pradesh", country: "India", flag: "🇮🇳", city: "Indore", state: "Madhya Pradesh", coords: [22.7196, 75.8577] },
+  { label: "Chandigarh", country: "India", flag: "🇮🇳", city: "Chandigarh", state: "Punjab", coords: [30.7333, 76.7794] },
+  { label: "Kochi, Kerala", country: "India", flag: "🇮🇳", city: "Kochi", state: "Kerala", coords: [9.9312, 76.2673] },
+
+  // International
+  { label: "Dubai", country: "United Arab Emirates", flag: "🇦🇪", city: "Dubai", state: "Dubai", coords: [25.2048, 55.2708] },
+  { label: "London", country: "United Kingdom", flag: "🇬🇧", city: "London", state: "Greater London", coords: [51.5074, -0.1278] },
+  { label: "New York", country: "United States", flag: "🇺🇸", city: "New York", state: "NY", coords: [40.7128, -74.0060] },
+  { label: "Singapore", country: "Singapore", flag: "🇸🇬", city: "Singapore", state: "Singapore", coords: [1.3521, 103.8198] },
+  { label: "Toronto", country: "Canada", flag: "🇨🇦", city: "Toronto", state: "Ontario", coords: [43.6532, -79.3832] },
+  { label: "Sydney", country: "Australia", flag: "🇦🇺", city: "Sydney", state: "NSW", coords: [-33.8688, 151.2093] },
+];
+
+// Kitchen Storage Area Presets
+export const KITCHEN_STORAGE_PRESETS = [
+  { label: "Walk-in Refrigerator", icon: "🧊", desc: "Cold Chilled Storage (2°C - 4°C)" },
+  { label: "Deep Freezer", icon: "❄️", desc: "Sub-Zero Frozen Storage (-18°C)" },
+  { label: "Dry Pantry & Bakery Shelf", icon: "🥖", desc: "Dry Ambient Room Temperature" },
+  { label: "Storefront Counter / Display Rack", icon: "🏬", desc: "Front Area (Ready for Pickup)" },
+  { label: "Main Kitchen Prep Station", icon: "🍳", desc: "Active Food Station" },
+];
+
 // Default fallback coordinate (Surat/Mumbai Western Hub)
 export const DEFAULT_FALLBACK_COORDINATES = [21.1702, 72.8311]; // Surat / West Hub
 

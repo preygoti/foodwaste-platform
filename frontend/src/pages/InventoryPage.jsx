@@ -30,6 +30,7 @@ import CsvUploadModal from "../components/CsvUploadModal";
 import BarcodeScannerModal from "../components/BarcodeScannerModal";
 import AiVisionScannerModal from "../components/AiVisionScannerModal";
 import RescueChefModal from "../components/RescueChefModal";
+import LocationAutocompleteInput from "../components/LocationAutocompleteInput";
 import { useAuth } from "../AuthContext";
 import { api } from "../api";
 
@@ -978,15 +979,12 @@ export default function InventoryPage() {
                 </div>
 
                 <div>
-                  <label className="block text-xs uppercase tracking-wide text-forest-800/70 font-semibold mb-1">
-                    Storage Location
-                  </label>
-                  <input
-                    type="text"
-                    placeholder="e.g. Walk-in Fridge #2"
+                  <LocationAutocompleteInput
+                    label="Storage Location / City"
+                    placeholder="e.g. Surat, Gujarat or Walk-in Refrigerator"
                     value={form.storage_location}
-                    onChange={updateForm("storage_location")}
-                    className="w-full border border-wheat-200 rounded-lg px-3 py-2 text-xs sm:text-sm focus:outline-none focus:ring-2 focus:ring-forest-400 bg-white"
+                    onChange={(val) => setForm((prev) => ({ ...prev, storage_location: val }))}
+                    showStoragePresets={true}
                   />
                 </div>
               </div>
@@ -1140,18 +1138,13 @@ export default function InventoryPage() {
                   </div>
 
                   <div>
-                    <label className="block text-xs uppercase tracking-wide text-forest-800/70 font-semibold mb-1">
-                      Pickup Location Address *
-                    </label>
-                    <input
-                      type="text"
-                      required
-                      placeholder="e.g. Front Counter, 123 Main St"
+                    <LocationAutocompleteInput
+                      label="Pickup Location Address"
+                      required={true}
+                      placeholder="e.g. Adajan, Surat, India or Front Counter"
                       value={listingForm.pickup_location}
-                      onChange={(e) =>
-                        setListingForm({ ...listingForm, pickup_location: e.target.value })
-                      }
-                      className="w-full border border-wheat-200 rounded-lg px-3 py-2 text-xs sm:text-sm focus:outline-none focus:ring-2 focus:ring-forest-400 bg-white"
+                      onChange={(val) => setListingForm((prev) => ({ ...prev, pickup_location: val }))}
+                      showStoragePresets={true}
                     />
                   </div>
 
