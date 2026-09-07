@@ -572,8 +572,8 @@ export default function BrowseListingsPage() {
                       placeholder="e.g. 25"
                       value={mealsEstimate}
                       onChange={(e) => setMealsEstimate(e.target.value)}
-                      style={{ textAlign: "center" }}
-                      className="w-[150px] h-8 max-w-full mx-auto block box-border border border-wheat-200 rounded-xl px-2.5 text-xs text-center focus:outline-none focus:ring-2 focus:ring-forest-400 bg-white shadow-xs"
+                      style={{ textAlign: "center", display: "inline-flex", alignItems: "center", justifyContent: "center" }}
+                      className="w-[150px] h-8 max-w-full mx-auto box-border border border-wheat-200 rounded-xl px-2.5 py-0 text-xs text-center focus:outline-none focus:ring-2 focus:ring-forest-400 bg-white shadow-xs"
                     />
                     <p className="text-[10px] text-forest-800/50 mt-0.5 text-center">
                       ~2.5 community meals per unit.
@@ -592,8 +592,8 @@ export default function BrowseListingsPage() {
                         required
                         value={pickupDate}
                         onChange={(e) => setPickupDate(e.target.value)}
-                        style={{ textAlign: "center" }}
-                        className="w-full h-8 block box-border bg-white border border-wheat-200 rounded-xl px-2 text-xs text-forest-900 focus:outline-none focus:ring-2 focus:ring-forest-400 font-mono text-center shadow-xs"
+                        style={{ textAlign: "center", display: "inline-flex", alignItems: "center", justifyContent: "center" }}
+                        className="w-full h-8 box-border bg-white border border-wheat-200 rounded-xl px-2 py-0 text-xs text-forest-900 focus:outline-none focus:ring-2 focus:ring-forest-400 font-mono text-center shadow-xs"
                       />
                     </div>
 
@@ -606,8 +606,8 @@ export default function BrowseListingsPage() {
                         required
                         value={pickupTime}
                         onChange={(e) => setPickupTime(e.target.value)}
-                        style={{ textAlign: "center", textAlignLast: "center" }}
-                        className="w-full h-8 block box-border bg-white border border-wheat-200 rounded-xl px-2 py-0 text-xs text-forest-900 focus:outline-none focus:ring-2 focus:ring-forest-400 font-mono text-center cursor-pointer shadow-xs"
+                        style={{ textAlign: "center", textAlignLast: "center", display: "inline-flex", alignItems: "center", justifyContent: "center" }}
+                        className="w-full h-8 box-border bg-white border border-wheat-200 rounded-xl px-2 py-0 text-xs text-forest-900 focus:outline-none focus:ring-2 focus:ring-forest-400 font-mono text-center cursor-pointer shadow-xs"
                       >
                         <option value="08:00" style={{ textAlign: "center" }}>08:00 AM</option>
                         <option value="09:00" style={{ textAlign: "center" }}>09:00 AM</option>

@@ -54,15 +54,61 @@ select.text-center {
   -moz-text-align-last: center !important;
 }
 
+input[type="date"],
+input[type="time"],
+input[type="datetime-local"] {
+  display: inline-flex !important;
+  align-items: center !important;
+  justify-content: center !important;
+  line-height: normal !important;
+  vertical-align: middle !important;
+}
+
 input[type="date"].text-center::-webkit-date-and-time-value {
   text-align: center !important;
+  display: flex !important;
+  align-items: center !important;
+  justify-content: center !important;
+  min-height: 100% !important;
+  height: 100% !important;
+  line-height: normal !important;
+  margin: 0 auto !important;
+  padding: 0 !important;
 }
 
 input[type="date"].text-center::-webkit-datetime-edit,
 input[type="date"].text-center::-webkit-datetime-edit-fields-wrapper {
   text-align: center !important;
   margin: 0 auto !important;
+  display: inline-flex !important;
+  align-items: center !important;
   justify-content: center !important;
+  height: 100% !important;
+  padding-top: 0 !important;
+  padding-bottom: 0 !important;
+  line-height: normal !important;
+}
+
+input[type="date"].text-center::-webkit-datetime-edit-text,
+input[type="date"].text-center::-webkit-datetime-edit-month-field,
+input[type="date"].text-center::-webkit-datetime-edit-day-field,
+input[type="date"].text-center::-webkit-datetime-edit-year-field {
+  display: inline-flex !important;
+  align-items: center !important;
+  justify-content: center !important;
+  height: 100% !important;
+  padding-top: 0 !important;
+  padding-bottom: 0 !important;
+  line-height: normal !important;
+  vertical-align: middle !important;
+}
+
+input[type="date"]::-webkit-calendar-picker-indicator {
+  align-self: center !important;
+  margin-top: auto !important;
+  margin-bottom: auto !important;
+  padding: 0 !important;
+  cursor: pointer;
 }
 
 select.text-center option {
