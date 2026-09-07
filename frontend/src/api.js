@@ -52,17 +52,27 @@ function authHeaders() {
 async function safeFetch(url, options = {}) {
   let lastErr;
   for (let attempt = 1; attempt <= 3; attempt++) {
+    const controller = new AbortController();
+    const timeoutId = setTimeout(() => controller.abort(), 15000);
     try {
-      return await fetch(url, options);
+      const res = await fetch(url, {
+        ...options,
+        signal: options.signal || controller.signal,
+      });
+      clearTimeout(timeoutId);
+      return res;
     } catch (err) {
+      clearTimeout(timeoutId);
       lastErr = err;
       if (attempt < 3) {
-        await new Promise((resolve) => setTimeout(resolve, attempt * 1200));
+        await new Promise((resolve) => setTimeout(resolve, attempt * 1000));
       }
     }
   }
   throw new Error(
-    "Cannot reach backend server. The cloud backend may be waking up from sleep (Render cold start) or network was interrupted. Please try again in a moment."
+    lastErr?.name === "AbortError"
+      ? "Backend connection timed out. The server may be waking up from sleep. Please refresh or retry in a moment."
+      : "Cannot reach backend server. Please check your connection or retry in a moment."
   );
 }
 

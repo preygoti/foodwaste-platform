@@ -12,7 +12,14 @@ import AnalyticsPage from "./pages/AnalyticsPage";
 
 function Protected({ role, children }) {
   const { user, loading } = useAuth();
-  if (loading) return <div className="min-h-screen flex items-center justify-center text-forest-800/50">Loading…</div>;
+  if (loading) {
+    return (
+      <div className="min-h-screen flex flex-col items-center justify-center bg-wheat-50 text-forest-800 gap-3">
+        <div className="w-8 h-8 border-3 border-forest-600 border-t-transparent rounded-full animate-spin"></div>
+        <p className="text-xs sm:text-sm font-medium text-forest-800/70">Connecting session...</p>
+      </div>
+    );
+  }
   if (!user) return <Navigate to="/login" replace />;
   if (role && user.role !== role) {
     return <Navigate to={user.role === "business" ? "/dashboard/inventory" : "/dashboard/browse"} replace />;
