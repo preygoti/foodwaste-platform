@@ -38,9 +38,9 @@ const CATEGORIES = ["produce", "dairy", "bakery", "prepared", "canned", "frozen"
 
 const emptyForm = {
   name: "",
-  category: "produce",
+  category: "",
   quantity: "",
-  unit: "kg",
+  unit: "",
   expiry_date: "",
   storage_location: "",
   avg_daily_usage: "",
@@ -166,38 +166,33 @@ export default function InventoryPage() {
   const [filter, setFilter] = useState("all");
   const [categoryFilter, setCategoryFilter] = useState("all");
   const [searchQuery, setSearchQuery] = useState("");
-
-  // Modals state
+  const [riskFilter, setRiskFilter] = useState("all");
+  const [sortBy, setSortBy] = useState("expiry_asc");
   const [showAddModal, setShowAddModal] = useState(false);
-  const [showCsvModal, setShowCsvModal] = useState(false);
-  const [showScannerModal, setShowScannerModal] = useState(false);
-  const [showAiVisionModal, setShowAiVisionModal] = useState(false);
-  const [rescueChefItem, setRescueChefItem] = useState(null);
+  const [form, setForm] = useState(emptyForm);
+  const [submittingAdd, setSubmittingAdd] = useState(false);
+  const [addError, setAddError] = useState("");
+
   const [listingModalItem, setListingModalItem] = useState(null);
   const [listingForm, setListingForm] = useState({ quantity: "", pickup_location: "" });
   const [listingSubmitting, setListingSubmitting] = useState(false);
   const [listingSuccessMsg, setListingSuccessMsg] = useState("");
 
-  // Add Item form state
-  const [form, setForm] = useState(emptyForm);
-  const [submittingAdd, setSubmittingAdd] = useState(false);
-  const [addError, setAddError] = useState("");
+  const [showCsvModal, setShowCsvModal] = useState(false);
+  const [showBarcodeModal, setShowBarcodeModal] = useState(false);
+  const [showAiModal, setShowAiModal] = useState(false);
+  const [showChefModal, setShowChefModal] = useState(false);
 
-  const load = (forceFresh = false) => {
-    if (user?.role !== "business") return;
-    if (forceFresh || !api.getCached("inventory")) {
-      setLoading(true);
+  const load = async (silent = false) => {
+    if (!silent) setLoading(true);
+    try {
+      const data = await api.getInventory();
+      setItems(data);
+    } catch (err) {
+      console.error(err);
+    } finally {
+      if (!silent) setLoading(false);
     }
-    setError("");
-    api
-      .listInventory(forceFresh)
-      .then((data) => {
-        if (Array.isArray(data)) {
-          setItems(data.sort((a, b) => a.days_to_expiry - b.days_to_expiry));
-        }
-      })
-      .catch((e) => setError(e.message))
-      .finally(() => setLoading(false));
   };
 
   useEffect(() => {
@@ -206,17 +201,16 @@ export default function InventoryPage() {
     } else {
       setLoading(false);
     }
-  }, [user?.id, user?.role]);
+  }, [user]);
 
-  // If authenticated as NGO, display clear role restriction
-  if (user?.role && user.role !== "business") {
+  if (user && user.role !== "business") {
     return (
       <Layout>
-        <div className="bg-white border border-wheat-200 rounded-xl p-8 sm:p-12 text-center shadow-2xs">
-          <div className="w-12 h-12 rounded-full bg-tomato-500/10 text-tomato-600 flex items-center justify-center mx-auto mb-4 border border-tomato-500/20">
-            <ShieldAlert className="w-6 h-6 text-tomato-500" />
+        <div className="max-w-xl mx-auto my-12 p-8 bg-white border border-wheat-200 rounded-2xl text-center shadow-xs">
+          <div className="w-12 h-12 bg-amber-50 text-amber-600 rounded-full flex items-center justify-center mx-auto mb-4 border border-amber-200">
+            <AlertTriangle className="w-6 h-6" />
           </div>
-          <h2 className="font-display text-xl text-forest-800 font-semibold mb-2">
+          <h2 className="font-display text-xl text-forest-900 font-semibold mb-2">
             Business Account Required
           </h2>
           <p className="text-xs sm:text-sm text-forest-800/60 max-w-md mx-auto mb-6">
@@ -242,6 +236,8 @@ export default function InventoryPage() {
     try {
       await api.createInventoryItem({
         ...form,
+        category: form.category || "produce",
+        unit: form.unit || "kg",
         quantity: parseFloat(form.quantity),
         avg_daily_usage: parseFloat(form.avg_daily_usage || "1"),
       });
@@ -381,7 +377,11 @@ export default function InventoryPage() {
         <div className="flex flex-col sm:flex-row sm:items-center gap-2 sm:gap-2.5 w-full sm:w-auto">
           {/* Add Item Button */}
           <button
-            onClick={() => setShowAddModal(true)}
+            onClick={() => {
+              setForm(emptyForm);
+              setAddError("");
+              setShowAddModal(true);
+            }}
             className="inline-flex items-center justify-center gap-2 px-4 py-2 rounded-xl text-xs sm:text-sm font-semibold bg-white text-forest-800 border border-wheat-300 hover:bg-wheat-50 shadow-2xs transition-all active:scale-[0.98] w-full sm:w-auto cursor-pointer whitespace-nowrap order-1 sm:order-none"
           >
             <Plus className="w-4 h-4 text-forest-700 shrink-0" />
@@ -968,24 +968,25 @@ export default function InventoryPage() {
                   <select
                     value={form.category}
                     onChange={updateForm("category")}
-                    className="w-full border border-wheat-200 rounded-lg px-3 py-2 h-10 text-xs sm:text-sm text-forest-900 focus:outline-none focus:ring-2 focus:ring-forest-400 bg-white capitalize"
+                    className={`w-full border border-wheat-200 rounded-lg px-3 py-2 h-10 text-xs sm:text-sm focus:outline-none focus:ring-2 focus:ring-forest-400 bg-white capitalize box-border ${
+                      !form.category ? "text-forest-800/40" : "text-forest-900"
+                    }`}
                   >
+                    <option value="" disabled className="text-forest-800/40">Select category...</option>
                     {CATEGORIES.map((c) => (
-                      <option key={c} value={c}>
+                      <option key={c} value={c} className="text-forest-900">
                         {c}
                       </option>
                     ))}
                   </select>
                 </div>
 
-                <div>
-                  <LocationAutocompleteInput
-                    label="Storage Location"
-                    placeholder="e.g. Surat, Gujarat"
-                    value={form.storage_location}
-                    onChange={(val) => setForm((prev) => ({ ...prev, storage_location: val }))}
-                  />
-                </div>
+                <LocationAutocompleteInput
+                  label="Storage Location"
+                  placeholder="e.g. Surat, Gujarat"
+                  value={form.storage_location}
+                  onChange={(val) => setForm((prev) => ({ ...prev, storage_location: val }))}
+                />
               </div>
 
               <div className="grid grid-cols-1 sm:grid-cols-2 gap-3">
@@ -1001,7 +1002,7 @@ export default function InventoryPage() {
                     placeholder="e.g. 10"
                     value={form.quantity}
                     onChange={updateForm("quantity")}
-                    className="w-full border border-wheat-200 rounded-lg px-3 py-2 h-10 text-xs sm:text-sm text-forest-900 placeholder:text-forest-800/40 focus:outline-none focus:ring-2 focus:ring-forest-400 bg-white"
+                    className="w-full border border-wheat-200 rounded-lg px-3 py-2 h-10 text-xs sm:text-sm text-forest-900 placeholder:text-forest-800/40 focus:outline-none focus:ring-2 focus:ring-forest-400 bg-white box-border"
                   />
                 </div>
 
@@ -1012,13 +1013,16 @@ export default function InventoryPage() {
                   <select
                     value={form.unit}
                     onChange={updateForm("unit")}
-                    className="w-full border border-wheat-200 rounded-lg px-3 py-2 h-10 text-xs sm:text-sm text-forest-900 focus:outline-none focus:ring-2 focus:ring-forest-400 bg-white"
+                    className={`w-full border border-wheat-200 rounded-lg px-3 py-2 h-10 text-xs sm:text-sm focus:outline-none focus:ring-2 focus:ring-forest-400 bg-white box-border ${
+                      !form.unit ? "text-forest-800/40" : "text-forest-900"
+                    }`}
                   >
-                    <option value="kg">kg</option>
-                    <option value="liters">liters</option>
-                    <option value="units">units</option>
-                    <option value="portions">portions</option>
-                    <option value="boxes">boxes</option>
+                    <option value="" disabled className="text-forest-800/40">Select unit...</option>
+                    <option value="kg" className="text-forest-900">kg</option>
+                    <option value="liters" className="text-forest-900">liters</option>
+                    <option value="units" className="text-forest-900">units</option>
+                    <option value="portions" className="text-forest-900">portions</option>
+                    <option value="boxes" className="text-forest-900">boxes</option>
                   </select>
                 </div>
               </div>
