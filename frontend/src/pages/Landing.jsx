@@ -955,16 +955,16 @@ export default function Landing() {
             itemType="https://schema.org/Person"
             className="flex flex-col md:flex-row items-center justify-between gap-4 text-xs font-mono text-forest-800/75 border-b border-wheat-200/60 pb-6 text-center md:text-left w-full"
           >
-            <div className="space-y-1 text-center md:text-left max-w-2xl">
-              <span className="font-bold text-forest-900 text-sm block font-sans sm:font-mono">
+            <div className="space-y-1 text-center md:text-left max-w-2xl w-full md:w-auto">
+              <span className="font-bold text-forest-900 text-sm block font-sans sm:font-mono text-center md:text-left">
                 Founded &amp; Built by <span itemProp="name">Prey Goti</span>
               </span>
-              <p className="text-xs text-forest-800/80 leading-relaxed font-sans sm:font-mono">
+              <p className="text-xs text-forest-800/80 leading-relaxed font-sans sm:font-mono text-center md:text-left">
                 <span itemProp="jobTitle">Founder of Harvest Ledger and Full-Stack AI Engineer</span> focused on building technology for smarter food waste management and community redistribution.
               </p>
             </div>
 
-            <div className="flex items-center justify-center md:justify-end gap-2.5 shrink-0 pt-1 md:pt-0 font-semibold text-xs">
+            <div className="flex items-center justify-center md:justify-end gap-2.5 shrink-0 pt-1 md:pt-0 font-semibold text-xs w-full md:w-auto">
               <a
                 href="https://www.linkedin.com/in/prey-goti-31a772318"
                 target="_blank"
