@@ -956,23 +956,21 @@ export default function Landing() {
             className="flex flex-col md:flex-row items-center justify-between gap-4 text-xs font-mono text-forest-800/75 border-b border-wheat-200/60 pb-6 text-center md:text-left w-full"
           >
             <div className="space-y-1 text-center md:text-left max-w-2xl">
-              <div className="flex items-center gap-2 flex-wrap justify-center md:justify-start">
-                <span className="font-bold text-forest-900 text-sm">
-                  Founded &amp; Built by <span itemProp="name">Prey Goti</span>
-                </span>
-              </div>
-              <p className="text-xs text-forest-800/80 leading-relaxed">
-                <span itemProp="jobTitle">Founder of Harvest Ledger and Full-Stack AI Engineer</span> building technology for smarter food waste management and community redistribution.
+              <span className="font-bold text-forest-900 text-sm block font-sans sm:font-mono">
+                Founded &amp; Built by <span itemProp="name">Prey Goti</span>
+              </span>
+              <p className="text-xs text-forest-800/80 leading-relaxed font-sans sm:font-mono">
+                <span itemProp="jobTitle">Founder of Harvest Ledger and Full-Stack AI Engineer</span> focused on building technology for smarter food waste management and community redistribution.
               </p>
             </div>
 
-            <div className="flex items-center justify-center md:justify-end gap-3 shrink-0 pt-1 md:pt-0">
+            <div className="flex items-center justify-center md:justify-end gap-2.5 shrink-0 pt-1 md:pt-0 font-semibold text-xs">
               <a
                 href="https://www.linkedin.com/in/prey-goti-31a772318"
                 target="_blank"
                 rel="author noopener noreferrer"
                 itemProp="sameAs"
-                className="inline-flex items-center gap-1.5 px-3 py-1.5 rounded-lg bg-white border border-wheat-200 text-forest-800 hover:text-[#0a66c2] hover:border-[#0a66c2]/40 font-semibold transition-all shadow-2xs"
+                className="inline-flex items-center gap-1.5 text-forest-800 hover:text-[#0a66c2] transition-colors py-1 px-1"
                 title="Prey Goti LinkedIn Profile"
               >
                 <svg className="w-3.5 h-3.5 fill-current text-[#0a66c2]" viewBox="0 0 24 24">
@@ -981,14 +979,14 @@ export default function Landing() {
                 <span>LinkedIn</span>
               </a>
 
-              <span className="text-forest-800/30">&bull;</span>
+              <span className="text-forest-800/40 select-none">&bull;</span>
 
               <a
                 href="https://github.com/preygoti"
                 target="_blank"
                 rel="author noopener noreferrer"
                 itemProp="sameAs"
-                className="inline-flex items-center gap-1.5 px-3 py-1.5 rounded-lg bg-white border border-wheat-200 text-forest-800 hover:text-forest-950 hover:border-forest-800/40 font-semibold transition-all shadow-2xs"
+                className="inline-flex items-center gap-1.5 text-forest-800 hover:text-forest-950 transition-colors py-1 px-1"
                 title="Prey Goti GitHub Profile"
               >
                 <svg className="w-3.5 h-3.5 fill-current" viewBox="0 0 24 24">
