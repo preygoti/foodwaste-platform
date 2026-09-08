@@ -212,6 +212,20 @@ export default function InventoryPage() {
       const cached = api.getCached("inventory");
       const hasCached = Array.isArray(cached) && cached.length > 0;
       load(hasCached);
+
+      const interval = setInterval(() => {
+        load(true);
+      }, 5000);
+
+      const handleFocus = () => load(true);
+      window.addEventListener("focus", handleFocus);
+      document.addEventListener("visibilitychange", handleFocus);
+
+      return () => {
+        clearInterval(interval);
+        window.removeEventListener("focus", handleFocus);
+        document.removeEventListener("visibilitychange", handleFocus);
+      };
     } else {
       setLoading(false);
     }

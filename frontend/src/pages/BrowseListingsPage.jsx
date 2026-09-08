@@ -188,8 +188,17 @@ export default function BrowseListingsPage() {
   useEffect(() => {
     if (user?.role === "ngo") {
       load();
-      const interval = setInterval(load, 5000);
-      return () => clearInterval(interval);
+      const interval = setInterval(load, 4000);
+
+      const handleFocus = () => load();
+      window.addEventListener("focus", handleFocus);
+      document.addEventListener("visibilitychange", handleFocus);
+
+      return () => {
+        clearInterval(interval);
+        window.removeEventListener("focus", handleFocus);
+        document.removeEventListener("visibilitychange", handleFocus);
+      };
     } else {
       setLoading(false);
     }

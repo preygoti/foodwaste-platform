@@ -53,14 +53,18 @@ export default function BusinessListingsPage() {
   });
   const [pickupsByListing, setPickupsByListing] = useState({});
   const [loading, setLoading] = useState(() => !api.getCached("my_listings"));
+  const [isRefreshing, setIsRefreshing] = useState(false);
   const [confirmingId, setConfirmingId] = useState(null);
   const [showVerifyQrModal, setShowVerifyQrModal] = useState(false);
 
-  const load = () => {
+  const load = (silent = false) => {
     if (user?.role !== "business") return;
-    if (!api.getCached("my_listings")) {
+    if (!silent && !api.getCached("my_listings")) {
       setLoading(true);
+    } else if (silent) {
+      setIsRefreshing(true);
     }
+
     api
       .myListings()
       .then(async (data) => {
@@ -72,12 +76,34 @@ export default function BusinessListingsPage() {
           setPickupsByListing(Object.fromEntries(entries));
         }
       })
-      .finally(() => setLoading(false));
+      .catch((err) => console.error("Error auto-syncing listings:", err))
+      .finally(() => {
+        if (!silent) setLoading(false);
+        setIsRefreshing(false);
+      });
   };
 
   useEffect(() => {
     if (user?.role === "business") {
-      load();
+      load(false);
+
+      // Auto-poll every 3.5 seconds so incoming NGO pickup requests appear in real time without refreshing
+      const interval = setInterval(() => {
+        load(true);
+      }, 3500);
+
+      // Instant refresh on window focus / tab visibility
+      const handleFocus = () => {
+        load(true);
+      };
+      window.addEventListener("focus", handleFocus);
+      document.addEventListener("visibilitychange", handleFocus);
+
+      return () => {
+        clearInterval(interval);
+        window.removeEventListener("focus", handleFocus);
+        document.removeEventListener("visibilitychange", handleFocus);
+      };
     } else {
       setLoading(false);
     }
@@ -108,7 +134,7 @@ export default function BusinessListingsPage() {
     setConfirmingId(pickupId);
     try {
       await api.updatePickup(pickupId, { status: "confirmed" });
-      load();
+      load(true);
     } catch (err) {
       alert(`Error confirming pickup: ${err.message}`);
     } finally {
@@ -121,7 +147,7 @@ export default function BusinessListingsPage() {
     setConfirmingId(pickupId);
     try {
       await api.updatePickup(pickupId, { status: "cancelled" });
-      load();
+      load(true);
     } catch (err) {
       alert(`Error rejecting pickup: ${err.message}`);
     } finally {
@@ -129,29 +155,74 @@ export default function BusinessListingsPage() {
     }
   };
 
+  // Count total pending requests across all listings
+  const totalPendingRequests = Object.values(pickupsByListing)
+    .flat()
+    .filter((p) => p.status === "pending").length;
+
   return (
     <Layout>
       <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-4 mb-6 sm:mb-8">
         <div>
-          <span className="font-mono text-xs uppercase tracking-widest text-tomato-500 font-semibold block mb-1">
-            Module 03 · Redistribution Marketplace
-          </span>
+          <div className="flex items-center gap-2 mb-1 flex-wrap">
+            <span className="font-mono text-xs uppercase tracking-widest text-tomato-500 font-semibold block">
+              Module 03 · Redistribution Marketplace
+            </span>
+            <span className="inline-flex items-center gap-1.5 px-2 py-0.5 rounded-full text-[10px] font-mono font-medium text-emerald-800 bg-emerald-50 border border-emerald-200">
+              <span className={`w-1.5 h-1.5 rounded-full bg-emerald-500 ${isRefreshing ? "animate-ping" : "animate-pulse"}`} />
+              <span>{isRefreshing ? "Syncing..." : "Live Sync Active"}</span>
+            </span>
+          </div>
           <h1 className="font-display text-2xl sm:text-3xl text-forest-800 font-semibold">
             Your Surplus Listings
           </h1>
           <p className="text-xs sm:text-sm text-forest-800/60 mt-1">
-            Manage food surplus items made available to verified NGOs and food banks.
+            Manage food surplus items made available to verified NGOs and food banks. Real-time requests sync automatically.
           </p>
         </div>
 
-        <button
-          onClick={() => setShowVerifyQrModal(true)}
-          className="inline-flex items-center justify-center gap-2 px-4 py-2.5 bg-emerald-600 hover:bg-emerald-700 text-white rounded-xl text-xs sm:text-sm font-semibold shadow-xs transition-all shrink-0 cursor-pointer w-full sm:w-auto"
-        >
-          <Scan className="w-4 h-4 text-emerald-100" />
-          <span>Verify Handshake QR</span>
-        </button>
+        <div className="flex items-center gap-2.5 flex-wrap sm:flex-nowrap">
+          <button
+            onClick={() => load(false)}
+            disabled={isRefreshing}
+            className="inline-flex items-center justify-center gap-1.5 px-3.5 py-2.5 bg-white hover:bg-wheat-100 text-forest-800 border border-wheat-300 rounded-xl text-xs sm:text-sm font-semibold shadow-2xs transition-all shrink-0 cursor-pointer disabled:opacity-60"
+            title="Force refresh listings now"
+          >
+            <RefreshCw className={`w-3.5 h-3.5 ${isRefreshing ? "animate-spin text-emerald-600" : "text-forest-600"}`} />
+            <span>{isRefreshing ? "Syncing..." : "Refresh"}</span>
+          </button>
+
+          <button
+            onClick={() => setShowVerifyQrModal(true)}
+            className="inline-flex items-center justify-center gap-2 px-4 py-2.5 bg-emerald-600 hover:bg-emerald-700 text-white rounded-xl text-xs sm:text-sm font-semibold shadow-xs transition-all shrink-0 cursor-pointer w-full sm:w-auto"
+          >
+            <Scan className="w-4 h-4 text-emerald-100" />
+            <span>Verify Handshake QR</span>
+          </button>
+        </div>
       </div>
+
+      {/* Pending Requests Alert Banner */}
+      {totalPendingRequests > 0 && (
+        <div className="mb-6 p-4 bg-amber-50/90 border border-amber-300 rounded-2xl flex items-center justify-between gap-4 shadow-xs animate-in fade-in slide-in-from-top-2 duration-300">
+          <div className="flex items-center gap-3">
+            <div className="w-9 h-9 rounded-xl bg-amber-200/80 text-amber-900 flex items-center justify-center shrink-0 font-bold text-sm">
+              🔔
+            </div>
+            <div>
+              <h4 className="font-display font-bold text-sm text-amber-950">
+                {totalPendingRequests} New NGO Pickup Request{totalPendingRequests > 1 ? "s" : ""} Waiting for Response!
+              </h4>
+              <p className="text-xs text-amber-900/80 mt-0.5">
+                A verified NGO has requested surplus food. Review and click <strong>Accept &amp; Assign</strong> below to confirm.
+              </p>
+            </div>
+          </div>
+          <span className="hidden sm:inline-flex px-3 py-1 bg-amber-200 text-amber-950 rounded-lg text-xs font-mono font-bold shrink-0">
+            Action Required
+          </span>
+        </div>
+      )}
 
       {loading ? (
         <div className="bg-white border border-wheat-200 rounded-xl p-12 text-center shadow-2xs">
