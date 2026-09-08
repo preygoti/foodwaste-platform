@@ -1,65 +1,63 @@
-# Harvest Ledger — AI-Powered Food Waste Management & Redistribution Platform
+<div align="center">
 
-[![Live Demo](https://img.shields.io/badge/Live%20Demo-foodwaste--platform.vercel.app-10b981?style=flat-square&logo=vercel)](https://foodwaste-platform.vercel.app)
-[![Founder & Lead Engineer](https://img.shields.io/badge/Founder%20%26%20Lead%20Engineer-Prey%20Goti-0a66c2?style=flat-square&logo=linkedin)](https://www.linkedin.com/in/prey-goti-31a772318)
-[![GitHub Repo](https://img.shields.io/badge/GitHub-preygoti%2Ffoodwaste--platform-181717?style=flat-square&logo=github)](https://github.com/preygoti/foodwaste-platform)
-[![FastAPI](https://img.shields.io/badge/Backend-FastAPI-009688?style=flat-square&logo=fastapi)](https://fastapi.tiangolo.com/)
-[![Python](https://img.shields.io/badge/Language-Python%203.13-3776AB?style=flat-square&logo=python)](https://python.org/)
-[![PostgreSQL](https://img.shields.io/badge/Database-PostgreSQL%20(Neon)%20%2F%20SQLite-4169E1?style=flat-square&logo=postgresql)](https://www.postgresql.org/)
-[![React](https://img.shields.io/badge/Frontend-React%2019-61DAFB?style=flat-square&logo=react)](https://react.dev/)
-[![Leaflet](https://img.shields.io/badge/Map-Leaflet%20%2F%20OpenStreetMap-199900?style=flat-square&logo=leaflet)](https://leafletjs.com/)
-[![Tailwind CSS](https://img.shields.io/badge/Styling-Tailwind%20CSS-06B6D4?style=flat-square&logo=tailwindcss)](https://tailwindcss.com/)
-[![Milestone 1 Status](https://img.shields.io/badge/Milestone%201-Completed%20%E2%9C%85-success?style=flat-square)](https://github.com/preygoti/foodwaste-platform)
-[![Milestone 2 Status](https://img.shields.io/badge/Milestone%202-In%20Progress%20(Active%20Work%20Done)%20%F0%9F%94%84-yellow?style=flat-square)](https://github.com/preygoti/foodwaste-platform)
+# Harvest Ledger
 
-> **Harvest Ledger** is an intelligent full-stack ecosystem connecting food businesses (supermarkets, restaurants, bakeries, food distributors) with non-profits (NGOs, food banks, community kitchens) to eliminate edible food waste, track batch-level shelf life with predictive AI, and execute verifiable digital QR handshakes for food redistribution.
+### AI-Powered Commercial Food Waste Management & Community Redistribution Platform
 
----
+[![Live Demo](https://img.shields.io/badge/Live%20Platform-foodwaste--platform.vercel.app-10b981?style=for-the-badge&logo=vercel&logoColor=white)](https://foodwaste-platform.vercel.app)
+[![Founder & Lead Engineer](https://img.shields.io/badge/Founder-Prey%20Goti-0a66c2?style=for-the-badge&logo=linkedin&logoColor=white)](https://www.linkedin.com/in/prey-goti-31a772318)
+[![GitHub](https://img.shields.io/badge/GitHub-preygoti-181717?style=for-the-badge&logo=github&logoColor=white)](https://github.com/preygoti)
+[![FastAPI](https://img.shields.io/badge/FastAPI-009688?style=for-the-badge&logo=fastapi&logoColor=white)](https://fastapi.tiangolo.com/)
+[![React 19](https://img.shields.io/badge/React%2019-61DAFB?style=for-the-badge&logo=react&logoColor=black)](https://react.dev/)
+[![TailwindCSS](https://img.shields.io/badge/Tailwind_CSS-38B2AC?style=for-the-badge&logo=tailwind-css&logoColor=white)](https://tailwindcss.com/)
+[![License](https://img.shields.io/badge/License-MIT-amber?style=for-the-badge)](LICENSE)
 
-## 📊 Project Roadmap & Milestone Status
+<br/>
 
-| Phase | Milestone | Focus Area | Status | Deliverables & Progress |
-|---|---|---|---|---|
-| **Phase 1** | **Milestone 1 (Weeks 1–2)** | **System Architecture, Database & Inventory Ingestion** | **`COMPLETED` ✅** | • Relational Neon PostgreSQL & SQLite database<br/>• Dual-role JWT authentication (Business & NGO)<br/>• 6-digit Email OTP registration & password reset<br/>• Multi-modal inventory logging (Form + Barcode Camera + CSV) |
-| **Phase 2** | **Milestone 2 (Weeks 3–4)** | **AI Waste Prediction Engine & Shelf Life Telemetry** | **`IN PROGRESS` 🔄 (Work Done)** | • **Done**: 0–100 heuristic waste risk scoring algorithm<br/>• **Done**: Smart reorder buffer calculations (`Reorder +X`)<br/>• **Done**: AI Computer Vision Freshness & Spoilage Scanner<br/>• **Done**: Live reactive expiry countdown tickers<br/>• **In Progress**: Time-series historical demand model integration |
-| **Phase 3** | **Milestone 3 (Weeks 5–6)** | **Surplus Marketplace & Live Radar Map** | **`UPCOMING` 📅** | • Real-time redistribution marketplace for NGOs<br/>• Live Radar Map with GPS auto-locate & OpenStreetMap<br/>• Smart address geocoding (100+ cities + Nominatim API)<br/>• Multi-stop turn-by-turn route planner & Google Maps link |
-| **Phase 4** | **Milestone 4 (Weeks 7–8)** | **Digital QR Handshake & ESG Telemetry** | **`UPCOMING` 📅** | • Competitive multi-NGO request & donor acceptance flow<br/>• Secure QR Driver Rescue Pass & camera handshake scanner<br/>• Official ESG Tax Statement & audit generator<br/>• Real-time cross-device auto-polling synchronization |
+![Harvest Ledger Platform Preview](https://foodwaste-platform.vercel.app/og-image.png)
+
+</div>
 
 ---
 
-## 🎯 Core Platform Capabilities
+## 🌟 Executive Overview
 
-### 1. ✉️ Mandatory 6-Digit Email OTP Verification (Registration & Password Reset)
-- **Account Verification**: Every new business and NGO account must verify their email with a 6-digit OTP code before account creation.
-- **Provider Support**: Built-in support for **Brevo (Sendinblue)** (300 emails/day free for life), **Resend**, **SendGrid**, standard **SMTP / Gmail App Password**, and local console mode.
-- **Security**: 10-minute expiry window, 60-second client-side cooldown timer, and brute-force prevention.
+**Harvest Ledger** is an enterprise-grade food rescue ecosystem engineered to eliminate commercial food waste. It seamlessly bridges the gap between food donors (supermarkets, restaurants, bakeries, hotels, distributors) and verified non-profit hunger relief organizations (NGOs, food banks, community kitchens) through real-time inventory telemetry, multimodal AI freshness analysis, and cryptographic digital QR handshakes.
 
-### 2. 📦 Multi-Modal Inventory Management
-- **Manual Form Entry**: Quick batch logging with units (`kg`, `liters`, `units`, `portions`, `boxes`), expiry dates, and storage locations.
-- **📷 Device Camera Barcode/QR Scanner**: Real-time barcode scanning using `html5-qrcode` with instant product metadata lookup.
-- **📄 Bulk CSV Ingestion**: High-speed batch processing via `PapaParse` with schema validation and error reporting.
-- **🤖 AI Vision Freshness Scanner**: Interactive simulated/live image quality grading and shelf-life prediction.
+### 👤 Founder Accreditation
+> **Founded & Built by [Prey Goti](https://github.com/preygoti)**  
+> *Founder of Harvest Ledger and Full-Stack AI Engineer focused on building technology for smarter food waste management and community redistribution.*  
+>  
+> 🔗 [LinkedIn Profile](https://www.linkedin.com/in/prey-goti-31a772318) • [GitHub Profile](https://github.com/preygoti) • [Live Web App](https://foodwaste-platform.vercel.app)
 
-### 3. 🧠 Predictive Waste & Demand Engine
-- **Risk Scoring (0–100)**: Evaluates days-to-expiry against daily consumption velocity to classify items into `Low`, `Medium`, and `High` waste risk.
-- **Reorder Recommendations (`Reorder +X`)**: Calculates optimal 7-day restocking buffer without causing overstock waste.
-- **Rescue Chef Modal**: Suggests creative zero-waste recipes for near-expiry ingredients.
+---
 
-### 4. 🛰️ Live Radar Map & Smart Geolocation
-- **100% Free OpenStreetMap Tiles**: High-performance mapping via `Leaflet` with zero API key dependencies and zero rate limits.
-- **Live GPS Tracking**: Automatically pinpoints driver/NGO location via `navigator.geolocation` with `[🎯 My GPS]` and `[🔄 Fit All]` controls.
-- **Geocoding Pipeline**: Offline dictionary for 100+ Indian & global metro areas combined with asynchronous OpenStreetMap Nominatim geocoding.
-- **Turn-by-Turn Navigation**: Real Haversine distance badges (e.g. `📍 1.2 km away`) and direct Google Maps driving directions.
+## 🚀 Key Platform Capabilities
 
-### 5. 🤝 Digital Rescue Handshake (QR Verification)
-- **Multi-NGO Bidding**: Multiple non-profits can request available surplus donations simultaneously.
-- **Donor Selection**: Donor selects the recipient NGO; rejected requests are automatically notified and closed.
-- **QR Driver Pass**: Assigned NGO receives a cryptographically linked Digital Rescue Pass (`HL-RES-XXXX`).
-- **Storefront Verification**: Donor scans the driver's QR code at pickup to instantly verify handoff, transfer chain of custody, and record ESG metrics.
+### 1. 📦 Smart Inventory Telemetry
+- **Multi-Modal Logging**: Add batches manually, scan product barcodes using live camera OCR (`html5-qrcode`), or bulk import spreadsheets via client-side `PapaParse`.
+- **Granular Shelf-Life Telemetry**: Tracks unit quantities (`kg`, `liters`, `units`, `portions`, `boxes`), storage zones (Cold Storage, Ambient Rack, Freezer), and reactive expiry countdown tickers.
 
-### 6. 📄 Official ESG Tax & Audit Reporting
-- Computes fair-market tax relief deductions, landfill disposal fees saved, and net environmental impact.
-- One-click print-ready ESG Tax Deduction and Audit Statement.
+### 2. 🧠 AI Freshness Inspector & Multimodal Vision
+- **Computer Vision Spoilage Detection**: Analyzes perishable items to grade visual freshness, estimate remaining shelf-life, and flag high-risk batches.
+- **Dynamic 0–100 Risk Engine**: Evaluates storage conditions and daily consumption velocity to classify items into `LOW`, `MEDIUM`, `HIGH`, or `CRITICAL` risk tiers before waste occurs.
+
+### 3. 🍳 Zero-Waste Recipe Engine (Rescue Chef)
+- **Culinary Repurposing**: AI-generated safe, creative recipes formulated from surplus ingredients to maximize kitchen yield and eliminate edible waste at the source.
+
+### 4. 🛰️ Live Radar Map & Proximity Routing
+- **100% Free OpenStreetMap & Leaflet**: Embedded proximity radar showing active surplus donors and non-profit centers with zero external API key fees or rate limits.
+- **Smart Geocoding Pipeline**: Integrated offline coordinate dictionary for 100+ Indian & global metro areas coupled with OpenStreetMap Nominatim geocoding.
+- **GPS Navigation**: Live Haversine distance calculation (`📍 1.2 km away`) and one-click Google Maps driving navigation.
+
+### 5. 🤝 Cryptographic QR Handshake & Proof-of-Rescue
+- **Competitive NGO Dispatch**: Non-profits discover listings and submit pickup requests in real time.
+- **Digital Rescue Pass (`HL-RES-XXXX`)**: Generates secure driver passes with dynamic QR codes.
+- **Storefront Verification**: Donors scan the driver's QR code at pickup to verify handoff, transfer chain of custody, and update the global ledger.
+
+### 6. 📄 Automated ESG & CSR Tax Statements
+- **Impact Metrics**: Automatic calculation of kilograms rescued, meals served, landfill methane diverted, and financial value recovered.
+- **Section 80G & CSR Tax Certificates**: Generates audit-ready ESG statements and commercial tax deduction certificates with a single click.
 
 ---
 
@@ -67,42 +65,42 @@
 
 ```mermaid
 flowchart TD
-    subgraph Clients ["Client Layer (React 19 + Vite + Tailwind CSS)"]
-        UI["🖥️ Modern Responsive Web App"]
-        MAP["🛰️ Live Radar Map (Leaflet + OpenStreetMap)"]
-        SCAN["📷 Camera Barcode & QR Scanner (html5-qrcode)"]
-        CSV["📄 CSV Batch Ingestion (PapaParse)"]
-        UI --> MAP
-        UI --> SCAN
+    subgraph Client ["Client Layer (React 19 + Vite + Tailwind CSS)"]
+        UI["🖥️ Responsive Dashboard (Desktop & Mobile)"]
+        RADAR["🛰️ Live Radar Map (Leaflet + OpenStreetMap)"]
+        VISION["📷 Camera Scanner & AI Vision (html5-qrcode)"]
+        CSV["📄 Bulk CSV Ingestion Engine (PapaParse)"]
+        UI --> RADAR
+        UI --> VISION
         UI --> CSV
     end
 
-    subgraph Server ["Backend API (FastAPI + Python 3.13)"]
-        API["⚡ FastAPI REST Endpoints"]
-        AUTH["🔐 JWT & RBAC Auth Engine"]
-        EMAIL["✉️ Email OTP Service (Brevo / Resend / SMTP)"]
-        RISK["🧠 AI Waste & Demand Engine"]
-        GEO["🗺️ Geocoding & Nominatim Service"]
+    subgraph Backend ["API Layer (FastAPI + Python 3.13)"]
+        API["⚡ High-Performance FastAPI REST Endpoints"]
+        AUTH["🔐 JWT RBAC (Donor & NGO Dual-Role)"]
+        OTP["✉️ 6-Digit Email OTP Service (Brevo / Resend / SMTP)"]
+        AI_ENGINE["🧠 Predictive Risk & Reorder Engine"]
+        GEO_ENGINE["🗺️ Geocoding & Nominatim Service"]
         
         API --> AUTH
-        API --> EMAIL
-        API --> RISK
-        API --> GEO
+        API --> OTP
+        API --> AI_ENGINE
+        API --> GEO_ENGINE
     end
 
-    subgraph Storage ["Database Layer (SQLAlchemy 2.0 ORM)"]
-        PG[("💾 Neon PostgreSQL (Cloud Production)")]
-        SQLITE[("💾 SQLite (Local Offline Development)")]
+    subgraph DataLayer ["Persistence Layer (SQLAlchemy 2.0 ORM)"]
+        NEON[("💾 Neon Cloud Serverless PostgreSQL")]
+        SQLITE[("💾 Local Offline SQLite")]
     end
 
-    UI -->|HTTPS / Bearer JWT| API
-    AUTH --> PG
+    Client -->|HTTPS / Bearer JWT| API
+    AUTH --> NEON
     AUTH --> SQLITE
 ```
 
 ---
 
-## 🗄️ Relational Data Model
+## 🗄️ Relational Schema
 
 ```mermaid
 erDiagram
@@ -121,14 +119,6 @@ erDiagram
     }
 
     REGISTRATION_OTPS {
-        int id PK
-        string email UK
-        string otp_code
-        datetime expires_at
-        datetime created_at
-    }
-
-    PASSWORD_RESET_OTPS {
         int id PK
         string email UK
         string otp_code
@@ -160,8 +150,6 @@ erDiagram
         string unit
         date expiry_date
         string pickup_location
-        datetime pickup_window_start
-        datetime pickup_window_end
         string status
         datetime created_at
     }
@@ -184,71 +172,18 @@ erDiagram
 
 | Layer | Technology | Key Capabilities |
 |---|---|---|
-| **Frontend** | **React 19**, **Vite 8**, **Tailwind CSS 3.4** | Fast SPA, responsive glassmorphism UI, hidden scrollbars |
-| **Mapping & Radar** | **Leaflet 1.9**, **OpenStreetMap Standard** | GPS auto-locate, smart geocoding, radius filter, Google Maps routing |
-| **Camera & Barcode** | **html5-qrcode** | Real-time camera QR and barcode scanning |
-| **CSV Engine** | **PapaParse 5.6** | High-performance bulk client-side spreadsheet parsing |
-| **Backend API** | **FastAPI 0.115**, **Python 3.13**, **Uvicorn** | Asynchronous RESTful APIs with automatic OpenAPI/Swagger docs |
-| **Database & ORM** | **PostgreSQL (Neon)**, **SQLite**, **SQLAlchemy 2.0** | Relational data persistence with pooling and migrations |
-| **Email Service** | **Brevo HTTPS API**, **Resend**, **SendGrid**, **SMTP** | Transactional 6-digit OTP delivery with lifetime free tiers |
-| **Security & Auth** | **Python-JOSE**, **Passlib (Bcrypt)** | Stateless JWT tokens, role guards (RBAC), salted password hashes |
+| **Frontend Framework** | **React 19**, **Vite 8** | High-performance single page application with modern hooks |
+| **Styling & Design** | **Tailwind CSS 3.4**, **Lucide Icons** | Responsive warm wheat / deep forest design system |
+| **Radar & Geolocation** | **Leaflet 1.9**, **OpenStreetMap** | Dynamic proximity mapping, GPS locating, and route generation |
+| **Vision & Scanning** | **html5-qrcode** | Real-time barcode scanning and QR handshake verification |
+| **Backend REST API** | **FastAPI 0.115**, **Python 3.13**, **Uvicorn** | Asynchronous Python backend with automatic OpenAPI/Swagger docs |
+| **Database & ORM** | **PostgreSQL (Neon)**, **SQLite**, **SQLAlchemy 2.0** | Relational persistence with connection pooling and migrations |
+| **Email Service** | **Brevo (Sendinblue)**, **Resend**, **SMTP** | 6-digit transactional registration and password reset OTPs |
+| **Security & Auth** | **Python-JOSE**, **Passlib (Bcrypt)** | Stateless JWT tokens, role guards (RBAC), and salted hashes |
 
 ---
 
-## 📂 Project Directory Structure
-
-```text
-foodwaste-platform/
-├── backend/
-│   ├── auth.py                  # JWT creation, Bcrypt hashing, role dependencies
-│   ├── database.py              # SQLAlchemy engine & PostgreSQL URL normalization
-│   ├── email_service.py         # Brevo/Resend/SendGrid/SMTP 6-digit OTP dispatch
-│   ├── main.py                  # FastAPI application & REST endpoint routers
-│   ├── models.py                # Database models (User, Inventory, Listing, Pickup, OTPs)
-│   ├── requirements.txt         # Python dependencies
-│   ├── risk_engine.py           # AI heuristic risk scoring & reorder buffer math
-│   ├── schemas.py               # Pydantic validation schemas
-│   └── test_platform_full.py    # 11-step automated unit & integration test suite
-│
-├── frontend/
-│   ├── src/
-│   │   ├── components/          # UI Modals & Widgets
-│   │   │   ├── AiVisionScannerModal.jsx  # AI Freshness Scanner
-│   │   │   ├── BarcodeScannerModal.jsx   # Live Camera Barcode Scanner
-│   │   │   ├── CsrCertificateModal.jsx   # Sustainability CSR Certificate
-│   │   │   ├── CsvUploadModal.jsx        # Bulk CSV Ingestion
-│   │   │   ├── EsgTaxReportModal.jsx     # ESG Tax Statement Modal
-│   │   │   ├── Layout.jsx                # Global navigation shell
-│   │   │   ├── PickupQrModal.jsx         # Driver Rescue Pass QR Generator
-│   │   │   ├── RescueChefModal.jsx       # Zero-Waste Recipe Generator
-│   │   │   ├── RescueMap.jsx             # Live Radar Map (Leaflet + OSM)
-│   │   │   └── VerifyQrModal.jsx         # Storefront Handshake Scanner
-│   │   ├── pages/               # Application Views
-│   │   │   ├── AnalyticsPage.jsx         # ESG Impact & Financial Telemetry
-│   │   │   ├── BrowseListingsPage.jsx    # NGO Surplus Marketplace & Radar
-│   │   │   ├── BusinessListingsPage.jsx  # Donor Active Listings & Pickups
-│   │   │   ├── ForgotPassword.jsx        # Password Reset OTP Flow
-│   │   │   ├── InventoryPage.jsx         # Business Inventory Ledger
-│   │   │   ├── Landing.jsx               # Public Landing Page
-│   │   │   ├── Login.jsx                 # User Authentication
-│   │   │   ├── MyPickupsPage.jsx         # NGO Rescue Operations Ledger
-│   │   │   └── Register.jsx              # User Registration with Email OTP
-│   │   ├── utils/
-│   │   │   └── geocoding.js              # Offline dictionary & Nominatim geocoder
-│   │   ├── api.js               # Centralized Axios/Fetch API client
-│   │   ├── App.jsx              # Application Route Map
-│   │   ├── AuthContext.jsx      # Global Auth & Role State Provider
-│   │   └── index.css            # Tailwind & Global Styling
-│   ├── package.json             # Frontend dependencies & npm scripts
-│   ├── tailwind.config.js       # Design tokens & color palette
-│   └── vite.config.js           # Vite configuration
-│
-└── README.md                    # Project Documentation
-```
-
----
-
-## 🚀 Quick Start Guide
+## 🚀 Getting Started
 
 ### Prerequisites
 - **Node.js** (v18+) & **npm**
@@ -272,48 +207,48 @@ cd backend
 python -m venv .venv
 
 # Windows:
-.venv\Scripts\activate
+.venv\Scriptsctivate
 # macOS/Linux:
 source .venv/bin/activate
 
 # Install dependencies
 pip install -r requirements.txt
 
-# (Optional) Set your Free Brevo API key for live inbox emails:
+# (Optional) Configure Brevo API Key for live email OTPs:
 # set BREVO_API_KEY=your_brevo_api_key_here
 
-# Start FastAPI server
+# Run backend development server
 uvicorn main:app --reload --port 8000
 ```
-- **API Root**: `http://localhost:8000`
-- **Interactive Swagger Docs**: `http://localhost:8000/docs`
+- **Backend API**: `http://localhost:8000`
+- **Swagger Documentation**: `http://localhost:8000/docs`
 
 ---
 
 ### 3. Frontend Setup
-In a new terminal window:
+In a separate terminal window:
 ```bash
 cd frontend
 
-# Install packages
+# Install dependencies
 npm install
 
-# Start Vite dev server
+# Start Vite development server
 npm run dev
 ```
 - **Web Application**: `http://localhost:5173`
 
 ---
 
-## 🧪 Automated Testing
+## 🧪 Verification & Automated Testing
 
-### Backend Unit & Integration Tests (11/11 Test Suite)
+### Backend Unit & Integration Suite
 ```bash
 cd backend
 python test_platform_full.py
 ```
 
-### Frontend Production Build Verification
+### Frontend Production Build Test
 ```bash
 cd frontend
 npm run build
@@ -321,23 +256,23 @@ npm run build
 
 ---
 
-## 👤 Founder & Author
+## 👤 Author & Connect
 
 **Prey Goti** — *Founder & Full-Stack AI Engineer*
 
-- 🌐 **Live Platform**: [foodwaste-platform.vercel.app](https://foodwaste-platform.vercel.app)
-- 💼 **LinkedIn Profile**: [linkedin.com/in/prey-goti-31a772318](https://www.linkedin.com/in/prey-goti-31a772318)
-- 🐙 **GitHub Profile**: [@preygoti](https://github.com/preygoti)
-- 💡 **Platform Vision**: Architected and engineered **Harvest Ledger** to eliminate commercial food waste, optimize kitchen redistribution, and provide transparent ESG impact analytics for sustainable communities.
+* 🌐 **Live Application**: [https://foodwaste-platform.vercel.app](https://foodwaste-platform.vercel.app)
+* 💼 **LinkedIn**: [linkedin.com/in/prey-goti-31a772318](https://www.linkedin.com/in/prey-goti-31a772318)
+* 🐙 **GitHub**: [@preygoti](https://github.com/preygoti)
+* ✉️ **Project Repository**: [github.com/preygoti/foodwaste-platform](https://github.com/preygoti/foodwaste-platform)
 
 ---
 
 ## 📜 License
 
-This project is licensed under the **MIT License** — free to use, modify, and distribute for educational, non-profit, or commercial food waste reduction initiatives.
+This project is open source and available under the **[MIT License](LICENSE)**.
 
----
+<br/>
 
 <div align="center">
-  <sub>Harvest Ledger &bull; Built with ❤️ by <b>Prey Goti</b> to Eliminate Food Waste</sub>
+  <sub>Harvest Ledger &bull; Engineered with ❤️ by <b>Prey Goti</b> to Eliminate Food Waste</sub>
 </div>
