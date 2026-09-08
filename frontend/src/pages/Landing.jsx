@@ -1034,14 +1034,14 @@ export default function Landing() {
 
 
           {/* 🌟 Founder & Engineering Credit for Google Knowledge Graph & Visibility */}
-          <div className="flex flex-col sm:flex-row items-center justify-between gap-3 pt-2 text-xs font-mono text-forest-800/70 border-b border-wheat-200/60 pb-5">
-            <div className="flex items-center gap-2 flex-wrap justify-center sm:justify-start">
+          <div className="flex flex-col md:flex-row items-center justify-between gap-3 text-xs font-mono text-forest-800/70 border-b border-wheat-200/60 pb-6 text-center md:text-left w-full">
+            <div className="flex items-center gap-2 flex-wrap justify-center md:justify-start">
               <span className="font-semibold text-forest-900">Founded by Prey Goti</span>
-              <span className="text-forest-800/40">&bull;</span>
+              <span className="text-forest-800/40 hidden sm:inline">&bull;</span>
               <span className="text-forest-800/75">Founder &amp; Full-Stack AI Engineer behind Harvest Ledger</span>
             </div>
 
-            <div className="flex items-center gap-3 shrink-0">
+            <div className="flex items-center justify-center md:justify-end gap-3 shrink-0">
               <a
                 href="https://www.linkedin.com/in/prey-goti-31a772318"
                 target="_blank"
