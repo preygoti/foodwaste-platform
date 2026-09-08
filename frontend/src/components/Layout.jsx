@@ -68,11 +68,11 @@ export default function Layout({ children }) {
   };
 
   return (
-    <div className="min-h-screen flex flex-col lg:flex-row bg-wheat-50 text-forest-800 overflow-x-hidden">
+    <div className="min-h-screen flex flex-col lg:flex-row bg-wheat-50 text-forest-800 overflow-x-clip">
       {/* ------------------------------------------------------------- */}
       {/* MOBILE STICKY TOPBAR (< 1024px)                               */}
       {/* ------------------------------------------------------------- */}
-      <header className="lg:hidden sticky top-0 z-30 bg-forest-800 text-wheat-100 px-4 sm:px-6 py-3 flex items-center justify-between border-b border-forest-600/60 shadow-md">
+      <header className="lg:hidden sticky top-0 z-40 bg-forest-800 text-wheat-100 px-4 sm:px-6 py-3 flex items-center justify-between border-b border-forest-600/60 shadow-md">
         <div className="flex items-center gap-2.5 sm:gap-3 min-w-0">
           <button
             type="button"
@@ -201,7 +201,7 @@ export default function Layout({ children }) {
       {/* ------------------------------------------------------------- */}
       {/* DESKTOP PERMANENT SIDEBAR (>= 1024px)                         */}
       {/* ------------------------------------------------------------- */}
-      <aside className="hidden lg:flex w-64 shrink-0 bg-forest-800 text-wheat-100 flex-col self-stretch border-r border-forest-700/50 shadow-lg">
+      <aside className="hidden lg:flex w-64 shrink-0 bg-forest-800 text-wheat-100 flex-col sticky top-0 h-screen overflow-y-auto border-r border-forest-700/50 shadow-lg">
         {/* Brand */}
         <div className="px-6 py-7 border-b border-forest-600/60">
           <p className="font-display italic text-2xl leading-tight font-semibold">

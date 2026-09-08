@@ -147,11 +147,11 @@ export default function Landing() {
   }, [mobileMenuOpen]);
 
   return (
-    <div className="min-h-screen bg-wheat-50 text-forest-800 flex flex-col overflow-x-hidden selection:bg-forest-800 selection:text-wheat-50 font-sans antialiased">
+    <div className="min-h-screen bg-wheat-50 text-forest-800 flex flex-col overflow-x-clip selection:bg-forest-800 selection:text-wheat-50 font-sans antialiased">
       {/* ------------------------------------------------------------- */}
       {/* 1. NAVIGATION                                                 */}
       {/* ------------------------------------------------------------- */}
-      <header className="sticky top-0 z-40 bg-wheat-50/95 backdrop-blur-md border-b border-wheat-200/80 transition-all">
+      <header className="sticky top-0 z-50 bg-wheat-50/95 backdrop-blur-md border-b border-wheat-200/80 transition-all shadow-2xs">
         <div className="max-w-6xl w-full mx-auto px-4 sm:px-6 lg:px-8 py-3.5 flex items-center justify-between">
           {/* Brand */}
           <Link to="/" className="group flex items-center gap-2.5">
