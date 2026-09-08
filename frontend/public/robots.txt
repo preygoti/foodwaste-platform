@@ -4,6 +4,14 @@ Allow: /browse
 Allow: /login
 Allow: /register
 Allow: /forgot-password
+Allow: /og-image.png
+Allow: /hero.png
+Allow: /logo.png
+Allow: /favicon*
+Allow: /apple-touch-icon.png
 Disallow: /dashboard/
+
+User-agent: Googlebot-Image
+Allow: /
 
 Sitemap: https://foodwaste-platform.vercel.app/sitemap.xml
