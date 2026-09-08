@@ -301,7 +301,7 @@ export default function InventoryPage() {
 
   const openListingModal = (item) => {
     const cd = computeLiveExpiryCountdown(item.expiry_date, now);
-    if (cd.isExpired || item.days_to_expiry <= 0) {
+    if (cd.isExpired) {
       alert("⚠️ Food Safety Restriction: Expired items cannot be published to the surplus marketplace. Please log for disposal or composting.");
       return;
     }
@@ -317,7 +317,7 @@ export default function InventoryPage() {
     e.preventDefault();
     if (!listingModalItem) return;
     const cd = computeLiveExpiryCountdown(listingModalItem.expiry_date, now);
-    if (cd.isExpired || listingModalItem.days_to_expiry <= 0) {
+    if (cd.isExpired) {
       alert("⚠️ Food Safety Restriction: Expired food items cannot be listed for donation.");
       return;
     }
@@ -352,7 +352,7 @@ export default function InventoryPage() {
     const expired = [];
     for (const item of items) {
       const cd = computeLiveExpiryCountdown(item.expiry_date, now);
-      if (cd.isExpired || item.days_to_expiry <= 0) {
+      if (cd.isExpired) {
         expired.push(item);
       } else {
         active.push(item);
@@ -708,7 +708,7 @@ export default function InventoryPage() {
               <tbody className="divide-y divide-wheat-200/80">
                 {filtered.map((item) => {
                   const cd = computeLiveExpiryCountdown(item.expiry_date, now);
-                  const isItemExpired = cd.isExpired || item.days_to_expiry <= 0;
+                  const isItemExpired = cd.isExpired;
 
                   return (
                     <tr
@@ -828,7 +828,7 @@ export default function InventoryPage() {
           <div className="md:hidden space-y-3.5">
             {filtered.map((item) => {
               const cd = computeLiveExpiryCountdown(item.expiry_date, now);
-              const isItemExpired = cd.isExpired || item.days_to_expiry <= 0;
+              const isItemExpired = cd.isExpired;
 
               return (
                 <div

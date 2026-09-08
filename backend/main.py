@@ -470,7 +470,7 @@ def clear_all_expired_inventory(
 ):
     expired_items = db.query(models.InventoryItem).filter(
         models.InventoryItem.business_id == user.id,
-        models.InventoryItem.expiry_date <= date.today()
+        models.InventoryItem.expiry_date < date.today()
     ).all()
     
     expired_ids = [i.id for i in expired_items]
