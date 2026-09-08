@@ -28,6 +28,7 @@ import {
   Activity,
   Layers,
   Search,
+  Utensils,
 } from "lucide-react";
 import Card3D from "../components/Card3D";
 import { api } from "../api";
@@ -105,7 +106,6 @@ export default function Landing() {
 
   // Section reveal refs
   const [problemRef, problemVisible] = useScrollReveal(0.12);
-  const [solutionRef, solutionVisible] = useScrollReveal(0.12);
   const [howItWorksRef, howItWorksVisible] = useScrollReveal(0.1);
   const [riskScoringRef, riskScoringVisible] = useScrollReveal(0.12);
   const [featuresRef, featuresVisible] = useScrollReveal(0.08);
@@ -390,7 +390,7 @@ export default function Landing() {
                   <strong className="text-base sm:text-lg font-bold text-amber-900">8 Items</strong>
                 </div>
                 <div className="p-2.5 rounded-xl bg-emerald-50/70 border border-emerald-100">
-                  <span className="text-[10px] text-emerald-800/70 uppercase block font-semibold">Rescued Month</span>
+                  <span className="text-[10px] text-emerald-800/70 uppercase block font-semibold">Rescued This Month</span>
                   <strong className="text-base sm:text-lg font-bold text-emerald-800">124 kg</strong>
                 </div>
               </div>
@@ -413,7 +413,7 @@ export default function Landing() {
                     <span className="text-[10px] text-forest-800/60">Bakery Rack &bull; Expiry in 2d</span>
                   </div>
                   <span className="px-2 py-0.5 rounded bg-amber-100 text-amber-800 text-[10px] font-bold">
-                    WATCH
+                    MEDIUM
                   </span>
                 </div>
               </div>
@@ -475,7 +475,7 @@ export default function Landing() {
                 Action Comes Too Late
               </h3>
               <p className="text-xs sm:text-sm text-forest-800/70 leading-relaxed">
-                Without clear visibility into expiry risk, teams may not know which food needs attention first.
+                Without clear visibility into expiry risk, teams lack clear visibility into which items need urgent redistribution.
               </p>
             </div>
 
@@ -507,152 +507,66 @@ export default function Landing() {
       </section>
 
       {/* ------------------------------------------------------------- */}
-      {/* 5. SOLUTION SECTION                                           */}
+      {/* 5. HOW IT WORKS (UNIFIED 5-STEP LIFECYCLE)                    */}
       {/* ------------------------------------------------------------- */}
-      <section ref={solutionRef} className="py-16 sm:py-24 bg-wheat-50 border-b border-wheat-200 scroll-mt-14">
-        <div className="max-w-6xl mx-auto px-4 sm:px-6 lg:px-8 space-y-12">
-          {/* Heading */}
-          <div className={`text-center max-w-2xl mx-auto space-y-3 transition-all duration-700 ${
-            solutionVisible ? "opacity-100 translate-y-0" : "opacity-0 translate-y-6"
-          }`}>
-            <span className="font-mono text-xs uppercase tracking-widest text-emerald-700 font-bold">
-              OUR SOLUTION
-            </span>
-            <h2 className="font-display text-3xl sm:text-4xl text-forest-800 font-bold">
-              From Surplus to Rescue — In One Platform.
-            </h2>
-            <p className="text-xs sm:text-sm text-forest-800/70 leading-relaxed">
-              Harvest Ledger gives food providers a simple way to monitor inventory, identify high-risk items, create listings, coordinate pickups, and understand their impact.
-            </p>
-          </div>
-
-          {/* Visual Connected Flow: TRACK -> IDENTIFY -> LIST -> RESCUE -> MEASURE */}
-          <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-5 gap-3.5 sm:gap-4">
-            {[
-              {
-                step: "01",
-                label: "TRACK",
-                desc: "Monitor batch quantities, categories & shelf-life.",
-                icon: Package,
-              },
-              {
-                step: "02",
-                label: "IDENTIFY",
-                desc: "Evaluate 0–100 AI waste risk urgency.",
-                icon: Sparkles,
-              },
-              {
-                step: "03",
-                label: "LIST",
-                desc: "Publish near-expiry surplus in 1-click.",
-                icon: Store,
-              },
-              {
-                step: "04",
-                label: "RESCUE",
-                desc: "Coordinate driver QR pass pickup handshakes.",
-                icon: ShieldCheck,
-              },
-              {
-                step: "05",
-                label: "MEASURE",
-                desc: "Track meals saved & ESG environmental telemetry.",
-                icon: BarChart3,
-              },
-            ].map((flow, i) => {
-              const Icon = flow.icon;
-              return (
-                <div
-                  key={flow.label}
-                  style={{ transitionDelay: `${i * 100}ms` }}
-                  className={`bg-white border border-wheat-200 rounded-2xl p-4 sm:p-5 flex flex-col justify-between shadow-2xs hover:shadow-md hover:border-forest-600/50 transition-all duration-500 group ${
-                    solutionVisible ? "opacity-100 translate-y-0 scale-100" : "opacity-0 translate-y-6 scale-95"
-                  }`}
-                >
-                  <div className="flex items-center justify-between mb-3">
-                    <span className="font-mono text-[10px] font-bold text-forest-800/50 group-hover:text-forest-800">
-                      STEP {flow.step}
-                    </span>
-                    <div className="w-8 h-8 rounded-lg bg-forest-50 text-forest-700 flex items-center justify-center group-hover:bg-forest-800 group-hover:text-wheat-50 transition-colors">
-                      <Icon className="w-4 h-4" />
-                    </div>
-                  </div>
-                  <div>
-                    <h3 className="font-mono font-bold text-sm text-forest-800 mb-1">
-                      {flow.label}
-                    </h3>
-                    <p className="text-[11px] text-forest-800/70 leading-relaxed">
-                      {flow.desc}
-                    </p>
-                  </div>
-                </div>
-              );
-            })}
-          </div>
-        </div>
-      </section>
-
-      {/* ------------------------------------------------------------- */}
-      {/* 6. HOW IT WORKS (VISUAL TIMELINE PROCESS)                     */}
-      {/* ------------------------------------------------------------- */}
-      <section id="how-it-works" ref={howItWorksRef} className="py-16 sm:py-24 bg-white border-b border-wheat-200 scroll-mt-14">
+      <section id="how-it-works" ref={howItWorksRef} className="py-16 sm:py-24 bg-wheat-50 border-b border-wheat-200 scroll-mt-14">
         <div className="max-w-6xl mx-auto px-4 sm:px-6 lg:px-8 space-y-12">
           {/* Heading */}
           <div className={`text-center max-w-2xl mx-auto space-y-3 transition-all duration-700 ${
             howItWorksVisible ? "opacity-100 translate-y-0" : "opacity-0 translate-y-6"
           }`}>
-            <span className="font-mono text-xs uppercase tracking-widest text-tomato-500 font-bold">
+            <span className="font-mono text-xs uppercase tracking-widest text-emerald-700 font-bold">
               HOW IT WORKS
             </span>
             <h2 className="font-display text-3xl sm:text-4xl text-forest-800 font-bold">
               Five Simple Steps. One Bigger Impact.
             </h2>
             <p className="text-xs sm:text-sm text-forest-800/70 leading-relaxed">
-              A clear, predictable process connecting food providers with verified community non-profits.
+              A seamless, predictable lifecycle connecting food businesses with verified community non-profits.
             </p>
           </div>
 
-          {/* 5-Step Process Timeline Cards */}
-          <div className="grid grid-cols-1 md:grid-cols-5 gap-4">
+          {/* 5-Step Process Cards */}
+          <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-5 gap-4">
             {[
               {
                 num: "01",
-                title: "Track Surplus Food",
-                desc: "Add your surplus food inventory and keep important details such as quantity, category, and expiry date in one place.",
+                label: "Track",
+                desc: "Log batch quantities, categories, and shelf-life in one central dashboard.",
                 icon: Package,
               },
               {
                 num: "02",
-                title: "Identify What Needs Attention",
-                desc: "Use risk scoring and expiry information to quickly identify food that needs action.",
+                label: "Identify",
+                desc: "Automated 0–100 risk scoring spots expiry bottlenecks instantly.",
                 icon: Sparkles,
               },
               {
                 num: "03",
-                title: "Create a Rescue Listing",
-                desc: "Turn available surplus into a listing so it can be discovered and collected.",
+                label: "List",
+                desc: "Publish near-expiry surplus to verified local non-profits in one click.",
                 icon: Store,
               },
               {
                 num: "04",
-                title: "Coordinate Pickup",
-                desc: "Manage pickup requests and keep the rescue process organized from request to completion.",
+                label: "Rescue",
+                desc: "Coordinate pickups smoothly with digital QR handshake verification.",
                 icon: Truck,
               },
               {
                 num: "05",
-                title: "Measure Your Impact",
-                desc: "Track rescued food, completed pickups, and other meaningful indicators of waste reduction.",
-                icon: Award,
+                label: "Measure",
+                desc: "Track rescued meals, landfill diversion, and automated ESG telemetry.",
+                icon: BarChart3,
               },
             ].map((step, idx) => {
               const StepIcon = step.icon;
               return (
                 <div
                   key={step.num}
-                  style={{ transitionDelay: `${idx * 100}ms` }}
-                  className={`bg-wheat-50/60 border border-wheat-200 rounded-2xl p-5 flex flex-col justify-between shadow-2xs hover:shadow-md transition-all duration-700 group ${
-                    howItWorksVisible ? "opacity-100 translate-y-0 scale-100" : "opacity-0 translate-y-8 scale-95"
+                  style={{ transitionDelay: `${idx * 80}ms` }}
+                  className={`bg-white border border-wheat-200 rounded-2xl p-5 flex flex-col justify-between shadow-2xs hover:shadow-md hover:border-forest-600/40 hover:-translate-y-1 transition-all duration-500 group ${
+                    howItWorksVisible ? "opacity-100 translate-y-0 scale-100" : "opacity-0 translate-y-6 scale-95"
                   }`}
                 >
                   <div className="space-y-3">
@@ -660,13 +574,13 @@ export default function Landing() {
                       <span className="w-7 h-7 rounded-full bg-forest-800 text-wheat-50 font-mono text-xs font-bold flex items-center justify-center">
                         {step.num}
                       </span>
-                      <div className="p-2 rounded-lg bg-white border border-wheat-200 text-forest-700">
+                      <div className="p-2 rounded-lg bg-forest-50 text-forest-700 group-hover:bg-forest-800 group-hover:text-wheat-50 transition-colors">
                         <StepIcon className="w-4 h-4" />
                       </div>
                     </div>
 
-                    <h3 className="font-display font-bold text-sm sm:text-base text-forest-800 leading-snug">
-                      {step.title}
+                    <h3 className="font-display font-bold text-base text-forest-800 leading-snug">
+                      {step.label}
                     </h3>
 
                     <p className="text-xs text-forest-800/70 leading-relaxed">
@@ -788,39 +702,39 @@ export default function Landing() {
             {[
               {
                 num: "01",
-                title: "Smart Inventory",
-                desc: "Keep surplus food organized with quantities, categories, expiry dates, and status information.",
+                title: "Smart Inventory Telemetry",
+                desc: "Keep surplus batches organized with precision quantities, categories, and real-time shelf-life telemetry.",
                 icon: Package,
               },
               {
                 num: "02",
-                title: "AI Risk Scoring",
-                desc: "Prioritize food items that need attention using intelligent waste-risk insights.",
+                title: "AI Freshness Inspector",
+                desc: "Computer vision and automated multi-factor risk scoring to instantly assess perishable shelf-life.",
                 icon: Sparkles,
               },
               {
                 num: "03",
-                title: "Rescue Listings",
-                desc: "Turn available surplus into clear listings that can be discovered and acted upon.",
-                icon: Store,
+                title: "Zero-Waste Recipe Engine",
+                desc: "Generate creative, safe culinary repurposing recipes from on-hand surplus to prevent food waste.",
+                icon: Utensils,
               },
               {
                 num: "04",
-                title: "Pickup Management",
-                desc: "Keep pickup requests, schedules, and completion status organized.",
-                icon: Truck,
+                title: "Live Radar Map & Routing",
+                desc: "Interactive proximity mapping to spot nearby community partners, NGOs, and food banks instantly.",
+                icon: Compass,
               },
               {
                 num: "05",
-                title: "Impact Analytics",
-                desc: "Understand your rescue activity through clear dashboards and meaningful analytics.",
-                icon: BarChart3,
+                title: "Cryptographic QR Handshake",
+                desc: "Secure pickup verification with one-time digital handshakes and chain-of-custody tracking.",
+                icon: ShieldCheck,
               },
               {
                 num: "06",
-                title: "Action-Oriented Alerts",
-                desc: "Surface food that needs attention so teams can act before valuable food becomes waste.",
-                icon: Bell,
+                title: "ESG & CSR Tax Certification",
+                desc: "Automated tax receipts, landfill diversion analytics, and CSR compliance reports ready for audit.",
+                icon: FileText,
               },
             ].map((feat, idx) => {
               const FeatIcon = feat.icon;
@@ -995,7 +909,7 @@ export default function Landing() {
           </div>
 
           <p className="text-xs font-mono text-forest-800/50 pt-1">
-            Make every surplus count.
+            Make every surplus item count.
           </p>
         </div>
       </section>
