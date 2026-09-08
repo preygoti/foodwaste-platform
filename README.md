@@ -1,5 +1,7 @@
 # Harvest Ledger — AI-Powered Food Waste Management & Redistribution Platform
 
+[![Live Demo](https://img.shields.io/badge/Live%20Demo-foodwaste--platform.vercel.app-10b981?style=flat-square&logo=vercel)](https://foodwaste-platform.vercel.app)
+[![Founder & Lead Engineer](https://img.shields.io/badge/Founder%20%26%20Lead%20Engineer-Prey%20Goti-0a66c2?style=flat-square&logo=linkedin)](https://www.linkedin.com/in/prey-goti-31a772318)
 [![GitHub Repo](https://img.shields.io/badge/GitHub-preygoti%2Ffoodwaste--platform-181717?style=flat-square&logo=github)](https://github.com/preygoti/foodwaste-platform)
 [![FastAPI](https://img.shields.io/badge/Backend-FastAPI-009688?style=flat-square&logo=fastapi)](https://fastapi.tiangolo.com/)
 [![Python](https://img.shields.io/badge/Language-Python%203.13-3776AB?style=flat-square&logo=python)](https://python.org/)
@@ -319,6 +321,17 @@ npm run build
 
 ---
 
+## 👤 Founder & Author
+
+**Prey Goti** — *Founder & Full-Stack AI Engineer*
+
+- 🌐 **Live Platform**: [foodwaste-platform.vercel.app](https://foodwaste-platform.vercel.app)
+- 💼 **LinkedIn Profile**: [linkedin.com/in/prey-goti-31a772318](https://www.linkedin.com/in/prey-goti-31a772318)
+- 🐙 **GitHub Profile**: [@preygoti](https://github.com/preygoti)
+- 💡 **Platform Vision**: Architected and engineered **Harvest Ledger** to eliminate commercial food waste, optimize kitchen redistribution, and provide transparent ESG impact analytics for sustainable communities.
+
+---
+
 ## 📜 License
 
 This project is licensed under the **MIT License** — free to use, modify, and distribute for educational, non-profit, or commercial food waste reduction initiatives.
@@ -326,5 +339,5 @@ This project is licensed under the **MIT License** — free to use, modify, and 
 ---
 
 <div align="center">
-  <sub>Harvest Ledger &bull; Built with ❤️ to Eliminate Food Waste</sub>
+  <sub>Harvest Ledger &bull; Built with ❤️ by <b>Prey Goti</b> to Eliminate Food Waste</sub>
 </div>
