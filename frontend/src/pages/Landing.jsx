@@ -953,26 +953,19 @@ export default function Landing() {
           <div
             itemScope
             itemType="https://schema.org/Person"
-            className="flex flex-col sm:flex-row items-center justify-between gap-5 text-xs font-mono text-forest-800/75 border-b border-wheat-200/60 pb-6 text-center sm:text-left w-full"
+            className="flex flex-col md:flex-row items-center justify-between gap-4 text-xs font-mono text-forest-800/75 border-b border-wheat-200/60 pb-6 text-center md:text-left w-full"
           >
-            <div className="flex flex-col sm:flex-row items-center gap-4 text-center sm:text-left max-w-2xl w-full sm:w-auto">
-              <img
-                src="/founder-square.jpg"
-                alt="Prey Goti - Founder of Harvest Ledger"
-                itemProp="image"
-                className="w-14 h-14 sm:w-16 sm:h-16 rounded-full object-cover border-2 border-forest-600 shadow-md shrink-0"
-              />
-              <div className="space-y-1">
-                <span className="font-bold text-forest-900 text-sm sm:text-base block font-sans sm:font-mono">
-                  Founded &amp; Built by <span itemProp="name">Prey Goti</span>
-                </span>
-                <p className="text-xs text-forest-800/80 leading-relaxed font-sans sm:font-mono">
-                  <span itemProp="jobTitle">Founder of Harvest Ledger and Full-Stack AI Engineer</span> focused on building technology for smarter food waste management and community redistribution.
-                </p>
-              </div>
+            <link itemProp="image" href="/founder-square.jpg" />
+            <div className="space-y-1 text-center md:text-left max-w-2xl w-full md:w-auto">
+              <span className="font-bold text-forest-900 text-sm block font-sans sm:font-mono text-center md:text-left">
+                Founded &amp; Built by <span itemProp="name">Prey Goti</span>
+              </span>
+              <p className="text-xs text-forest-800/80 leading-relaxed font-sans sm:font-mono text-center md:text-left">
+                <span itemProp="jobTitle">Founder of Harvest Ledger and Full-Stack AI Engineer</span> focused on building technology for smarter food waste management and community redistribution.
+              </p>
             </div>
 
-            <div className="flex items-center justify-center sm:justify-end gap-2.5 shrink-0 pt-1 sm:pt-0 font-semibold text-xs w-full sm:w-auto">
+            <div className="flex items-center justify-center md:justify-end gap-2.5 shrink-0 pt-1 md:pt-0 font-semibold text-xs w-full md:w-auto">
               <a
                 href="https://www.linkedin.com/in/prey-goti-31a772318"
                 target="_blank"
