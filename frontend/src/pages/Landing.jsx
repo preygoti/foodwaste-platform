@@ -310,7 +310,7 @@ export default function Landing() {
         <div className="md:col-span-7 space-y-6 animate-in fade-in slide-in-from-bottom-3 duration-500">
           <div className="inline-flex items-center gap-2 px-3 py-1 rounded-full bg-forest-800/10 border border-forest-800/20 text-forest-800 font-mono text-xs">
             <span className="w-2 h-2 rounded-full bg-emerald-500 animate-pulse" />
-            <span className="uppercase tracking-wider font-semibold">SMART FOOD RESCUE PLATFORM</span>
+            <span className="uppercase tracking-wider font-semibold">HARVEST LEDGER &bull; SMART FOOD RESCUE PLATFORM</span>
           </div>
 
           <h1 className="font-display text-4xl sm:text-5xl lg:text-6xl leading-[1.08] text-forest-800 font-bold tracking-tight">
@@ -318,7 +318,7 @@ export default function Landing() {
           </h1>
 
           <p className="text-forest-800/75 text-base sm:text-lg leading-relaxed max-w-xl">
-            Harvest Ledger helps businesses and organizations track surplus food, identify what needs attention, and connect usable food with people who can rescue it — before it becomes waste.
+            Harvest Ledger is the AI-driven commercial food waste management and surplus redistribution platform connecting restaurants, bakeries, and grocery stores with local NGOs — before it becomes waste.
           </p>
 
           <div className="flex flex-col sm:flex-row items-stretch sm:items-center gap-3 pt-2">
