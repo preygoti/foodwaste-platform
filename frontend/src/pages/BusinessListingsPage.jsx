@@ -162,8 +162,9 @@ export default function BusinessListingsPage() {
 
   return (
     <Layout>
-      <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-4 mb-6 sm:mb-8">
-        <div>
+      {/* Header with Live Sync Indicator */}
+      <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-4 mb-6 sm:mb-8 sm:pr-2 lg:pr-6">
+        <div className="min-w-0 flex-1 pr-2 sm:pr-6">
           <div className="flex items-center gap-2 mb-1 flex-wrap">
             <span className="font-mono text-xs uppercase tracking-widest text-tomato-500 font-semibold block">
               Module 03 · Redistribution Marketplace
@@ -176,12 +177,12 @@ export default function BusinessListingsPage() {
           <h1 className="font-display text-2xl sm:text-3xl text-forest-800 font-semibold">
             Your Surplus Listings
           </h1>
-          <p className="text-xs sm:text-sm text-forest-800/60 mt-1">
+          <p className="text-xs sm:text-sm text-forest-800/60 mt-1 max-w-xl">
             Manage food surplus items made available to verified NGOs and food banks. Real-time requests sync automatically.
           </p>
         </div>
 
-        <div className="flex items-center gap-2.5 flex-wrap sm:flex-nowrap">
+        <div className="flex items-center gap-2.5 flex-wrap sm:flex-nowrap shrink-0 sm:self-center">
           <button
             onClick={() => load(false)}
             disabled={isRefreshing}
