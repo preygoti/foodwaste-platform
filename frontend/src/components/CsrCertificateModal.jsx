@@ -60,17 +60,8 @@ export default function CsrCertificateModal({ isOpen, onClose, metrics, user }) 
             </div>
           </div>
 
-          {/* Right: Print / Download & Close X */}
-          <div className="flex items-center gap-1.5 sm:gap-2 shrink-0">
-            <button
-              onClick={handlePrint}
-              className="inline-flex items-center gap-1.5 px-3 py-1.5 bg-wheat-50 text-forest-800 font-semibold text-xs rounded-lg hover:bg-wheat-100 transition-colors shadow-sm"
-              title="Print or Save as PDF"
-            >
-              <Printer className="w-3.5 h-3.5" />
-              <span className="hidden sm:inline">Print / Save PDF</span>
-              <span className="sm:hidden">Print</span>
-            </button>
+          {/* Right: Close X */}
+          <div className="flex items-center shrink-0">
             <button
               onClick={onClose}
               className="p-1.5 text-wheat-200 hover:text-white rounded-lg hover:bg-white/10 active:bg-white/20 transition-colors"
@@ -185,10 +176,10 @@ export default function CsrCertificateModal({ isOpen, onClose, metrics, user }) 
           <div className="flex items-center gap-2 ml-auto w-full sm:w-auto justify-end">
             <button
               onClick={handlePrint}
-              className="inline-flex items-center justify-center gap-1.5 px-3 py-1.5 border border-wheat-300 bg-white text-forest-800 font-semibold text-xs rounded-lg hover:bg-wheat-100 transition-colors shadow-2xs"
+              className="inline-flex items-center justify-center gap-1.5 px-3.5 py-1.5 border border-wheat-300 bg-white text-forest-800 font-semibold text-xs rounded-lg hover:bg-wheat-100 transition-colors shadow-2xs"
             >
               <Printer className="w-3.5 h-3.5" />
-              <span>Print</span>
+              <span>Print / Save as PDF</span>
             </button>
             <button
               onClick={onClose}
