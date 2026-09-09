@@ -147,11 +147,16 @@ export default function Landing() {
   }, [mobileMenuOpen]);
 
   return (
-    <div className="min-h-screen bg-wheat-50 text-forest-800 flex flex-col overflow-x-clip selection:bg-forest-800 selection:text-wheat-50 font-sans antialiased">
+    <div className="min-h-screen bg-wheat-50 text-forest-800 flex flex-col overflow-x-clip selection:bg-forest-800 selection:text-wheat-50 font-sans antialiased relative">
+      {/* Ambient background light orbs for frosted glass refractions */}
+      <div aria-hidden="true" className="pointer-events-none absolute -top-24 left-1/4 w-96 h-96 bg-emerald-400/15 rounded-full blur-3xl animate-mesh-pulse" />
+      <div aria-hidden="true" className="pointer-events-none absolute top-48 right-10 w-80 h-80 bg-gold-400/20 rounded-full blur-3xl animate-mesh-pulse-delayed" />
+      <div aria-hidden="true" className="pointer-events-none absolute top-[700px] -left-20 w-80 h-80 bg-emerald-300/15 rounded-full blur-3xl" />
+
       {/* ------------------------------------------------------------- */}
       {/* 1. NAVIGATION                                                 */}
       {/* ------------------------------------------------------------- */}
-      <header className="sticky top-0 z-50 bg-wheat-50/95 backdrop-blur-md border-b border-wheat-200/80 transition-all shadow-2xs">
+      <header className="sticky top-0 z-50 glass-header transition-all">
         <div className="max-w-6xl w-full mx-auto px-4 sm:px-6 lg:px-8 py-3.5 flex items-center justify-between">
           {/* Brand */}
           <Link to="/" className="group flex items-center gap-2.5">
@@ -217,11 +222,11 @@ export default function Landing() {
       {/* Mobile Drawer Backdrop & Navigation */}
       {mobileMenuOpen && (
         <div
-          className="fixed inset-0 z-50 bg-black/60 backdrop-blur-sm md:hidden animate-in fade-in duration-200"
+          className="fixed inset-0 z-50 bg-forest-950/60 backdrop-blur-md md:hidden animate-in fade-in duration-200"
           onClick={() => setMobileMenuOpen(false)}
         >
           <div
-            className="fixed inset-y-0 left-0 w-72 max-w-[80vw] bg-white border-r border-wheat-200 shadow-2xl p-5 sm:p-6 flex flex-col justify-between box-border h-full max-h-[100dvh] overflow-y-auto pb-safe animate-in slide-in-from-left duration-250"
+            className="fixed inset-y-0 left-0 w-72 max-w-[80vw] glass-modal border-r border-wheat-200/80 shadow-2xl p-5 sm:p-6 flex flex-col justify-between box-border h-full max-h-[100dvh] overflow-y-auto pb-safe animate-in slide-in-from-left duration-250"
             onClick={(e) => e.stopPropagation()}
           >
             <div className="space-y-6">
@@ -308,7 +313,7 @@ export default function Landing() {
       <section id="hero" className="relative max-w-6xl w-full mx-auto px-4 sm:px-6 lg:px-8 pt-10 sm:pt-16 pb-16 sm:pb-24 grid md:grid-cols-12 gap-8 lg:gap-12 items-center">
         {/* Left Hero Content */}
         <div className="md:col-span-7 space-y-6 animate-in fade-in slide-in-from-bottom-3 duration-500">
-          <div className="inline-flex items-center gap-2 px-3 py-1 rounded-full bg-forest-800/10 border border-forest-800/20 text-forest-800 font-mono text-xs">
+          <div className="inline-flex items-center gap-2 px-3 py-1 rounded-full glass-pill text-forest-800 font-mono text-xs">
             <span className="w-2 h-2 rounded-full bg-emerald-500 animate-pulse" />
             <span className="uppercase tracking-wider font-semibold">HARVEST LEDGER &bull; SMART FOOD RESCUE PLATFORM</span>
           </div>
@@ -324,14 +329,14 @@ export default function Landing() {
           <div className="flex flex-col sm:flex-row items-stretch sm:items-center gap-3 pt-2">
             <Link
               to="/register"
-              className="inline-flex items-center justify-center gap-2 px-6 py-3.5 bg-forest-800 text-wheat-50 border border-forest-800 rounded-xl font-semibold text-sm sm:text-base hover:bg-forest-700 shadow-md transition-all active:scale-[0.99]"
+              className="inline-flex items-center justify-center gap-2 px-6 py-3.5 bg-forest-800 text-wheat-50 border border-forest-800 rounded-xl font-semibold text-sm sm:text-base hover:bg-forest-700 shadow-md hover:shadow-lg transition-all active:scale-[0.99]"
             >
               <span>Start Rescuing Food</span>
               <ArrowRight className="w-4 h-4" />
             </Link>
             <a
               href="#how-it-works"
-              className="inline-flex items-center justify-center gap-2 px-6 py-3.5 bg-white text-forest-800 border border-wheat-300 rounded-xl font-semibold text-sm sm:text-base hover:bg-wheat-100 transition-all shadow-2xs active:scale-[0.99]"
+              className="inline-flex items-center justify-center gap-2 px-6 py-3.5 glass-card glass-card-hover text-forest-800 rounded-xl font-semibold text-sm sm:text-base transition-all active:scale-[0.99]"
             >
               <span>See How It Works</span>
             </a>
@@ -347,25 +352,25 @@ export default function Landing() {
           <Card3D maxTilt={7} scale={1.02}>
             <div className="relative">
               {/* Subtle Floating Badge 1 (Top Left - directly on top border) */}
-              <div className="absolute -top-3 left-3 sm:-left-3 z-20 flex items-center gap-1 sm:gap-1.5 px-2.5 py-1 sm:px-3 sm:py-1.5 bg-forest-800 text-wheat-50 rounded-full shadow-lg text-[10px] sm:text-xs font-mono font-semibold animate-float-slow border border-forest-600">
+              <div className="absolute -top-3 left-3 sm:-left-3 z-20 flex items-center gap-1 sm:gap-1.5 px-2.5 py-1 sm:px-3 sm:py-1.5 glass-forest text-wheat-50 rounded-full shadow-lg text-[10px] sm:text-xs font-mono font-semibold animate-float-slow">
                 <Leaf className="w-3 h-3 sm:w-3.5 sm:h-3.5 text-emerald-400" />
                 <span>Food Saved 🌱</span>
               </div>
 
               {/* Subtle Floating Badge 2 (Bottom Right - directly on bottom border) */}
-              <div className="absolute -bottom-3 right-3 sm:-right-2 z-20 flex items-center gap-1 sm:gap-1.5 px-2.5 py-1 sm:px-3 sm:py-1.5 bg-emerald-600 text-white rounded-full shadow-lg text-[10px] sm:text-xs font-mono font-semibold animate-float-delayed border border-emerald-500">
+              <div className="absolute -bottom-3 right-3 sm:-right-2 z-20 flex items-center gap-1 sm:gap-1.5 px-2.5 py-1 sm:px-3 sm:py-1.5 bg-emerald-600/90 backdrop-blur-md text-white rounded-full shadow-lg text-[10px] sm:text-xs font-mono font-semibold animate-float-delayed border border-white/20">
                 <CheckCircle2 className="w-3 h-3 sm:w-3.5 sm:h-3.5 text-white" />
                 <span>Pickup Scheduled ✓</span>
               </div>
 
               {/* Subtle Floating Badge 3 (Top Right - directly on top border) */}
-              <div className="absolute -top-3 right-3 sm:-right-2 z-20 flex items-center gap-1 sm:gap-1.5 px-2 py-0.5 sm:px-2.5 sm:py-1 bg-rose-50 text-rose-800 rounded-full shadow-md text-[10px] sm:text-[11px] font-mono font-semibold border border-rose-200">
+              <div className="absolute -top-3 right-3 sm:-right-2 z-20 flex items-center gap-1 sm:gap-1.5 px-2 py-0.5 sm:px-2.5 sm:py-1 glass-pill text-rose-800 rounded-full shadow-md text-[10px] sm:text-[11px] font-mono font-semibold border-rose-200/80">
                 <Flame className="w-3 h-3 text-rose-600" />
                 <span>Risk Detected</span>
               </div>
 
-              <div className="bg-white border border-wheat-200 rounded-2xl shadow-xl p-4 sm:p-6 space-y-3.5 sm:space-y-4">
-                <div className="flex items-center justify-between border-b border-wheat-100 pb-3">
+              <div className="glass-card rounded-2xl shadow-xl p-4 sm:p-6 space-y-3.5 sm:space-y-4">
+                <div className="flex items-center justify-between border-b border-wheat-200/60 pb-3">
                   <div className="space-y-0.5">
                     <span className="text-[10px] font-mono uppercase tracking-wider text-forest-800/50 block font-semibold">
                       UI Visualizer &bull; Live Telemetry
@@ -374,7 +379,7 @@ export default function Landing() {
                       FOOD RESCUE STATUS
                     </h3>
                   </div>
-                  <span className="px-2.5 py-1 rounded-full text-[10px] font-mono font-bold bg-emerald-50 text-emerald-800 border border-emerald-200 flex items-center gap-1">
+                  <span className="px-2.5 py-1 rounded-full text-[10px] font-mono font-bold bg-emerald-50/80 backdrop-blur-sm text-emerald-800 border border-emerald-200 flex items-center gap-1">
                     <span className="w-1.5 h-1.5 rounded-full bg-emerald-500 animate-pulse" />
                     Active
                   </span>
@@ -382,15 +387,15 @@ export default function Landing() {
 
                 {/* 3 Metric Indicator Cards */}
                 <div className="grid grid-cols-3 gap-1.5 sm:gap-2 text-center font-mono">
-                  <div className="p-2 sm:p-2.5 rounded-xl bg-rose-50/70 border border-rose-100">
+                  <div className="p-2 sm:p-2.5 rounded-xl bg-rose-50/80 backdrop-blur-sm border border-rose-200/60">
                     <span className="text-[9px] sm:text-[10px] text-rose-800/70 uppercase block font-semibold leading-tight">Food At Risk</span>
                     <strong className="text-xs sm:text-lg font-bold text-rose-800 block pt-0.5">12 Items</strong>
                   </div>
-                  <div className="p-2 sm:p-2.5 rounded-xl bg-amber-50/70 border border-amber-100">
+                  <div className="p-2 sm:p-2.5 rounded-xl bg-amber-50/80 backdrop-blur-sm border border-amber-200/60">
                     <span className="text-[9px] sm:text-[10px] text-amber-800/70 uppercase block font-semibold leading-tight">Ready for Rescue</span>
                     <strong className="text-xs sm:text-lg font-bold text-amber-900 block pt-0.5">8 Items</strong>
                   </div>
-                  <div className="p-2 sm:p-2.5 rounded-xl bg-emerald-50/70 border border-emerald-100">
+                  <div className="p-2 sm:p-2.5 rounded-xl bg-emerald-50/80 backdrop-blur-sm border border-emerald-200/60">
                     <span className="text-[9px] sm:text-[10px] text-emerald-800/70 uppercase block font-semibold leading-tight">Rescued This Month</span>
                     <strong className="text-xs sm:text-lg font-bold text-emerald-800 block pt-0.5">124 kg</strong>
                   </div>
@@ -398,7 +403,7 @@ export default function Landing() {
 
                 {/* Sample Batch Ledger Row */}
                 <div className="space-y-2 pt-1">
-                  <div className="p-2 sm:p-2.5 rounded-xl bg-wheat-50/70 border border-wheat-200/80 flex items-center justify-between text-xs font-mono">
+                  <div className="p-2 sm:p-2.5 rounded-xl bg-wheat-100/60 backdrop-blur-sm border border-wheat-200/80 flex items-center justify-between text-xs font-mono">
                     <div>
                       <span className="font-bold text-forest-800 block text-xs">Fresh Milk (30L)</span>
                       <span className="text-[10px] text-forest-800/60">Cold Storage A &bull; Expiry in 18h</span>
@@ -408,7 +413,7 @@ export default function Landing() {
                     </span>
                   </div>
 
-                  <div className="p-2 sm:p-2.5 rounded-xl bg-wheat-50/70 border border-wheat-200/80 flex items-center justify-between text-xs font-mono">
+                  <div className="p-2 sm:p-2.5 rounded-xl bg-wheat-100/60 backdrop-blur-sm border border-wheat-200/80 flex items-center justify-between text-xs font-mono">
                     <div>
                       <span className="font-bold text-forest-800 block text-xs">Bakery Sourdough (15x)</span>
                       <span className="text-[10px] text-forest-800/60">Bakery Rack &bull; Expiry in 2d</span>
@@ -419,7 +424,7 @@ export default function Landing() {
                   </div>
                 </div>
 
-                <div className="pt-2 flex items-center justify-between text-[11px] text-forest-800/60 border-t border-wheat-100 font-mono">
+                <div className="pt-2 flex items-center justify-between text-[11px] text-forest-800/60 border-t border-wheat-200/60 font-mono">
                   <span>Rescue Stream</span>
                   <span className="font-semibold text-forest-800">Zero-Waste Connected</span>
                 </div>
@@ -432,8 +437,9 @@ export default function Landing() {
       {/* ------------------------------------------------------------- */}
       {/* 4. PROBLEM SECTION                                            */}
       {/* ------------------------------------------------------------- */}
-      <section ref={problemRef} className="py-16 sm:py-24 bg-white border-y border-wheat-200 scroll-mt-14">
-        <div className="max-w-6xl mx-auto px-4 sm:px-6 lg:px-8 space-y-12">
+      <section ref={problemRef} className="py-16 sm:py-24 bg-white/60 backdrop-blur-md border-y border-wheat-200/80 scroll-mt-14 relative">
+        <div aria-hidden="true" className="pointer-events-none absolute top-10 right-1/4 w-72 h-72 bg-rose-400/10 rounded-full blur-3xl" />
+        <div className="max-w-6xl mx-auto px-4 sm:px-6 lg:px-8 space-y-12 relative z-10">
           {/* Heading */}
           <div className={`text-center max-w-2xl mx-auto space-y-3 transition-all duration-700 ${
             problemVisible ? "opacity-100 translate-y-0" : "opacity-0 translate-y-6"
@@ -452,10 +458,10 @@ export default function Landing() {
           {/* 3 Problem Cards with Staggered Slide In */}
           <div className="grid md:grid-cols-3 gap-6">
             {/* Card 1 */}
-            <div className={`p-6 sm:p-7 rounded-2xl bg-wheat-50/60 border border-wheat-200 space-y-3 shadow-2xs hover:shadow-md transition-all duration-700 ${
+            <div className={`p-6 sm:p-7 rounded-2xl glass-card glass-card-hover space-y-3 shadow-2xs hover:shadow-md transition-all duration-700 ${
               problemVisible ? "opacity-100 translate-x-0" : "opacity-0 -translate-x-6"
             }`}>
-              <div className="w-10 h-10 rounded-xl bg-rose-100 text-rose-700 flex items-center justify-center font-bold">
+              <div className="w-10 h-10 rounded-xl bg-rose-100/80 backdrop-blur-sm text-rose-700 flex items-center justify-center font-bold">
                 <Clock className="w-5 h-5" />
               </div>
               <h3 className="font-display text-lg font-bold text-forest-800">
@@ -467,10 +473,10 @@ export default function Landing() {
             </div>
 
             {/* Card 2 */}
-            <div className={`p-6 sm:p-7 rounded-2xl bg-wheat-50/60 border border-wheat-200 space-y-3 shadow-2xs hover:shadow-md transition-all duration-700 delay-100 ${
+            <div className={`p-6 sm:p-7 rounded-2xl glass-card glass-card-hover space-y-3 shadow-2xs hover:shadow-md transition-all duration-700 delay-100 ${
               problemVisible ? "opacity-100 translate-y-0" : "opacity-0 translate-y-6"
             }`}>
-              <div className="w-10 h-10 rounded-xl bg-amber-100 text-amber-800 flex items-center justify-center font-bold">
+              <div className="w-10 h-10 rounded-xl bg-amber-100/80 backdrop-blur-sm text-amber-800 flex items-center justify-center font-bold">
                 <AlertTriangle className="w-5 h-5" />
               </div>
               <h3 className="font-display text-lg font-bold text-forest-800">
@@ -482,10 +488,10 @@ export default function Landing() {
             </div>
 
             {/* Card 3 */}
-            <div className={`p-6 sm:p-7 rounded-2xl bg-wheat-50/60 border border-wheat-200 space-y-3 shadow-2xs hover:shadow-md transition-all duration-700 delay-200 ${
+            <div className={`p-6 sm:p-7 rounded-2xl glass-card glass-card-hover space-y-3 shadow-2xs hover:shadow-md transition-all duration-700 delay-200 ${
               problemVisible ? "opacity-100 translate-x-0" : "opacity-0 translate-x-6"
             }`}>
-              <div className="w-10 h-10 rounded-xl bg-forest-100 text-forest-800 flex items-center justify-center font-bold">
+              <div className="w-10 h-10 rounded-xl bg-forest-100/80 backdrop-blur-sm text-forest-800 flex items-center justify-center font-bold">
                 <Truck className="w-5 h-5" />
               </div>
               <h3 className="font-display text-lg font-bold text-forest-800">
@@ -501,7 +507,7 @@ export default function Landing() {
           <div className={`text-center pt-2 transition-all duration-700 delay-300 ${
             problemVisible ? "opacity-100 translate-y-0" : "opacity-0 translate-y-4"
           }`}>
-            <p className="text-xs sm:text-sm font-semibold text-forest-800 bg-forest-50 border border-forest-200/80 px-4 py-2.5 rounded-full inline-block">
+            <p className="text-xs sm:text-sm font-semibold text-forest-800 glass-pill px-4 py-2.5 rounded-full inline-block">
               Harvest Ledger brings these steps together in one place.
             </p>
           </div>
@@ -511,8 +517,9 @@ export default function Landing() {
       {/* ------------------------------------------------------------- */}
       {/* 5. HOW IT WORKS (UNIFIED 5-STEP LIFECYCLE)                    */}
       {/* ------------------------------------------------------------- */}
-      <section id="how-it-works" ref={howItWorksRef} className="py-16 sm:py-24 bg-wheat-50 border-b border-wheat-200 scroll-mt-14">
-        <div className="max-w-6xl mx-auto px-4 sm:px-6 lg:px-8 space-y-12">
+      <section id="how-it-works" ref={howItWorksRef} className="py-16 sm:py-24 bg-wheat-50/70 backdrop-blur-sm border-b border-wheat-200/80 scroll-mt-14 relative">
+        <div aria-hidden="true" className="pointer-events-none absolute bottom-10 left-10 w-80 h-80 bg-emerald-400/10 rounded-full blur-3xl" />
+        <div className="max-w-6xl mx-auto px-4 sm:px-6 lg:px-8 space-y-12 relative z-10">
           {/* Heading */}
           <div className={`text-center max-w-2xl mx-auto space-y-3 transition-all duration-700 ${
             howItWorksVisible ? "opacity-100 translate-y-0" : "opacity-0 translate-y-6"
@@ -567,16 +574,16 @@ export default function Landing() {
                 <div
                   key={step.num}
                   style={{ transitionDelay: `${idx * 80}ms` }}
-                  className={`bg-white border border-wheat-200 rounded-2xl p-5 flex flex-col justify-between shadow-2xs hover:shadow-md hover:border-forest-600/40 hover:-translate-y-1 transition-all duration-500 group ${
+                  className={`glass-card glass-card-hover rounded-2xl p-5 flex flex-col justify-between shadow-2xs group ${
                     howItWorksVisible ? "opacity-100 translate-y-0 scale-100" : "opacity-0 translate-y-6 scale-95"
                   }`}
                 >
                   <div className="space-y-3">
                     <div className="flex items-center justify-between">
-                      <span className="w-7 h-7 rounded-full bg-forest-800 text-wheat-50 font-mono text-xs font-bold flex items-center justify-center">
+                      <span className="w-7 h-7 rounded-full bg-forest-800 text-wheat-50 font-mono text-xs font-bold flex items-center justify-center shadow-xs">
                         {step.num}
                       </span>
-                      <div className="p-2 rounded-lg bg-forest-50 text-forest-700 group-hover:bg-forest-800 group-hover:text-wheat-50 transition-colors">
+                      <div className="p-2 rounded-lg bg-forest-50/80 backdrop-blur-sm text-forest-700 group-hover:bg-forest-800 group-hover:text-wheat-50 transition-colors">
                         <StepIcon className="w-4 h-4" />
                       </div>
                     </div>
@@ -599,7 +606,7 @@ export default function Landing() {
       {/* ------------------------------------------------------------- */}
       {/* 7. AI RISK SCORING SECTION                                    */}
       {/* ------------------------------------------------------------- */}
-      <section ref={riskScoringRef} className="py-16 sm:py-24 bg-wheat-50 border-b border-wheat-200 scroll-mt-14">
+      <section ref={riskScoringRef} className="py-16 sm:py-24 bg-wheat-50 border-b border-wheat-200 scroll-mt-14 relative">
         <div className="max-w-6xl mx-auto px-4 sm:px-6 lg:px-8">
           <div className="grid md:grid-cols-12 gap-8 lg:gap-12 items-center">
             {/* Left Content */}
@@ -618,19 +625,19 @@ export default function Landing() {
 
               {/* 4 Example Risk Levels Grid */}
               <div className="grid grid-cols-2 gap-3 pt-2">
-                <div className="p-3 bg-white border border-wheat-200 rounded-xl space-y-0.5">
+                <div className="p-3 glass-card rounded-xl space-y-0.5">
                   <span className="text-[10px] font-mono font-bold text-forest-700 uppercase">LOW</span>
                   <p className="text-xs text-forest-800/70">Monitor normally</p>
                 </div>
-                <div className="p-3 bg-white border border-wheat-200 rounded-xl space-y-0.5">
+                <div className="p-3 glass-card rounded-xl space-y-0.5">
                   <span className="text-[10px] font-mono font-bold text-amber-700 uppercase">MEDIUM</span>
                   <p className="text-xs text-forest-800/70">Keep an eye on expiry</p>
                 </div>
-                <div className="p-3 bg-white border border-wheat-200 rounded-xl space-y-0.5">
+                <div className="p-3 glass-card rounded-xl space-y-0.5">
                   <span className="text-[10px] font-mono font-bold text-tomato-600 uppercase">HIGH</span>
                   <p className="text-xs text-forest-800/70">Action recommended</p>
                 </div>
-                <div className="p-3 bg-white border border-wheat-200 rounded-xl space-y-0.5">
+                <div className="p-3 glass-card rounded-xl space-y-0.5">
                   <span className="text-[10px] font-mono font-bold text-rose-700 uppercase">CRITICAL</span>
                   <p className="text-xs text-forest-800/70">Immediate attention</p>
                 </div>
@@ -641,15 +648,15 @@ export default function Landing() {
             <div className={`md:col-span-6 transition-all duration-700 delay-150 ${
               riskScoringVisible ? "opacity-100 translate-x-0 scale-100" : "opacity-0 translate-x-6 scale-95"
             }`}>
-              <div className="bg-white border border-wheat-300 rounded-3xl p-6 sm:p-8 shadow-lg space-y-5 font-mono">
-                <div className="flex items-center justify-between border-b border-wheat-100 pb-3">
+              <div className="glass-card rounded-3xl p-6 sm:p-8 shadow-xl space-y-5 font-mono">
+                <div className="flex items-center justify-between border-b border-wheat-200/60 pb-3">
                   <div>
                     <span className="text-[10px] text-forest-800/50 uppercase block font-semibold">
                       Automated Risk Engine
                     </span>
                     <h3 className="font-bold text-sm text-forest-800">FOOD RISK SCORE</h3>
                   </div>
-                  <span className="px-2.5 py-1 rounded-full text-[10px] font-bold bg-rose-100 text-rose-800 border border-rose-200">
+                  <span className="px-2.5 py-1 rounded-full text-[10px] font-bold bg-rose-100/90 backdrop-blur-sm text-rose-800 border border-rose-200/80">
                     HIGH PRIORITY
                   </span>
                 </div>
@@ -659,7 +666,7 @@ export default function Landing() {
                   <span className="text-forest-800/40 text-base font-bold">/ 100</span>
                 </div>
 
-                <div className="p-3.5 bg-rose-50/70 border border-rose-200 rounded-2xl space-y-1">
+                <div className="p-3.5 bg-rose-50/80 backdrop-blur-sm border border-rose-200/80 rounded-2xl space-y-1">
                   <div className="flex items-center gap-1.5 text-rose-900 font-bold text-xs">
                     <Flame className="w-4 h-4 text-rose-600 shrink-0" />
                     <span>Expires Soon</span>
@@ -669,7 +676,7 @@ export default function Landing() {
                   </p>
                 </div>
 
-                <div className="pt-2 flex items-center justify-between text-[11px] text-forest-800/50 border-t border-wheat-100">
+                <div className="pt-2 flex items-center justify-between text-[11px] text-forest-800/50 border-t border-wheat-200/60">
                   <span>Batch #HL-9042</span>
                   <span>Calculated in Real Time</span>
                 </div>
@@ -682,8 +689,9 @@ export default function Landing() {
       {/* ------------------------------------------------------------- */}
       {/* 8. FEATURES SECTION                                           */}
       {/* ------------------------------------------------------------- */}
-      <section id="features" ref={featuresRef} className="py-16 sm:py-24 bg-white border-b border-wheat-200 scroll-mt-14">
-        <div className="max-w-6xl mx-auto px-4 sm:px-6 lg:px-8 space-y-12">
+      <section id="features" ref={featuresRef} className="py-16 sm:py-24 bg-white/60 backdrop-blur-md border-b border-wheat-200/80 scroll-mt-14 relative">
+        <div aria-hidden="true" className="pointer-events-none absolute top-1/2 left-1/3 w-96 h-96 bg-gold-400/10 rounded-full blur-3xl" />
+        <div className="max-w-6xl mx-auto px-4 sm:px-6 lg:px-8 space-y-12 relative z-10">
           {/* Heading */}
           <div className={`text-center max-w-2xl mx-auto space-y-3 transition-all duration-700 ${
             featuresVisible ? "opacity-100 translate-y-0" : "opacity-0 translate-y-6"
@@ -744,7 +752,7 @@ export default function Landing() {
                 <div
                   key={feat.title}
                   style={{ transitionDelay: `${idx * 60}ms` }}
-                  className={`bg-wheat-50/50 border border-wheat-200 rounded-2xl p-6 flex flex-col justify-between shadow-2xs hover:shadow-md hover:border-forest-600/40 hover:-translate-y-1 transition-all duration-500 group ${
+                  className={`glass-card glass-card-hover rounded-2xl p-6 flex flex-col justify-between shadow-2xs group ${
                     featuresVisible ? "opacity-100 translate-y-0" : "opacity-0 translate-y-6"
                   }`}
                 >
@@ -753,7 +761,7 @@ export default function Landing() {
                       <span className="font-mono text-xs font-bold text-forest-800/40 group-hover:text-forest-800">
                         {feat.num}
                       </span>
-                      <div className="p-2.5 rounded-xl bg-white border border-wheat-200 text-forest-700 group-hover:bg-forest-800 group-hover:text-wheat-50 transition-colors">
+                      <div className="p-2.5 rounded-xl bg-white/80 backdrop-blur-sm border border-wheat-200/80 text-forest-700 group-hover:bg-forest-800 group-hover:text-wheat-50 transition-colors">
                         <FeatIcon className="w-4 h-4" />
                       </div>
                     </div>
@@ -774,7 +782,7 @@ export default function Landing() {
       {/* ------------------------------------------------------------- */}
       {/* 9. IMPACT SECTION                                             */}
       {/* ------------------------------------------------------------- */}
-      <section id="impact" ref={impactRef} className="py-16 sm:py-24 bg-wheat-50 border-b border-wheat-200 scroll-mt-14">
+      <section id="impact" ref={impactRef} className="py-16 sm:py-24 bg-wheat-50/70 backdrop-blur-sm border-b border-wheat-200/80 scroll-mt-14 relative">
         <div className="max-w-6xl mx-auto px-4 sm:px-6 lg:px-8 space-y-12">
           {/* Heading */}
           <div className={`text-center max-w-2xl mx-auto space-y-3 transition-all duration-700 ${
@@ -793,10 +801,10 @@ export default function Landing() {
 
           {/* 4 Impact Telemetry Cards */}
           <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-4 sm:gap-6">
-            <div className={`bg-white border border-wheat-200 rounded-2xl p-6 space-y-2 shadow-2xs hover:shadow-md transition-all duration-700 ${
+            <div className={`glass-card glass-card-hover rounded-2xl p-6 space-y-2 shadow-2xs transition-all duration-700 ${
               impactVisible ? "opacity-100 translate-y-0" : "opacity-0 translate-y-6"
             }`}>
-              <div className="w-8 h-8 rounded-lg bg-emerald-50 text-emerald-700 flex items-center justify-center mb-1">
+              <div className="w-8 h-8 rounded-lg bg-emerald-100/80 backdrop-blur-sm text-emerald-700 flex items-center justify-center mb-1">
                 <Leaf className="w-4 h-4" />
               </div>
               <span className="text-[10px] uppercase font-mono tracking-wider text-forest-800/50 block font-semibold">
@@ -810,10 +818,10 @@ export default function Landing() {
               </p>
             </div>
 
-            <div className={`bg-white border border-wheat-200 rounded-2xl p-6 space-y-2 shadow-2xs hover:shadow-md transition-all duration-700 delay-100 ${
+            <div className={`glass-card glass-card-hover rounded-2xl p-6 space-y-2 shadow-2xs transition-all duration-700 delay-100 ${
               impactVisible ? "opacity-100 translate-y-0" : "opacity-0 translate-y-6"
             }`}>
-              <div className="w-8 h-8 rounded-lg bg-forest-50 text-forest-700 flex items-center justify-center mb-1">
+              <div className="w-8 h-8 rounded-lg bg-forest-100/80 backdrop-blur-sm text-forest-700 flex items-center justify-center mb-1">
                 <Truck className="w-4 h-4" />
               </div>
               <span className="text-[10px] uppercase font-mono tracking-wider text-forest-800/50 block font-semibold">
@@ -827,10 +835,10 @@ export default function Landing() {
               </p>
             </div>
 
-            <div className={`bg-white border border-wheat-200 rounded-2xl p-6 space-y-2 shadow-2xs hover:shadow-md transition-all duration-700 delay-200 ${
+            <div className={`glass-card glass-card-hover rounded-2xl p-6 space-y-2 shadow-2xs transition-all duration-700 delay-200 ${
               impactVisible ? "opacity-100 translate-y-0" : "opacity-0 translate-y-6"
             }`}>
-              <div className="w-8 h-8 rounded-lg bg-amber-50 text-amber-700 flex items-center justify-center mb-1">
+              <div className="w-8 h-8 rounded-lg bg-amber-100/80 backdrop-blur-sm text-amber-700 flex items-center justify-center mb-1">
                 <Activity className="w-4 h-4" />
               </div>
               <span className="text-[10px] uppercase font-mono tracking-wider text-forest-800/50 block font-semibold">
@@ -844,10 +852,10 @@ export default function Landing() {
               </p>
             </div>
 
-            <div className={`bg-white border border-wheat-200 rounded-2xl p-6 space-y-2 shadow-2xs hover:shadow-md transition-all duration-700 delay-300 ${
+            <div className={`glass-card glass-card-hover rounded-2xl p-6 space-y-2 shadow-2xs transition-all duration-700 delay-300 ${
               impactVisible ? "opacity-100 translate-y-0" : "opacity-0 translate-y-6"
             }`}>
-              <div className="w-8 h-8 rounded-lg bg-gold-50 text-gold-700 flex items-center justify-center mb-1">
+              <div className="w-8 h-8 rounded-lg bg-gold-100/80 backdrop-blur-sm text-gold-700 flex items-center justify-center mb-1">
                 <TrendingUp className="w-4 h-4" />
               </div>
               <span className="text-[10px] uppercase font-mono tracking-wider text-forest-800/50 block font-semibold">
@@ -871,7 +879,7 @@ export default function Landing() {
         <div className={`max-w-4xl mx-auto px-4 sm:px-6 lg:px-8 space-y-4 relative z-10 transition-all duration-700 ${
           statementVisible ? "opacity-100 scale-100" : "opacity-0 scale-95"
         }`}>
-          <div className="w-10 h-10 rounded-full bg-emerald-500/20 text-emerald-300 border border-emerald-400/30 flex items-center justify-center mx-auto mb-2">
+          <div className="w-10 h-10 rounded-full glass-forest text-emerald-300 flex items-center justify-center mx-auto mb-2">
             <Leaf className="w-5 h-5" />
           </div>
 
@@ -888,8 +896,9 @@ export default function Landing() {
       {/* ------------------------------------------------------------- */}
       {/* 11. FINAL CTA                                                 */}
       {/* ------------------------------------------------------------- */}
-      <section ref={ctaRef} className="py-16 sm:py-24 bg-white border-b border-wheat-200">
-        <div className={`max-w-3xl mx-auto px-4 sm:px-6 lg:px-8 text-center space-y-6 transition-all duration-700 ${
+      <section ref={ctaRef} className="py-16 sm:py-24 bg-white/60 backdrop-blur-md border-b border-wheat-200/80 relative">
+        <div aria-hidden="true" className="pointer-events-none absolute top-1/2 left-1/2 -translate-x-1/2 -translate-y-1/2 w-96 h-96 bg-emerald-400/15 rounded-full blur-3xl" />
+        <div className={`max-w-3xl mx-auto px-4 sm:px-6 lg:px-8 text-center space-y-6 relative z-10 transition-all duration-700 ${
           ctaVisible ? "opacity-100 translate-y-0" : "opacity-0 translate-y-6"
         }`}>
           <h2 className="font-display text-3xl sm:text-4xl lg:text-5xl font-bold text-forest-800 tracking-tight">
@@ -903,7 +912,7 @@ export default function Landing() {
           <div className="pt-2">
             <Link
               to="/register"
-              className="inline-flex items-center justify-center gap-2 px-8 py-4 bg-forest-800 text-wheat-50 font-bold text-sm sm:text-base rounded-xl hover:bg-forest-700 shadow-md transition-all active:scale-[0.99]"
+              className="inline-flex items-center justify-center gap-2 px-8 py-4 bg-forest-800 text-wheat-50 font-bold text-sm sm:text-base rounded-xl hover:bg-forest-700 shadow-md hover:shadow-xl transition-all active:scale-[0.99]"
             >
               <span>Get Started</span>
               <ArrowRight className="w-4 h-4" />

@@ -72,12 +72,12 @@ export default function Layout({ children }) {
       {/* ------------------------------------------------------------- */}
       {/* MOBILE STICKY TOPBAR (< 1024px)                               */}
       {/* ------------------------------------------------------------- */}
-      <header className="lg:hidden sticky top-0 z-40 bg-forest-800 text-wheat-100 px-4 sm:px-6 py-3 flex items-center justify-between border-b border-forest-600/60 shadow-md">
+      <header className="lg:hidden sticky top-0 z-40 bg-forest-900/90 backdrop-blur-xl text-wheat-100 px-4 sm:px-6 py-3 flex items-center justify-between border-b border-forest-600/50 shadow-md">
         <div className="flex items-center gap-2.5 sm:gap-3 min-w-0">
           <button
             type="button"
             onClick={() => setMobileMenuOpen(true)}
-            className="w-10 h-10 min-w-[40px] flex items-center justify-center rounded-xl text-wheat-100 hover:bg-forest-700 active:bg-forest-600 transition-colors"
+            className="w-10 h-10 min-w-[40px] flex items-center justify-center rounded-xl text-wheat-100 hover:bg-forest-700/80 active:bg-forest-600 transition-colors"
             aria-label="Open navigation menu"
             aria-expanded={mobileMenuOpen}
           >
@@ -94,7 +94,7 @@ export default function Layout({ children }) {
         </div>
 
         <div className="flex items-center gap-2 shrink-0">
-          <span className="px-2.5 py-1 rounded-full text-[10px] sm:text-[11px] font-mono capitalize bg-forest-700/90 text-wheat-100 border border-forest-600/50">
+          <span className="px-2.5 py-1 rounded-full text-[10px] sm:text-[11px] font-mono capitalize glass-pill-dark text-wheat-100">
             {user?.role}
           </span>
           <button
@@ -113,14 +113,14 @@ export default function Layout({ children }) {
       {/* ------------------------------------------------------------- */}
       {mobileMenuOpen && (
         <div
-          className="lg:hidden fixed inset-0 bg-black/60 backdrop-blur-sm z-40 transition-opacity animate-in fade-in duration-200"
+          className="lg:hidden fixed inset-0 bg-forest-950/60 backdrop-blur-md z-40 transition-opacity animate-in fade-in duration-200"
           onClick={() => setMobileMenuOpen(false)}
           aria-hidden="true"
         />
       )}
 
       <aside
-        className={`lg:hidden fixed inset-y-0 left-0 z-50 w-72 max-w-[85vw] bg-forest-800 text-wheat-100 flex flex-col shadow-2xl transition-transform duration-300 ease-in-out pb-safe ${
+        className={`lg:hidden fixed inset-y-0 left-0 z-50 w-72 max-w-[85vw] glass-forest text-wheat-100 flex flex-col shadow-2xl transition-transform duration-300 ease-in-out pb-safe border-r border-white/15 ${
           mobileMenuOpen ? "translate-x-0" : "-translate-x-full"
         }`}
         aria-label="Mobile Navigation"
@@ -145,9 +145,9 @@ export default function Layout({ children }) {
         </div>
 
         {/* User Badge in Drawer */}
-        <div className="px-5 py-4 bg-forest-900/60 border-b border-forest-600/40">
+        <div className="px-5 py-4 bg-black/20 backdrop-blur-sm border-b border-forest-600/40">
           <div className="flex items-center gap-2.5">
-            <div className="w-8 h-8 rounded-full bg-forest-700 flex items-center justify-center text-wheat-100 shrink-0">
+            <div className="w-8 h-8 rounded-full bg-forest-700/90 flex items-center justify-center text-wheat-100 shrink-0 border border-forest-600/50">
               {user?.role === "business" ? (
                 <Building2 className="w-4 h-4 text-forest-100" />
               ) : (
@@ -171,10 +171,10 @@ export default function Layout({ children }) {
                 to={l.to}
                 onClick={() => setMobileMenuOpen(false)}
                 className={({ isActive }) =>
-                  `flex items-center gap-3 px-3.5 py-3 rounded-lg text-sm font-medium transition-all ${
+                  `flex items-center gap-3 px-3.5 py-3 rounded-xl text-sm font-medium transition-all ${
                     isActive
-                      ? "bg-forest-600 text-white shadow-sm"
-                      : "text-wheat-100/80 hover:bg-forest-600/40 hover:text-white"
+                      ? "bg-white/15 backdrop-blur-sm text-white border border-white/20 shadow-sm"
+                      : "text-wheat-100/80 hover:bg-white/10 hover:text-white"
                   }`
                 }
               >
@@ -201,7 +201,7 @@ export default function Layout({ children }) {
       {/* ------------------------------------------------------------- */}
       {/* DESKTOP PERMANENT SIDEBAR (>= 1024px)                         */}
       {/* ------------------------------------------------------------- */}
-      <aside className="hidden lg:flex w-64 shrink-0 bg-forest-800 text-wheat-100 flex-col sticky top-0 h-screen overflow-y-auto border-r border-forest-700/50 shadow-lg">
+      <aside className="hidden lg:flex w-64 shrink-0 bg-forest-900/90 backdrop-blur-2xl text-wheat-100 flex-col sticky top-0 h-screen overflow-y-auto border-r border-forest-700/60 shadow-xl">
         {/* Brand */}
         <div className="px-6 py-7 border-b border-forest-600/60">
           <p className="font-display italic text-2xl leading-tight font-semibold">
@@ -213,9 +213,9 @@ export default function Layout({ children }) {
         </div>
 
         {/* User Summary */}
-        <div className="px-6 py-4 bg-forest-900/50 border-b border-forest-600/40">
+        <div className="px-6 py-4 bg-black/20 backdrop-blur-sm border-b border-forest-600/40">
           <div className="flex items-center gap-3">
-            <div className="w-9 h-9 rounded-full bg-forest-700 flex items-center justify-center text-wheat-100 shrink-0 border border-forest-600">
+            <div className="w-9 h-9 rounded-full bg-forest-700/90 flex items-center justify-center text-wheat-100 shrink-0 border border-forest-600/50 shadow-2xs">
               {user?.role === "business" ? (
                 <Building2 className="w-4.5 h-4.5 text-forest-100" />
               ) : (
@@ -238,10 +238,10 @@ export default function Layout({ children }) {
                 key={l.to}
                 to={l.to}
                 className={({ isActive }) =>
-                  `flex items-center gap-3 px-3.5 py-3 rounded-lg text-sm font-medium transition-all ${
+                  `flex items-center gap-3 px-3.5 py-3 rounded-xl text-sm font-medium transition-all ${
                     isActive
-                      ? "bg-forest-600 text-white shadow-sm font-semibold"
-                      : "text-wheat-100/80 hover:bg-forest-600/40 hover:text-white"
+                      ? "bg-white/15 backdrop-blur-md text-white shadow-sm font-semibold border border-white/20"
+                      : "text-wheat-100/80 hover:bg-white/10 hover:text-white"
                   }`
                 }
               >
@@ -254,10 +254,10 @@ export default function Layout({ children }) {
         </nav>
 
         {/* Desktop Footer */}
-        <div className="mt-auto px-6 py-5 border-t border-forest-600/60 bg-forest-900/30">
+        <div className="mt-auto px-6 py-5 border-t border-forest-600/60 bg-black/20 backdrop-blur-sm">
           <button
             onClick={handleSignOut}
-            className="w-full flex items-center justify-center gap-2 px-3 py-2 rounded-md text-xs uppercase tracking-wider font-semibold text-tomato-400 hover:text-tomato-300 hover:bg-forest-700/50 transition-colors"
+            className="w-full flex items-center justify-center gap-2 px-3 py-2 rounded-xl text-xs uppercase tracking-wider font-semibold text-tomato-400 hover:text-tomato-300 hover:bg-forest-700/50 transition-colors"
           >
             <LogOut className="w-3.5 h-3.5" />
             Sign Out

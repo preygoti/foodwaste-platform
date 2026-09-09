@@ -18,10 +18,10 @@ export default function CsrCertificateModal({ isOpen, onClose, metrics, user }) 
   };
 
   return (
-    <div className="fixed inset-0 z-50 flex items-center justify-center p-4 bg-black/70 backdrop-blur-sm overflow-y-auto print:p-0 print:bg-white print:static">
-      <div className="relative w-full max-w-3xl bg-white border border-wheat-300 rounded-2xl shadow-2xl overflow-hidden my-8 print:my-0 print:border-0 print:shadow-none print:w-full">
+    <div className="fixed inset-0 z-50 flex items-center justify-center p-4 bg-forest-950/65 backdrop-blur-md overflow-y-auto print:p-0 print:bg-white print:static">
+      <div className="relative w-full max-w-3xl glass-modal rounded-2xl shadow-2xl overflow-hidden my-8 print:my-0 print:border-0 print:shadow-none print:w-full">
         {/* Actions bar (Hidden in Print) */}
-        <div className="flex items-center justify-between px-6 py-3.5 bg-forest-800 text-wheat-50 print:hidden">
+        <div className="flex items-center justify-between px-6 py-3.5 bg-gradient-to-r from-forest-900/95 to-forest-800/95 backdrop-blur-md text-wheat-50 print:hidden">
           <div className="flex items-center gap-2">
             <Award className="w-5 h-5 text-amber-300" />
             <span className="font-semibold text-sm">Official Food Rescue &amp; CSR Compliance Certificate</span>

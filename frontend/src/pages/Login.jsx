@@ -26,8 +26,13 @@ export default function Login() {
   };
 
   return (
-    <div className="min-h-[100dvh] bg-wheat-50 flex flex-col justify-center items-center px-4 sm:px-6 py-8 sm:py-12 text-forest-800 pt-safe pb-safe">
-      <div className="w-full max-w-md space-y-6">
+    <div className="min-h-[100dvh] bg-wheat-50 flex flex-col justify-center items-center px-4 sm:px-6 py-8 sm:py-12 text-forest-800 pt-safe pb-safe relative overflow-hidden">
+      {/* Ambient background light orbs for frosted glass refractions */}
+      <div aria-hidden="true" className="pointer-events-none absolute -top-10 -left-10 w-96 h-96 bg-emerald-400/20 rounded-full blur-3xl animate-mesh-pulse" />
+      <div aria-hidden="true" className="pointer-events-none absolute -bottom-10 -right-10 w-96 h-96 bg-gold-400/25 rounded-full blur-3xl animate-mesh-pulse-delayed" />
+      <div aria-hidden="true" className="pointer-events-none absolute top-1/2 left-1/2 -translate-x-1/2 -translate-y-1/2 w-80 h-80 bg-tomato-400/10 rounded-full blur-3xl" />
+
+      <div className="w-full max-w-md space-y-6 relative z-10">
         <div className="text-center">
           <Link to="/" className="font-display italic text-3xl sm:text-4xl text-forest-800 font-bold block mb-1">
             Harvest&nbsp;Ledger
@@ -37,7 +42,7 @@ export default function Login() {
           </p>
         </div>
 
-        <div className="bg-white border border-wheat-200 rounded-2xl shadow-sm p-6 sm:p-8 space-y-6">
+        <div className="glass-modal rounded-2xl p-6 sm:p-8 space-y-6">
           <h1 className="font-display text-xl sm:text-2xl text-forest-800 font-semibold">
             Welcome Back
           </h1>

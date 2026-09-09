@@ -45,10 +45,10 @@ export default function PickupQrModal({ isOpen, onClose, pickup }) {
   };
 
   return (
-    <div className="fixed inset-0 z-50 flex items-center justify-center p-3 sm:p-4 bg-black/60 backdrop-blur-md overflow-y-auto print:p-0 print:bg-white print:static animate-in fade-in duration-200">
-      <div className="relative bg-white border border-wheat-300 rounded-2xl w-full max-w-lg shadow-2xl overflow-hidden my-auto animate-in fade-in zoom-in-95 duration-150 print:max-w-none print:shadow-none print:border-0 print:w-full">
+    <div className="fixed inset-0 z-50 flex items-center justify-center p-3 sm:p-4 bg-forest-950/65 backdrop-blur-md overflow-y-auto print:p-0 print:bg-white print:static animate-in fade-in duration-200">
+      <div className="relative glass-modal rounded-2xl w-full max-w-lg shadow-2xl overflow-hidden my-auto animate-in fade-in zoom-in-95 duration-150 print:max-w-none print:shadow-none print:border-0 print:w-full">
         {/* Compact Header */}
-        <div className="px-4 sm:px-5 py-3 bg-gradient-to-r from-forest-900 via-forest-800 to-forest-800 text-wheat-50 flex items-center justify-between shrink-0">
+        <div className="px-4 sm:px-5 py-3 bg-gradient-to-r from-forest-900/95 via-forest-800/95 to-forest-800/95 backdrop-blur-md text-wheat-50 flex items-center justify-between shrink-0">
           <div className="flex items-center gap-2">
             <div className="p-1 rounded-md bg-emerald-500/20 text-emerald-300 border border-emerald-400/30">
               <ShieldCheck className="w-4 h-4" />

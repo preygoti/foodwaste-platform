@@ -189,10 +189,10 @@ export default function AiVisionScannerModal({ isOpen, onClose, onAutofill }) {
   };
 
   return (
-    <div className="fixed inset-0 z-50 flex items-center justify-center p-3 sm:p-4 bg-black/70 backdrop-blur-md overflow-y-auto animate-in fade-in duration-200">
-      <div className="bg-white border border-wheat-200 rounded-2xl w-full max-w-xl shadow-2xl overflow-hidden animate-in fade-in zoom-in-95 duration-200 flex flex-col max-h-[94vh] my-auto">
+    <div className="fixed inset-0 z-50 flex items-center justify-center p-3 sm:p-4 bg-forest-950/65 backdrop-blur-md overflow-y-auto animate-in fade-in duration-200">
+      <div className="glass-modal rounded-2xl w-full max-w-xl shadow-2xl overflow-hidden animate-in fade-in zoom-in-95 duration-200 flex flex-col max-h-[94vh] my-auto border border-white/80">
         {/* Header */}
-        <div className="p-4 sm:p-5 border-b border-wheat-100 flex items-center justify-between bg-gradient-to-r from-forest-900 to-forest-800 text-wheat-50 shrink-0">
+        <div className="p-4 sm:p-5 border-b border-wheat-200/50 flex items-center justify-between bg-gradient-to-r from-forest-900/95 to-forest-800/95 backdrop-blur-md text-wheat-50 shrink-0">
           <div className="flex items-center gap-2.5">
             <div className="w-10 h-10 rounded-xl bg-gold-400 text-forest-900 flex items-center justify-center shadow-sm shrink-0">
               <Sparkles className="w-5 h-5" />
