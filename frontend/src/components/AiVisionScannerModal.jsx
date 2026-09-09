@@ -22,6 +22,7 @@ import {
   HeartHandshake,
   Info,
 } from "lucide-react";
+import LocationAutocompleteInput from "./LocationAutocompleteInput";
 import { api } from "../api";
 
 const CATEGORIES = [
@@ -64,7 +65,7 @@ export default function AiVisionScannerModal({ isOpen, onClose, onAutofill }) {
   const [editedQty, setEditedQty] = useState("10");
   const [editedUnit, setEditedUnit] = useState("kg");
   const [editedExpiry, setEditedExpiry] = useState("");
-  const [editedStorage, setEditedStorage] = useState("");
+  const [editedLocation, setEditedLocation] = useState("");
 
   const videoRef = useRef(null);
   const streamRef = useRef(null);
@@ -146,7 +147,7 @@ export default function AiVisionScannerModal({ isOpen, onClose, onAutofill }) {
       setEditedQty(String(data.estimated_quantity || 10));
       setEditedUnit(data.unit || "kg");
       setEditedExpiry(data.estimated_expiry_date || "");
-      setEditedStorage(data.suggested_storage || "");
+      setEditedLocation("");
     } catch (err) {
       setError(err.message || "Failed to analyze food image with AI vision.");
     } finally {
@@ -160,7 +161,6 @@ export default function AiVisionScannerModal({ isOpen, onClose, onAutofill }) {
     setEditedCategory(alt.category || editedCategory);
     if (alt.unit) setEditedUnit(alt.unit);
     if (alt.estimated_quantity) setEditedQty(String(alt.estimated_quantity));
-    if (alt.suggested_storage) setEditedStorage(alt.suggested_storage);
     if (alt.estimated_days_to_expiry) {
       const targetDate = new Date();
       targetDate.setDate(targetDate.getDate() + Number(alt.estimated_days_to_expiry));
@@ -182,7 +182,7 @@ export default function AiVisionScannerModal({ isOpen, onClose, onAutofill }) {
       quantity: editedQty,
       unit: editedUnit,
       expiry_date: editedExpiry,
-      storage_location: editedStorage,
+      storage_location: editedLocation || "",
       avg_daily_usage: "2",
     });
     onClose();
@@ -558,18 +558,20 @@ export default function AiVisionScannerModal({ isOpen, onClose, onAutofill }) {
                     </div>
                   </div>
 
-                  {/* Storage Advice */}
+                  {/* Physical Location Selection (City & State) */}
                   <div className="bg-wheat-50 p-3 rounded-xl border border-wheat-200 text-xs">
-                    <div className="flex items-center gap-1.5 text-forest-800/60 font-mono text-[10px] uppercase mb-1">
-                      <ThermometerSnowflake className="w-3.5 h-3.5 text-forest-600" />
-                      <span>Recommended Storage Condition</span>
-                    </div>
-                    <input
-                      type="text"
-                      value={editedStorage}
-                      onChange={(e) => setEditedStorage(e.target.value)}
-                      className="w-full text-xs font-medium text-forest-900 bg-white border border-wheat-300 rounded-lg px-2.5 py-1.5 focus:outline-none focus:ring-1 focus:ring-forest-400"
+                    <LocationAutocompleteInput
+                      label="Store / Warehouse Location (City, State)"
+                      placeholder="e.g. Surat, Gujarat (or type manually)"
+                      value={editedLocation}
+                      onChange={setEditedLocation}
                     />
+                    {result.suggested_storage && (
+                      <div className="mt-2.5 pt-2 border-t border-wheat-200/80 flex items-center gap-1.5 text-[11px] text-forest-800/80 font-mono">
+                        <ThermometerSnowflake className="w-3.5 h-3.5 text-forest-600 shrink-0" />
+                        <span>AI Climate Advice: <strong className="text-forest-900">{result.suggested_storage}</strong></span>
+                      </div>
+                    )}
                   </div>
 
                   {/* Deep 360° Food Intelligence Panel */}
