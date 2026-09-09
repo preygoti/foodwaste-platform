@@ -1,4 +1,4 @@
-import { useRef } from "react";
+import { useEffect, useRef } from "react";
 import {
   FileText,
   Printer,
@@ -11,12 +11,23 @@ import {
   DollarSign,
   Leaf,
   CheckCircle2,
+  ArrowLeft,
 } from "lucide-react";
 import { useAuth } from "../AuthContext";
 
 export default function EsgTaxReportModal({ isOpen, onClose, analytics }) {
   const { user } = useAuth();
   const reportRef = useRef(null);
+
+  // Support ESC key to dismiss modal
+  useEffect(() => {
+    if (!isOpen) return;
+    const handleKeyDown = (e) => {
+      if (e.key === "Escape") onClose();
+    };
+    window.addEventListener("keydown", handleKeyDown);
+    return () => window.removeEventListener("keydown", handleKeyDown);
+  }, [isOpen, onClose]);
 
   if (!isOpen) return null;
 
@@ -45,33 +56,43 @@ export default function EsgTaxReportModal({ isOpen, onClose, analytics }) {
   }
 
   return (
-    <div className="fixed inset-0 z-50 flex items-center justify-center p-4 bg-forest-950/65 backdrop-blur-md overflow-y-auto print:p-0 print:bg-white print:static animate-in fade-in duration-200">
-      <div className="glass-modal rounded-2xl w-full max-w-2xl shadow-2xl overflow-hidden animate-in fade-in zoom-in-95 duration-200 flex flex-col max-h-[92vh] my-8 print:my-0 print:border-0 print:shadow-none">
+    <div className="fixed inset-0 z-50 flex items-center justify-center p-2 sm:p-4 bg-forest-950/65 backdrop-blur-md overflow-y-auto print:p-0 print:bg-white print:static animate-in fade-in duration-200">
+      <div className="glass-modal rounded-2xl w-full max-w-2xl shadow-2xl overflow-hidden animate-in fade-in zoom-in-95 duration-200 flex flex-col max-h-[94vh] sm:max-h-[92vh] my-auto print:my-0 print:border-0 print:shadow-none">
         {/* Header (Hidden when printing) */}
-        <div className="p-4 sm:p-5 border-b border-wheat-200/60 flex items-center justify-between bg-wheat-50/70 backdrop-blur-sm print:hidden">
-          <div className="flex items-center gap-2.5">
-            <div className="w-9 h-9 rounded-xl bg-forest-800 text-gold-400 flex items-center justify-center shadow-2xs">
-              <FileText className="w-5 h-5" />
+        <div className="p-3.5 sm:p-5 border-b border-wheat-200/60 flex items-center justify-between bg-wheat-50/70 backdrop-blur-sm print:hidden shrink-0 gap-2">
+          <div className="flex items-center gap-2 sm:gap-2.5 min-w-0">
+            <button
+              onClick={onClose}
+              className="inline-flex items-center gap-1.5 px-2.5 py-1.5 rounded-lg bg-forest-800/10 hover:bg-forest-800/20 active:bg-forest-800/30 text-forest-800 font-medium text-xs transition-colors shrink-0"
+              title="Back / Close (Esc)"
+              aria-label="Back to Dashboard"
+            >
+              <ArrowLeft className="w-4 h-4" />
+              <span className="hidden sm:inline">Back</span>
+            </button>
+            <div className="w-8 h-8 sm:w-9 sm:h-9 rounded-xl bg-forest-800 text-gold-400 flex items-center justify-center shadow-2xs shrink-0">
+              <FileText className="w-4 h-4 sm:w-5 sm:h-5" />
             </div>
-            <div>
-              <h3 className="font-display font-semibold text-forest-800 text-base sm:text-lg">
-                Official ESG Tax Deduction &amp; Audit Statement
+            <div className="min-w-0">
+              <h3 className="font-display font-semibold text-forest-800 text-xs sm:text-base truncate">
+                ESG Tax Deduction Statement
               </h3>
-              <p className="text-[11px] text-forest-800/60 font-mono">
-                CSR Compliance &bull; Section 80G / IRS 170(e)(3) Food Rescue Benefit
+              <p className="text-[10px] sm:text-[11px] text-forest-800/60 font-mono truncate">
+                CSR Compliance &bull; Section 80G / IRS 170(e)(3)
               </p>
             </div>
           </div>
           <button
             onClick={onClose}
-            className="text-forest-800/40 hover:text-forest-800 p-1.5 rounded-lg"
+            className="text-forest-800/50 hover:text-forest-800 p-1.5 rounded-lg hover:bg-wheat-200/50 transition-colors shrink-0"
+            title="Close (Esc)"
           >
             <X className="w-5 h-5" />
           </button>
         </div>
 
         {/* Printable Audit Statement Sheet */}
-        <div ref={reportRef} className="p-6 sm:p-8 overflow-y-auto space-y-6 text-forest-900 bg-white">
+        <div ref={reportRef} className="p-4 sm:p-8 overflow-y-auto space-y-6 text-forest-900 bg-white flex-1">
           {/* Certificate Top Banner */}
           <div className="border-b-2 border-forest-800 pb-4 flex flex-col sm:flex-row sm:items-center justify-between gap-4">
             <div>
