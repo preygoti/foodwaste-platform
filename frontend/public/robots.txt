@@ -7,6 +7,8 @@ Allow: /forgot-password
 Allow: /og-image.png
 Allow: /hero.png
 Allow: /logo.png
+Allow: /founder*
+Allow: /prey-goti*
 Allow: /favicon*
 Allow: /apple-touch-icon.png
 Disallow: /dashboard/
