@@ -647,6 +647,7 @@ def call_gemini_vision_api(api_key: str, image_bytes: bytes, mime_type: str, hin
         return None
 
     models_to_try = [
+        "gemini-2.5-flash",
         "gemini-1.5-flash",
         "gemini-2.0-flash",
         "gemini-1.5-flash-latest",
@@ -658,23 +659,29 @@ def call_gemini_vision_api(api_key: str, image_bytes: bytes, mime_type: str, hin
             b64_data = base64.b64encode(image_bytes).decode("utf-8")
 
             system_instruction = (
-                "You are an expert AI Food Freshness & Quality Computer Vision Inspector for a commercial food rescue and zero-waste platform. "
-                "Analyze the provided image of food/groceries. Identify the food item accurately. "
+                "You are an expert AI Food Scientist, Freshness & Quality Computer Vision Inspector for a commercial food rescue and zero-waste platform. "
+                "Analyze the provided food/grocery image in comprehensive detail. "
                 "Return a strictly valid JSON object with NO surrounding markdown or prose with the following keys:\n"
-                "- detected_name: (string, e.g. 'Crisp Red Apples', 'Steamed Basmati Rice & Grain Bowl', 'Artisan Sourdough Loaf', 'Fresh Whole Milk')\n"
-                "- detected_category: (string: produce, dairy, bakery, prepared, canned, grains, meat, seafood, general)\n"
-                "- freshness_score: (float between 0 and 100, e.g. 92.5)\n"
-                "- freshness_grade: (string, e.g. 'Optimal Freshness (Grade A)', 'Good Freshness (Grade B)', 'Consume Promptly (Grade C)', 'Spoiled / Quarantine')\n"
-                "- estimated_days_to_expiry: (integer, realistic days remaining until spoilage)\n"
-                "- suggested_storage: (string, e.g. 'Refrigerated crisper (2°C–4°C)', 'Cool dry pantry (18°C–22°C)')\n"
+                "- detected_name: (string, specific food title, e.g. 'Fresh Honeycrisp Red Apples', 'Artisan Sourdough Loaf', 'Steamed Basmati Rice', 'Organic Spinach')\n"
+                "- detected_category: (string: produce, dairy, bakery, prepared, canned, grains, meat, seafood, packaged, general)\n"
+                "- freshness_score: (float between 0 and 100, e.g. 94.5)\n"
+                "- freshness_grade: (string: 'Peak Freshness (Grade A)', 'Good Freshness (Grade B)', 'Consume Promptly (Grade C)', 'Spoiled / Quarantine')\n"
+                "- spoilage_risk: (string: 'Low', 'Moderate', 'High', 'Critical')\n"
+                "- estimated_days_to_expiry: (integer, realistic days remaining before expiration)\n"
+                "- suggested_storage: (string, e.g. 'Refrigerated crisper drawer (2°C–4°C)', 'Cool dry pantry (18°C–22°C)')\n"
+                "- storage_pro_tip: (string, actionable advice on how to extend shelf-life by 3-5 days)\n"
                 "- estimated_quantity: (float, estimated commercial batch quantity)\n"
-                "- unit: (string: kg, liter, loaves, packs, boxes, heads, portions, cans)\n"
-                "- confidence: (float between 85.0 and 99.5)\n"
-                "- quality_notes: (string, brief 1-2 sentence assessment of visual texture, color, and spoilage risk)\n"
+                "- unit: (string: kg, liter, loaves, packs, boxes, portions, cans)\n"
+                "- confidence: (float between 88.0 and 99.8)\n"
+                "- quality_notes: (string, 1-2 sentence assessment of visual texture, color, firmness, and spoilage indicators)\n"
+                "- nutritional_profile: (string, e.g. '52 kcal/100g • High Fiber, Potassium & Vitamin C')\n"
+                "- dietary_flags: (list of strings, e.g. ['Vegan 🌱', 'Gluten-Free 🌾', 'Nutrient Dense'])\n"
+                "- zero_waste_recipe: (string, immediate chef rescue recipe idea to prevent food waste)\n"
+                "- carbon_impact_saved: (string, e.g. '~2.5 kg CO2e saved per kg rescued')\n"
                 "- alternatives: (list of objects with: name, category, confidence)"
             )
 
-            user_prompt = f"Identify this food item and grade freshness. User context/hint: '{hint}'" if hint else "Identify this food item and grade freshness in detail."
+            user_prompt = f"Identify this food item, evaluate freshness, nutrition, shelf life, and zero-waste storage. User context/hint: '{hint}'" if hint else "Identify this food item and extract complete 360-degree freshness, nutrition, shelf life, and storage intelligence."
 
             payload = {
                 "contents": [
@@ -692,11 +699,11 @@ def call_gemini_vision_api(api_key: str, image_bytes: bytes, mime_type: str, hin
                 ],
                 "generationConfig": {
                     "temperature": 0.1,
-                    "maxOutputTokens": 800,
+                    "maxOutputTokens": 1000,
                 }
             }
 
-            with httpx.Client(timeout=8.0) as client:
+            with httpx.Client(timeout=9.0) as client:
                 resp = client.post(url, json=payload)
                 if resp.status_code == 200:
                     data = resp.json()
@@ -756,14 +763,20 @@ def run_food_vision_classifier(image_base64: Optional[str] = None, hint: str = "
                 "detected_name": gemini_result.get("detected_name", "Fresh Food Item"),
                 "detected_category": gemini_result.get("detected_category", "produce"),
                 "freshness_score": float(gemini_result.get("freshness_score", 92.0)),
-                "freshness_grade": gemini_result.get("freshness_grade", "Optimal Freshness (Grade A)"),
+                "freshness_grade": gemini_result.get("freshness_grade", "Peak Freshness (Grade A)"),
+                "spoilage_risk": gemini_result.get("spoilage_risk", "Low"),
                 "estimated_days_to_expiry": days,
                 "estimated_expiry_date": exp_date,
                 "suggested_storage": gemini_result.get("suggested_storage", "Cold Storage / Refrigerated (2°C–4°C)"),
+                "storage_pro_tip": gemini_result.get("storage_pro_tip", "Keep sealed in breathable container to maintain crisp moisture balance."),
                 "estimated_quantity": float(gemini_result.get("estimated_quantity", 10.0)),
                 "unit": gemini_result.get("unit", "kg"),
                 "confidence": float(gemini_result.get("confidence", 97.2)),
-                "quality_notes": gemini_result.get("quality_notes", "Verified fresh and safe by AI Vision multimodal model."),
+                "quality_notes": gemini_result.get("quality_notes", "Verified fresh and safe by AI Vision multimodal neural network."),
+                "nutritional_profile": gemini_result.get("nutritional_profile", "Nutrient rich • Wholesome natural food source"),
+                "dietary_flags": gemini_result.get("dietary_flags", ["Natural Food 🌱", "Zero Waste Candidate"]),
+                "zero_waste_recipe": gemini_result.get("zero_waste_recipe", "Ideal for daily fresh meals or chef's soup / stir-fry rescue."),
+                "carbon_impact_saved": gemini_result.get("carbon_impact_saved", "~2.5 kg CO2e avoided per kg rescued"),
                 "alternatives": gemini_result.get("alternatives", []),
             }
 

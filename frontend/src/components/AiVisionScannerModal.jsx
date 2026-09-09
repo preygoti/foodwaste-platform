@@ -15,6 +15,12 @@ import {
   Sliders,
   Tag,
   Zap,
+  Leaf,
+  Utensils,
+  ShieldCheck,
+  Flame,
+  HeartHandshake,
+  Info,
 } from "lucide-react";
 import { api } from "../api";
 
@@ -565,6 +571,67 @@ export default function AiVisionScannerModal({ isOpen, onClose, onAutofill }) {
                       className="w-full text-xs font-medium text-forest-900 bg-white border border-wheat-300 rounded-lg px-2.5 py-1.5 focus:outline-none focus:ring-1 focus:ring-forest-400"
                     />
                   </div>
+
+                  {/* Deep 360° Food Intelligence Panel */}
+                  <div className="grid grid-cols-1 sm:grid-cols-2 gap-2.5">
+                    {/* Pro Shelf-Life Extension Tip */}
+                    {result.storage_pro_tip && (
+                      <div className="bg-emerald-50/80 p-3 rounded-xl border border-emerald-200 text-xs space-y-1">
+                        <div className="flex items-center gap-1.5 text-emerald-900 font-mono text-[10px] font-bold uppercase">
+                          <Leaf className="w-3.5 h-3.5 text-emerald-600 shrink-0" />
+                          <span>Shelf-Life Pro-Tip (+3-5 Days)</span>
+                        </div>
+                        <p className="text-[11px] text-emerald-950 leading-relaxed font-medium">
+                          {result.storage_pro_tip}
+                        </p>
+                      </div>
+                    )}
+
+                    {/* Nutrition & Dietary Profile */}
+                    {result.nutritional_profile && (
+                      <div className="bg-sky-50/80 p-3 rounded-xl border border-sky-200 text-xs space-y-1">
+                        <div className="flex items-center gap-1.5 text-sky-900 font-mono text-[10px] font-bold uppercase">
+                          <Zap className="w-3.5 h-3.5 text-sky-600 shrink-0" />
+                          <span>Nutritional &amp; Health Profile</span>
+                        </div>
+                        <p className="text-[11px] text-sky-950 leading-relaxed font-medium">
+                          {result.nutritional_profile}
+                        </p>
+                        {result.dietary_flags && result.dietary_flags.length > 0 && (
+                          <div className="flex flex-wrap items-center gap-1 pt-1">
+                            {result.dietary_flags.map((flag, i) => (
+                              <span
+                                key={i}
+                                className="bg-sky-100 text-sky-900 text-[10px] font-mono px-1.5 py-0.5 rounded border border-sky-300 font-semibold"
+                              >
+                                {flag}
+                              </span>
+                            ))}
+                          </div>
+                        )}
+                      </div>
+                    )}
+                  </div>
+
+                  {/* Zero-Waste Chef & Spoilage Prevention Card */}
+                  {result.zero_waste_recipe && (
+                    <div className="bg-amber-50/80 p-3 rounded-xl border border-amber-200 text-xs space-y-1">
+                      <div className="flex items-center justify-between gap-2">
+                        <div className="flex items-center gap-1.5 text-amber-950 font-mono text-[10px] font-bold uppercase">
+                          <Utensils className="w-3.5 h-3.5 text-amber-600 shrink-0" />
+                          <span>AI Zero-Waste Rescue Chef Idea</span>
+                        </div>
+                        {result.carbon_impact_saved && (
+                          <span className="text-[10px] font-mono text-emerald-900 bg-emerald-100 px-2 py-0.5 rounded border border-emerald-300 font-semibold">
+                            🌱 {result.carbon_impact_saved}
+                          </span>
+                        )}
+                      </div>
+                      <p className="text-[11px] text-amber-950 leading-relaxed font-medium">
+                        {result.zero_waste_recipe}
+                      </p>
+                    </div>
+                  )}
 
                   {/* AI Quality Notes */}
                   <p className="text-xs text-forest-800/80 bg-wheat-100/60 p-3 rounded-xl border border-wheat-200/80 leading-relaxed italic">

@@ -258,6 +258,12 @@ class FreshnessInspectionResponse(BaseModel):
     unit: str
     confidence: float
     quality_notes: str
+    storage_pro_tip: Optional[str] = None
+    spoilage_risk: Optional[str] = None
+    nutritional_profile: Optional[str] = None
+    dietary_flags: Optional[List[str]] = None
+    zero_waste_recipe: Optional[str] = None
+    carbon_impact_saved: Optional[str] = None
     alternatives: Optional[List[Dict[str, Any]]] = None
 
 
