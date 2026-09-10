@@ -11,7 +11,10 @@ Canned Chickpeas,canned,50,cans,2027-01-15,0.5,Pantry Bin 3
 Greek Yogurt,dairy,12,tubs,2026-08-27,2,Refrigerator B
 `;
 
-const VALID_CATEGORIES = ["produce", "dairy", "bakery", "prepared", "canned", "frozen", "general"];
+const VALID_CATEGORIES = [
+  "produce", "dairy", "bakery", "prepared", "canned", "frozen",
+  "grains", "fruits", "vegetables", "meat", "poultry", "beverages", "general"
+];
 
 function cleanKey(str) {
   return String(str || "")
@@ -48,12 +51,17 @@ function findValue(row, aliases) {
 function detectCategory(catStr, itemName) {
   const raw = String(catStr || itemName || "").toLowerCase().trim();
   for (const c of VALID_CATEGORIES) {
-    if (raw.startsWith(c) || raw.includes(c)) return c;
+    if (raw === c || raw.startsWith(c) || raw.includes(c)) return c;
   }
-  if (/fruit|veg|apple|banana|tomato|spinach|berry|lettuce|onion|potato|carrot|produced/i.test(raw)) return "produce";
+  if (/grain|rice|wheat|oats|cereal|barley|flour/i.test(raw)) return "grains";
+  if (/fruit|apple|banana|berry|orange|mango|grape/i.test(raw)) return "fruits";
+  if (/veg|spinach|lettuce|onion|potato|carrot|tomato|broccoli|produced/i.test(raw)) return "vegetables";
+  if (/meat|beef|pork|lamb|steak|mutton/i.test(raw)) return "meat";
+  if (/poultry|chicken|turkey|egg/i.test(raw)) return "poultry";
+  if (/beverage|drink|juice|soda|coffee|tea/i.test(raw)) return "beverages";
   if (/milk|cheese|yogurt|butter|cream|dairy|paneer|curd/i.test(raw)) return "dairy";
-  if (/bread|loaf|bakery|cake|croissant|pastry|cookie|biscuit|flour|buns/i.test(raw)) return "bakery";
-  if (/rice|curry|meal|pasta|cooked|prepared|biryani|roast|soup/i.test(raw)) return "prepared";
+  if (/bread|loaf|bakery|cake|croissant|pastry|cookie|biscuit|buns/i.test(raw)) return "bakery";
+  if (/curry|meal|pasta|cooked|prepared|biryani|roast|soup/i.test(raw)) return "prepared";
   if (/can|canned|tinned|bean|chickpea|tuna/i.test(raw)) return "canned";
   if (/frozen|freezer|ice|salmon|fillet|nugget/i.test(raw)) return "frozen";
   return "general";
@@ -67,13 +75,27 @@ function normalizeYear(yrStr) {
   return String(y);
 }
 
-function normalizeDate(dateStr) {
+function normalizeDate(dateStr, baseDateStr) {
   if (!dateStr) {
     const d = new Date();
     d.setDate(d.getDate() + 7);
     return d.toISOString().split("T")[0];
   }
   const trimmed = String(dateStr).trim();
+
+  // If numeric offset (e.g. days_to_expiry like 377 or 14)
+  if (/^\d{1,4}$/.test(trimmed)) {
+    const days = parseInt(trimmed, 10);
+    if (days >= 0 && days <= 2000) {
+      let base = new Date();
+      if (baseDateStr) {
+        const parsedBase = new Date(baseDateStr);
+        if (!isNaN(parsedBase.getTime())) base = parsedBase;
+      }
+      base.setDate(base.getDate() + days);
+      return base.toISOString().split("T")[0];
+    }
+  }
 
   // 1. ISO format: YYYY-MM-DD or YYYY/MM/DD or YYYY.MM.DD
   const ymd4Match = trimmed.match(/^(\d{4})[\/. -](\d{1,2})[\/. -](\d{1,2})$/);
@@ -126,7 +148,7 @@ function normalizeDate(dateStr) {
   }
 
   const d = new Date(trimmed);
-  if (!isNaN(d.getTime())) {
+  if (!isNaN(d.getTime()) && d.getFullYear() > 1900 && d.getFullYear() < 2100) {
     const yyyy = d.getFullYear();
     const mm = String(d.getMonth() + 1).padStart(2, "0");
     const dd = String(d.getDate()).padStart(2, "0");
@@ -222,7 +244,7 @@ export default function CsvUploadModal({ isOpen, open, onClose, onSuccess }) {
       }
 
       // Extract Quantity & Unit
-      const rawQty = findValue(row, ["quantity", "qty", "count", "amount", "stock", "weight", "vol", "volume", "total"]);
+      const rawQty = findValue(row, ["closing_stock", "quantity", "qty", "count", "amount", "stock", "purchase_quantity", "opening_stock", "weight", "vol", "volume", "total"]);
       const rawUnit = findValue(row, ["unit", "units", "uom", "measure", "measurement", "metric"]);
 
       let quantity = 1;
@@ -243,7 +265,8 @@ export default function CsvUploadModal({ isOpen, open, onClose, onSuccess }) {
         unit = rawUnit.toLowerCase();
       }
 
-      // Extract Expiry Date
+      // Extract Base / Purchase Date & Expiry Date
+      const rawBaseDate = findValue(row, ["date", "purchase_date", "received_date", "created_date", "entry_date"]);
       const rawExpiry = findValue(row, [
         "expiry_date",
         "expiry",
@@ -251,24 +274,25 @@ export default function CsvUploadModal({ isOpen, open, onClose, onSuccess }) {
         "expiration",
         "exp_date",
         "exp",
+        "days_to_expiry",
         "best_before",
         "use_by",
         "shelf_life",
         "date_of_expiry",
         "valid_until",
       ]);
-      const expiryDateStr = normalizeDate(rawExpiry);
+      const expiryDateStr = normalizeDate(rawExpiry, rawBaseDate);
 
       // Extract Category
       const rawCat = findValue(row, ["category", "cat", "type", "food_category", "group", "section"]);
       const category = detectCategory(rawCat, name);
 
       // Extract Avg Daily Usage
-      const rawUsage = findValue(row, ["avg_daily_usage", "daily_usage", "usage", "daily", "consumption", "rate", "avg_usage"]);
+      const rawUsage = findValue(row, ["sales_quantity", "avg_daily_usage", "daily_usage", "usage", "daily", "consumption", "rate", "avg_usage"]);
       const avgDailyUsage = parseFloat(String(rawUsage).replace(/[^0-9.]/g, "")) || 1.0;
 
       // Extract Storage Location
-      const storageLoc = findValue(row, ["storage_location", "storage", "location", "loc", "bin", "shelf", "area", "room", "refrigerator", "pantry"]);
+      const storageLoc = findValue(row, ["storage_location", "storage", "location", "location_id", "loc", "bin", "shelf", "area", "room", "refrigerator", "pantry"]);
 
       validRows.push({
         name,
