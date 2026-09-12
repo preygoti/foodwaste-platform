@@ -100,9 +100,9 @@ export default function Layout({ children }) {
             {user?.role}
           </span>
           <button
+            type="button"
             onClick={handleSignOut}
             className="w-9 h-9 flex items-center justify-center text-wheat-100/70 hover:text-tomato-400 rounded-xl hover:bg-forest-700/60 transition-colors"
-            title="Sign out"
             aria-label="Sign out"
           >
             <LogOut className="w-4 h-4" />

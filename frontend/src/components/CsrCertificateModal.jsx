@@ -44,9 +44,9 @@ export default function CsrCertificateModal({ isOpen, onClose, metrics, user }) 
           {/* Left: Back Button & Title */}
           <div className="flex items-center gap-2 min-w-0">
             <button
+              type="button"
               onClick={onClose}
-              className="inline-flex items-center gap-1.5 px-2.5 py-1.5 rounded-lg bg-white/10 hover:bg-white/20 active:bg-white/30 text-wheat-100 font-medium text-xs transition-colors shrink-0 border border-white/10 shadow-2xs"
-              title="Back / Close (Esc)"
+              className="inline-flex items-center gap-1.5 px-2.5 py-1.5 rounded-lg bg-white/10 hover:bg-white/20 active:bg-white/30 text-wheat-100 font-medium text-xs transition-colors shrink-0 border border-white/10 shadow-2xs cursor-pointer"
               aria-label="Back to Dashboard"
             >
               <ArrowLeft className="w-4 h-4" />
@@ -63,10 +63,10 @@ export default function CsrCertificateModal({ isOpen, onClose, metrics, user }) 
           {/* Right: Close X */}
           <div className="flex items-center shrink-0">
             <button
+              type="button"
               onClick={onClose}
-              className="p-1.5 text-wheat-200 hover:text-white rounded-lg hover:bg-white/10 active:bg-white/20 transition-colors"
+              className="p-1.5 text-wheat-200 hover:text-white rounded-lg hover:bg-white/10 active:bg-white/20 transition-colors cursor-pointer"
               aria-label="Close"
-              title="Close (Esc)"
             >
               <X className="w-5 h-5" />
             </button>

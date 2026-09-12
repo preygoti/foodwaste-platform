@@ -64,9 +64,10 @@ export default function PickupQrModal({ isOpen, onClose, pickup }) {
           </div>
 
           <button
+            type="button"
             onClick={onClose}
-            className="p-1.5 text-wheat-300 hover:text-white rounded-lg hover:bg-white/10 transition-colors print:hidden"
-            title="Close"
+            className="p-1.5 text-wheat-300 hover:text-white rounded-lg hover:bg-white/10 transition-colors print:hidden cursor-pointer"
+            aria-label="Close"
           >
             <X className="w-4 h-4" />
           </button>
@@ -120,7 +121,7 @@ export default function PickupQrModal({ isOpen, onClose, pickup }) {
                 type="button"
                 onClick={copyCode}
                 className="inline-flex items-center gap-1 px-3 py-1.5 bg-white border border-wheat-300 rounded-lg text-forest-800 text-xs font-semibold hover:bg-forest-50 transition-all shadow-2xs cursor-pointer"
-                title="Copy 6-digit code"
+                aria-label="Copy 6-digit code"
               >
                 {copied ? (
                   <>

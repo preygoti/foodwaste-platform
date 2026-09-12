@@ -781,9 +781,10 @@ export default function InventoryPage() {
                         <div className="inline-flex items-center justify-center gap-1.5 mx-auto">
                           {isItemExpired ? (
                             <button
+                              type="button"
                               onClick={() => remove(item.id, item.name)}
-                              className="inline-flex items-center gap-1 px-2.5 py-1 text-xs font-semibold text-rose-700 bg-rose-100 hover:bg-rose-200 border border-rose-300 rounded-lg transition-colors shadow-2xs"
-                              title="Log disposal & remove"
+                              className="inline-flex items-center gap-1 px-2.5 py-1 text-xs font-semibold text-rose-700 bg-rose-100 hover:bg-rose-200 border border-rose-300 rounded-lg transition-colors shadow-2xs cursor-pointer"
+                              aria-label="Log disposal & remove"
                             >
                               <Trash2 className="w-3.5 h-3.5" />
                               <span>Log Disposal</span>
@@ -791,25 +792,28 @@ export default function InventoryPage() {
                           ) : (
                             <>
                               <button
+                                type="button"
                                 onClick={() => setRescueChefItem(item)}
-                                className="inline-flex items-center gap-1 px-2 py-1 text-xs font-semibold text-amber-900 bg-amber-50 hover:bg-amber-100 border border-amber-200/80 rounded-lg transition-colors shadow-2xs"
-                                title="AI Zero-Waste Rescue Recipes"
+                                className="inline-flex items-center gap-1 px-2 py-1 text-xs font-semibold text-amber-900 bg-amber-50 hover:bg-amber-100 border border-amber-200/80 rounded-lg transition-colors shadow-2xs cursor-pointer"
+                                aria-label="AI Zero-Waste Rescue Recipes"
                               >
                                 <Sparkles className="w-3.5 h-3.5 text-amber-600" />
                                 <span>Recipe</span>
                               </button>
                               <button
+                                type="button"
                                 onClick={() => openListingModal(item)}
-                                className="inline-flex items-center gap-1 px-2.5 py-1 text-xs font-semibold text-forest-800 bg-forest-50 hover:bg-forest-100 border border-forest-200/80 rounded-lg transition-colors shadow-2xs"
-                                title="Add to surplus marketplace for NGOs"
+                                className="inline-flex items-center gap-1 px-2.5 py-1 text-xs font-semibold text-forest-800 bg-forest-50 hover:bg-forest-100 border border-forest-200/80 rounded-lg transition-colors shadow-2xs cursor-pointer"
+                                aria-label="Add to surplus marketplace for NGOs"
                               >
                                 <Share2 className="w-3.5 h-3.5 text-forest-600" />
                                 <span>Add to Surplus</span>
                               </button>
                               <button
+                                type="button"
                                 onClick={() => remove(item.id, item.name)}
-                                className="p-1 text-tomato-500 hover:text-tomato-700 hover:bg-tomato-50 rounded-lg transition-colors border border-transparent hover:border-tomato-200"
-                                title="Delete item"
+                                className="p-1 text-tomato-500 hover:text-tomato-700 hover:bg-tomato-50 rounded-lg transition-colors border border-transparent hover:border-tomato-200 cursor-pointer"
+                                aria-label="Delete item"
                               >
                                 <Trash2 className="w-3.5 h-3.5" />
                               </button>
@@ -873,9 +877,10 @@ export default function InventoryPage() {
                       )}
                       {!isItemExpired && (
                         <button
+                          type="button"
                           onClick={() => remove(item.id, item.name)}
-                          className="p-1.5 text-tomato-400 hover:text-tomato-600 hover:bg-tomato-50 rounded-lg transition-colors"
-                          title="Remove item"
+                          className="p-1.5 text-tomato-400 hover:text-tomato-600 hover:bg-tomato-50 rounded-lg transition-colors cursor-pointer"
+                          aria-label="Remove item"
                         >
                           <Trash2 className="w-3.5 h-3.5" />
                         </button>
@@ -1129,9 +1134,10 @@ export default function InventoryPage() {
                 </p>
               </div>
               <button
+                type="button"
                 onClick={() => setListingModalItem(null)}
-                className="p-1.5 text-wheat-300 hover:text-white rounded-lg hover:bg-white/10 transition-colors"
-                title="Close"
+                className="p-1.5 text-wheat-300 hover:text-white rounded-lg hover:bg-white/10 transition-colors cursor-pointer"
+                aria-label="Close"
               >
                 <X className="w-5 h-5" />
               </button>

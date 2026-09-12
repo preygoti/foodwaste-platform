@@ -527,8 +527,7 @@ export default function BrowseListingsPage() {
               <button
                 type="button"
                 onClick={() => setSelectedListing(null)}
-                className="p-1 text-wheat-300 hover:text-white rounded-lg hover:bg-white/10 transition-colors shrink-0"
-                title="Close"
+                className="p-1 text-wheat-300 hover:text-white rounded-lg hover:bg-white/10 transition-colors shrink-0 cursor-pointer"
                 aria-label="Close"
               >
                 <X className="w-4 h-4" />

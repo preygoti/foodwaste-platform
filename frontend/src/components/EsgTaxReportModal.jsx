@@ -62,9 +62,9 @@ export default function EsgTaxReportModal({ isOpen, onClose, analytics }) {
         <div className="p-3.5 sm:p-5 border-b border-wheat-200/60 flex items-center justify-between bg-wheat-50/70 backdrop-blur-sm print:hidden shrink-0 gap-2">
           <div className="flex items-center gap-2 sm:gap-2.5 min-w-0">
             <button
+              type="button"
               onClick={onClose}
-              className="inline-flex items-center gap-1.5 px-2.5 py-1.5 rounded-lg bg-forest-800/10 hover:bg-forest-800/20 active:bg-forest-800/30 text-forest-800 font-medium text-xs transition-colors shrink-0"
-              title="Back / Close (Esc)"
+              className="inline-flex items-center gap-1.5 px-2.5 py-1.5 rounded-lg bg-forest-800/10 hover:bg-forest-800/20 active:bg-forest-800/30 text-forest-800 font-medium text-xs transition-colors shrink-0 cursor-pointer"
               aria-label="Back to Dashboard"
             >
               <ArrowLeft className="w-4 h-4" />
@@ -83,9 +83,10 @@ export default function EsgTaxReportModal({ isOpen, onClose, analytics }) {
             </div>
           </div>
           <button
+            type="button"
             onClick={onClose}
-            className="text-forest-800/50 hover:text-forest-800 p-1.5 rounded-lg hover:bg-wheat-200/50 transition-colors shrink-0"
-            title="Close (Esc)"
+            className="text-forest-800/50 hover:text-forest-800 p-1.5 rounded-lg hover:bg-wheat-200/50 transition-colors shrink-0 cursor-pointer"
+            aria-label="Close"
           >
             <X className="w-5 h-5" />
           </button>

@@ -211,9 +211,10 @@ Yield: ${recipe.yieldPerKg}`;
                       {recipe.time}
                     </span>
                     <button
+                      type="button"
                       onClick={() => handleCopyRecipe(recipe)}
-                      className="inline-flex items-center gap-1 px-2.5 py-1 text-xs font-medium border border-wheat-300 rounded-lg hover:bg-wheat-100 text-forest-800 transition-colors"
-                      title="Copy Recipe"
+                      className="inline-flex items-center gap-1 px-2.5 py-1 text-xs font-medium border border-wheat-300 rounded-lg hover:bg-wheat-100 text-forest-800 transition-colors cursor-pointer"
+                      aria-label="Copy Recipe"
                     >
                       {copied ? <Check className="w-3.5 h-3.5 text-forest-600" /> : <Copy className="w-3.5 h-3.5 text-forest-600" />}
                       <span>{copied ? "Copied" : "Copy"}</span>

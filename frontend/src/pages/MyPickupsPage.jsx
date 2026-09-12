@@ -279,18 +279,20 @@ export default function MyPickupsPage() {
                     {p.status === "confirmed" && (
                       <>
                         <button
+                          type="button"
                           onClick={() => setSelectedQrPickup(p)}
-                          className="flex-1 sm:flex-initial inline-flex items-center justify-center gap-1.5 px-3.5 py-2.5 sm:py-2 bg-emerald-600 hover:bg-emerald-700 text-white rounded-xl text-xs font-semibold transition-all shadow-2xs"
-                          title="View Driver Identity & Proof-of-Rescue QR Card"
+                          className="flex-1 sm:flex-initial inline-flex items-center justify-center gap-1.5 px-3.5 py-2.5 sm:py-2 bg-emerald-600 hover:bg-emerald-700 text-white rounded-xl text-xs font-semibold transition-all shadow-2xs cursor-pointer"
+                          aria-label="View Driver Identity & Proof-of-Rescue QR Card"
                         >
                           <QrCode className="w-3.5 h-3.5 text-emerald-100" />
                           <span>Driver ID &amp; QR Pass</span>
                         </button>
                         <button
+                          type="button"
                           onClick={() => cancel(p.id)}
                           disabled={processingId === p.id}
-                          className="inline-flex items-center justify-center gap-1 px-3 py-2.5 sm:py-2 text-tomato-500 hover:bg-tomato-500/10 rounded-xl text-xs font-medium transition-colors"
-                          title="Cancel scheduled pickup"
+                          className="inline-flex items-center justify-center gap-1 px-3 py-2.5 sm:py-2 text-tomato-500 hover:bg-tomato-500/10 rounded-xl text-xs font-medium transition-colors cursor-pointer"
+                          aria-label="Cancel scheduled pickup"
                         >
                           <XCircle className="w-3.5 h-3.5" />
                           <span>Cancel</span>
@@ -300,10 +302,11 @@ export default function MyPickupsPage() {
 
                     {p.status === "pending" && (
                       <button
+                        type="button"
                         onClick={() => cancel(p.id)}
                         disabled={processingId === p.id}
-                        className="inline-flex items-center gap-1 px-3 py-2 text-tomato-600 bg-tomato-50 hover:bg-tomato-100 border border-tomato-200 rounded-lg text-xs font-medium transition-colors"
-                        title="Withdraw pending request"
+                        className="inline-flex items-center gap-1 px-3 py-2 text-tomato-600 bg-tomato-50 hover:bg-tomato-100 border border-tomato-200 rounded-lg text-xs font-medium transition-colors cursor-pointer"
+                        aria-label="Withdraw pending request"
                       >
                         <XCircle className="w-3.5 h-3.5" />
                         <span>Withdraw Request</span>

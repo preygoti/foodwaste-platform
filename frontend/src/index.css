@@ -24,8 +24,14 @@ html, body {
   -webkit-font-smoothing: antialiased;
   -moz-osx-font-smoothing: grayscale;
   -webkit-tap-highlight-color: transparent;
+  touch-action: manipulation;
   min-height: 100%;
   min-height: 100dvh;
+}
+
+button, a, [role="button"], input, select, textarea {
+  touch-action: manipulation;
+  -webkit-tap-highlight-color: transparent;
 }
 
 /* Global text safety - prevent overflow on small viewports */
@@ -316,11 +322,19 @@ select.text-center option {
   .glass-card-hover {
     transition: all 0.3s cubic-bezier(0.16, 1, 0.3, 1);
   }
-  .glass-card-hover:hover {
-    background: rgba(255, 255, 255, 0.90);
-    transform: translateY(-2px);
-    box-shadow: 0 16px 36px -6px rgba(31, 58, 46, 0.10), inset 0 1px 2px 0 rgba(255, 255, 255, 1);
-    border-color: rgba(76, 124, 89, 0.3);
+  @media (hover: hover) and (pointer: fine) {
+    .glass-card-hover:hover {
+      background: rgba(255, 255, 255, 0.90);
+      transform: translateY(-2px);
+      box-shadow: 0 16px 36px -6px rgba(31, 58, 46, 0.10), inset 0 1px 2px 0 rgba(255, 255, 255, 1);
+      border-color: rgba(76, 124, 89, 0.3);
+    }
+  }
+  @media (hover: none) or (pointer: coarse) {
+    .glass-card-hover:active {
+      background: rgba(255, 255, 255, 0.90);
+      transform: none;
+    }
   }
 
   /* Deep Forest / Emerald Glass */

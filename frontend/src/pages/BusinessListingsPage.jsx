@@ -184,10 +184,11 @@ export default function BusinessListingsPage() {
 
         <div className="flex items-center gap-2.5 flex-wrap sm:flex-nowrap shrink-0 sm:self-center">
           <button
+            type="button"
             onClick={() => load(false)}
             disabled={isRefreshing}
             className="inline-flex items-center justify-center gap-1.5 px-3.5 py-2.5 bg-white hover:bg-wheat-100 text-forest-800 border border-wheat-300 rounded-xl text-xs sm:text-sm font-semibold shadow-2xs transition-all shrink-0 cursor-pointer disabled:opacity-60"
-            title="Force refresh listings now"
+            aria-label="Force refresh listings now"
           >
             <RefreshCw className={`w-3.5 h-3.5 ${isRefreshing ? "animate-spin text-emerald-600" : "text-forest-600"}`} />
             <span>{isRefreshing ? "Syncing..." : "Refresh"}</span>
@@ -381,19 +382,21 @@ export default function BusinessListingsPage() {
                           {p.status === "pending" && (
                             <>
                               <button
+                                type="button"
                                 onClick={() => confirmPickup(p.id)}
                                 disabled={confirmingId === p.id}
-                                className="inline-flex items-center justify-center gap-1.5 px-3 py-1.5 bg-emerald-700 hover:bg-emerald-800 text-white rounded-lg text-xs font-semibold disabled:opacity-50 transition-all shadow-2xs"
-                                title="Accept this NGO request (will assign listing and reject other pending requests)"
+                                className="inline-flex items-center justify-center gap-1.5 px-3 py-1.5 bg-emerald-700 hover:bg-emerald-800 text-white rounded-lg text-xs font-semibold disabled:opacity-50 transition-all shadow-2xs cursor-pointer"
+                                aria-label="Accept this NGO request (will assign listing and reject other pending requests)"
                               >
                                 <CheckCircle2 className="w-3.5 h-3.5 text-emerald-200" />
                                 <span>Accept &amp; Assign</span>
                               </button>
                               <button
+                                type="button"
                                 onClick={() => rejectPickup(p.id)}
                                 disabled={confirmingId === p.id}
-                                className="inline-flex items-center justify-center gap-1 px-2.5 py-1.5 text-tomato-600 hover:bg-tomato-50 rounded-lg text-xs font-medium transition-colors border border-transparent hover:border-tomato-200"
-                                title="Decline this pickup request"
+                                className="inline-flex items-center justify-center gap-1 px-2.5 py-1.5 text-tomato-600 hover:bg-tomato-50 rounded-lg text-xs font-medium transition-colors border border-transparent hover:border-tomato-200 cursor-pointer"
+                                aria-label="Decline this pickup request"
                               >
                                 <XCircle className="w-3.5 h-3.5" />
                                 <span>Decline</span>
@@ -404,17 +407,19 @@ export default function BusinessListingsPage() {
                           {p.status === "confirmed" && (
                             <>
                               <button
+                                type="button"
                                 onClick={() => setShowVerifyQrModal(true)}
-                                className="inline-flex items-center justify-center gap-1 px-3 py-1.5 bg-emerald-600 hover:bg-emerald-700 text-white rounded-lg text-xs font-semibold transition-all shadow-2xs"
+                                className="inline-flex items-center justify-center gap-1 px-3 py-1.5 bg-emerald-600 hover:bg-emerald-700 text-white rounded-lg text-xs font-semibold transition-all shadow-2xs cursor-pointer"
                               >
                                 <Scan className="w-3.5 h-3.5" />
                                 <span>Scan Driver QR</span>
                               </button>
                               <button
+                                type="button"
                                 onClick={() => rejectPickup(p.id)}
                                 disabled={confirmingId === p.id}
-                                className="inline-flex items-center justify-center gap-1 px-2 py-1.5 text-tomato-600 hover:bg-tomato-50 rounded-lg text-xs font-medium transition-colors"
-                                title="Cancel pickup"
+                                className="inline-flex items-center justify-center gap-1 px-2 py-1.5 text-tomato-600 hover:bg-tomato-50 rounded-lg text-xs font-medium transition-colors cursor-pointer"
+                                aria-label="Cancel pickup"
                               >
                                 <XCircle className="w-3.5 h-3.5" />
                                 <span>Cancel</span>
