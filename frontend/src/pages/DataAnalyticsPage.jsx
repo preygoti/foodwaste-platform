@@ -151,56 +151,74 @@ const DataAnalyticsPage = () => {
       </div>
 
       {/* SECTION 1: Financial Overview KPI Cards */}
-      <section className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-6">
-        <Card3D className="bg-gradient-to-br from-forest-50 to-forest-100 border border-forest-200">
+      <section className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-4 sm:gap-6">
+        <Card3D className="bg-gradient-to-br from-forest-50 to-forest-100 border border-forest-200 p-5 sm:p-6 rounded-2xl">
           <div className="flex justify-between items-start">
-            <div>
-              <p className="text-forest-800 font-mono text-sm mb-1 uppercase tracking-wider">Total Revenue</p>
-              <h3 className="font-display text-3xl text-forest-900">{formatCurrency(financials?.total_revenue)}</h3>
+            <div className="min-w-0 flex-1">
+              <p className="text-forest-800 font-mono text-xs sm:text-sm mb-1 uppercase tracking-wider">Total Revenue</p>
+              <h3 className="font-display text-xl sm:text-2xl xl:text-3xl text-forest-900 tracking-tight truncate">{formatCurrency(financials?.total_revenue)}</h3>
             </div>
-            <div className="p-3 bg-forest-200 rounded-full">
-              <DollarSign className="w-6 h-6 text-forest-700" />
+            <div className="p-2.5 sm:p-3 bg-forest-200 rounded-full flex-shrink-0 ml-3">
+              <DollarSign className="w-5 h-5 sm:w-6 sm:h-6 text-forest-700" />
             </div>
           </div>
         </Card3D>
         
-        <Card3D className="bg-gradient-to-br from-wheat-100 to-wheat-200 border border-wheat-300">
+        <Card3D className="bg-gradient-to-br from-wheat-100 to-wheat-200 border border-wheat-300 p-5 sm:p-6 rounded-2xl">
           <div className="flex justify-between items-start">
-            <div>
-              <p className="text-charcoal-700 font-mono text-sm mb-1 uppercase tracking-wider">Purchase Cost</p>
-              <h3 className="font-display text-3xl text-charcoal-900">{formatCurrency(financials?.total_purchase_cost)}</h3>
+            <div className="min-w-0 flex-1">
+              <p className="text-charcoal-700 font-mono text-xs sm:text-sm mb-1 uppercase tracking-wider">Purchase Cost</p>
+              <h3 className="font-display text-xl sm:text-2xl xl:text-3xl text-charcoal-900 tracking-tight truncate">{formatCurrency(financials?.total_purchase_cost)}</h3>
             </div>
-            <div className="p-3 bg-wheat-300 rounded-full">
-              <ShoppingCart className="w-6 h-6 text-charcoal-700" />
+            <div className="p-2.5 sm:p-3 bg-wheat-300 rounded-full flex-shrink-0 ml-3">
+              <ShoppingCart className="w-5 h-5 sm:w-6 sm:h-6 text-charcoal-700" />
             </div>
           </div>
         </Card3D>
         
-        <Card3D className="bg-gradient-to-br from-tomato-50 to-tomato-100 border border-tomato-200">
+        <Card3D className="bg-gradient-to-br from-tomato-50 to-tomato-100 border border-tomato-200 p-5 sm:p-6 rounded-2xl">
           <div className="flex justify-between items-start">
-            <div>
-              <p className="text-tomato-800 font-mono text-sm mb-1 uppercase tracking-wider">Waste Loss</p>
-              <h3 className="font-display text-3xl text-tomato-900">{formatCurrency(financials?.total_waste_loss)}</h3>
+            <div className="min-w-0 flex-1">
+              <p className="text-tomato-800 font-mono text-xs sm:text-sm mb-1 uppercase tracking-wider">Waste Loss</p>
+              <h3 className="font-display text-xl sm:text-2xl xl:text-3xl text-tomato-900 tracking-tight truncate">{formatCurrency(financials?.total_waste_loss)}</h3>
             </div>
-            <div className="p-3 bg-tomato-200 rounded-full">
-              <TrendingDown className="w-6 h-6 text-tomato-700" />
+            <div className="p-2.5 sm:p-3 bg-tomato-200 rounded-full flex-shrink-0 ml-3">
+              <TrendingDown className="w-5 h-5 sm:w-6 sm:h-6 text-tomato-700" />
             </div>
           </div>
         </Card3D>
         
-        <Card3D className="bg-gradient-to-br from-gold-50 to-gold-100 border border-gold-200">
+        <Card3D className={`bg-gradient-to-br border p-5 sm:p-6 rounded-2xl ${
+          (financials?.gross_margin ?? 0) < 0 
+            ? 'from-rose-50 to-orange-50 border-orange-200' 
+            : 'from-gold-50 to-gold-100 border-gold-200'
+        }`}>
           <div className="flex justify-between items-start">
-            <div>
-              <p className="text-gold-800 font-mono text-sm mb-1 uppercase tracking-wider">Net Margin</p>
-              <div className="flex items-baseline gap-2">
-                 <h3 className="font-display text-3xl text-gold-900">{formatCurrency(financials?.gross_margin)}</h3>
-                 <span className="text-sm font-bold bg-gold-200 text-gold-800 px-2 py-0.5 rounded-full">
-                    {financials?.gross_margin_pct}%
-                 </span>
+            <div className="min-w-0 flex-1">
+              <p className={`font-mono text-xs sm:text-sm mb-1 uppercase tracking-wider ${
+                (financials?.gross_margin ?? 0) < 0 ? 'text-orange-900' : 'text-gold-800'
+              }`}>Net Margin</p>
+              <h3 className={`font-display text-xl sm:text-2xl xl:text-3xl tracking-tight truncate ${
+                (financials?.gross_margin ?? 0) < 0 ? 'text-tomato-700' : 'text-gold-900'
+              }`}>
+                {formatCurrency(financials?.gross_margin)}
+              </h3>
+              <div className="mt-1.5 flex items-center">
+                <span className={`text-xs font-bold font-mono px-2.5 py-0.5 rounded-full inline-flex items-center gap-1 ${
+                  (financials?.gross_margin_pct ?? 0) < 0 
+                    ? 'bg-tomato-100 text-tomato-800 border border-tomato-200' 
+                    : 'bg-gold-200 text-gold-900'
+                }`}>
+                  {(financials?.gross_margin_pct ?? 0) > 0 ? `+${financials?.gross_margin_pct}%` : `${financials?.gross_margin_pct}%`} margin
+                </span>
               </div>
             </div>
-            <div className="p-3 bg-gold-200 rounded-full">
-              <Activity className="w-6 h-6 text-gold-700" />
+            <div className={`p-2.5 sm:p-3 rounded-full flex-shrink-0 ml-3 ${
+              (financials?.gross_margin ?? 0) < 0 ? 'bg-orange-100' : 'bg-gold-200'
+            }`}>
+              <Activity className={`w-5 h-5 sm:w-6 sm:h-6 ${
+                (financials?.gross_margin ?? 0) < 0 ? 'text-orange-700' : 'text-gold-700'
+              }`} />
             </div>
           </div>
         </Card3D>
@@ -266,23 +284,32 @@ const DataAnalyticsPage = () => {
                 <p className="font-display text-xl text-gray-800">{formatNumber(wasteAnalysis?.total_waste_quantity)} units</p>
              </div>
           </div>
-          <div className="flex-1 min-h-[250px]">
+          <div className="h-[220px] w-full">
             <ResponsiveContainer width="100%" height="100%">
-              <PieChart>
+              <PieChart margin={{ top: 5, right: 5, bottom: 5, left: 5 }}>
                 <Pie
                   data={wasteAnalysis?.by_reason || []}
-                  cx="50%" cy="50%" innerRadius={60} outerRadius={100}
-                  paddingAngle={5} dataKey="quantity" nameKey="reason"
-                  label={({reason, percentage}) => `${reason} (${percentage}%)`}
-                  labelLine={false}
+                  cx="50%" cy="50%" innerRadius={50} outerRadius={80}
+                  paddingAngle={4} dataKey="quantity" nameKey="reason"
                 >
                   {(wasteAnalysis?.by_reason || []).map((entry, index) => (
                     <Cell key={`cell-${index}`} fill={PIE_COLORS[index % PIE_COLORS.length]} />
                   ))}
                 </Pie>
-                <RechartsTooltip formatter={(val, name, props) => [`${val} units`, name]} />
+                <RechartsTooltip formatter={(val, name) => [`${formatNumber(val)} units`, name]} />
               </PieChart>
             </ResponsiveContainer>
+          </div>
+          {/* Responsive legend badges below chart to prevent label clipping */}
+          <div className="flex flex-wrap items-center justify-center gap-3 pt-3 border-t border-gray-100 mt-2">
+            {(wasteAnalysis?.by_reason || []).map((item, index) => (
+              <div key={item.reason} className="flex items-center gap-2 text-xs sm:text-sm bg-white/70 px-3 py-1.5 rounded-full border border-gray-100 shadow-sm">
+                <span className="w-2.5 h-2.5 rounded-full flex-shrink-0" style={{ backgroundColor: PIE_COLORS[index % PIE_COLORS.length] }} />
+                <span className="font-medium text-gray-700">{item.reason}</span>
+                <span className="font-mono text-gray-900 font-bold">{item.percentage}%</span>
+                <span className="text-xs text-gray-400 font-mono">({formatNumber(item.quantity)})</span>
+              </div>
+            ))}
           </div>
         </div>
 
@@ -457,15 +484,21 @@ const DataAnalyticsPage = () => {
                   <h3 className="font-bold text-gray-900">{pred.product_name}</h3>
                   <p className="text-xs text-gray-500 font-mono">{pred.category}</p>
                 </div>
-                <div className="relative w-12 h-12 flex items-center justify-center rounded-full border-4" 
-                     style={{borderColor: pred.waste_risk_score > 75 ? '#fee2e2' : pred.waste_risk_score > 50 ? '#fef9c3' : '#dcfce3'}}>
-                  <span className="font-bold text-sm" style={{color: pred.waste_risk_score > 75 ? '#dc2626' : pred.waste_risk_score > 50 ? '#ca8a04' : '#16a34a'}}>
-                    {pred.waste_risk_score}
-                  </span>
-                  <svg className="absolute top-0 left-0 w-full h-full transform -rotate-90" viewBox="0 0 36 36">
-                     <path className="text-gray-200" strokeWidth="3" stroke="currentColor" fill="none" d="M18 2.0845 a 15.9155 15.9155 0 0 1 0 31.831 a 15.9155 15.9155 0 0 1 0 -31.831" />
-                     <path strokeWidth="3" strokeDasharray={`${pred.waste_risk_score}, 100`} stroke={pred.waste_risk_score > 75 ? '#ef4444' : pred.waste_risk_score > 50 ? '#eab308' : '#22c55e'} fill="none" d="M18 2.0845 a 15.9155 15.9155 0 0 1 0 31.831 a 15.9155 15.9155 0 0 1 0 -31.831" />
+                <div className="relative w-12 h-12 flex-shrink-0 flex items-center justify-center">
+                  <svg className="w-full h-full transform -rotate-90" viewBox="0 0 36 36">
+                     <path className="text-gray-100" strokeWidth="3.5" stroke="currentColor" fill="none" d="M18 2.0845 a 15.9155 15.9155 0 0 1 0 31.831 a 15.9155 15.9155 0 0 1 0 -31.831" />
+                     <path 
+                       strokeWidth="3.5" 
+                       strokeDasharray={`${Math.min(Math.round(pred.waste_risk_score), 100)}, 100`} 
+                       strokeLinecap="round"
+                       stroke={pred.waste_risk_score > 75 ? '#ef4444' : pred.waste_risk_score > 50 ? '#f59e0b' : '#10b981'} 
+                       fill="none" 
+                       d="M18 2.0845 a 15.9155 15.9155 0 0 1 0 31.831 a 15.9155 15.9155 0 0 1 0 -31.831" 
+                     />
                   </svg>
+                  <span className="absolute font-bold text-xs font-mono" style={{color: pred.waste_risk_score > 75 ? '#dc2626' : pred.waste_risk_score > 50 ? '#b45309' : '#047857'}}>
+                    {Math.round(pred.waste_risk_score)}
+                  </span>
                 </div>
               </div>
               

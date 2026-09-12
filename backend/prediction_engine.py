@@ -21,6 +21,45 @@ def parse_date(date_str: str) -> datetime.date:
         pass
     return datetime.date.today()
 
+PRODUCT_BENCHMARK_COSTS = {
+    'Bread Loaves': 2.50,
+    'Chicken Breast': 8.50,
+    'Cheese Blocks': 5.00,
+    'Bananas': 1.20,
+    'Lettuce': 1.80,
+    'Yogurt Cups': 1.50,
+    'Orange Juice': 3.50,
+    'Milk': 42.0,
+    'Apples': 35.0,
+    'Eggs': 7.0,
+    'Verified Rice': 80.0,
+    'Verified Wheat': 60.0,
+}
+
+CATEGORY_BENCHMARK_COSTS = {
+    'Bakery': 2.50,
+    'Dairy': 4.00,
+    'Meat': 8.50,
+    'Poultry': 6.00,
+    'Vegetables': 2.00,
+    'Fruits': 2.50,
+    'Beverages': 3.50,
+    'Grains': 5.00,
+}
+
+def get_effective_cost(product_name: str = '', category: str = '', direct_cost: float = 0.0) -> float:
+    try:
+        val = float(direct_cost or 0)
+        if val > 0:
+            return val
+    except (ValueError, TypeError):
+        pass
+    if product_name in PRODUCT_BENCHMARK_COSTS:
+        return PRODUCT_BENCHMARK_COSTS[product_name]
+    if category in CATEGORY_BENCHMARK_COSTS:
+        return CATEGORY_BENCHMARK_COSTS[category]
+    return 2.50
+
 class DemandForecaster:
     def __init__(self, data_dir: str):
         self.data_dir = data_dir
@@ -243,13 +282,12 @@ class WastePredictor:
                 closing_stock = 0
             predicted_waste = min(closing_stock, avg_waste_qty * (risk_score/100))
             
-            financial_loss = 0
-            for r in p_waste:
-                try:
-                    qty = float(r.get('quantity_wasted') or 0)
-                    cost = float(r.get('unit_cost') or 0)
-                    financial_loss += qty * cost
-                except ValueError: pass
+            try:
+                rec_cost = float(last_record.get('unit_cost') or 0)
+            except (ValueError, TypeError):
+                rec_cost = 0.0
+            effective_cost = get_effective_cost(p_name, category, rec_cost)
+            financial_loss = predicted_waste * effective_cost
             
             if risk_score > 80: action = 'donate_now'
             elif risk_score > 60: action = 'discount'
@@ -486,10 +524,12 @@ def get_waste_analysis(data_dir: str) -> dict:
                     cost = float(row.get('unit_cost') or 0)
                 except ValueError:
                     continue
-                loss = qty * cost
-                reason = row.get('waste_reason', 'Unknown')
                 pid = row.get('product_id', '')
                 pname = pid_to_name.get(pid, pid[:8])
+                cat = pid_to_cat.get(pid, 'Unknown')
+                effective_cost = get_effective_cost(pname, cat, cost)
+                loss = qty * effective_cost
+                reason = row.get('waste_reason', 'Unknown')
                 d = parse_date(row.get('waste_date', '')).strftime('%Y-%m-%d')
 
                 total_waste_quantity += qty
