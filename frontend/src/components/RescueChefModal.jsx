@@ -148,8 +148,14 @@ Yield: ${recipe.yieldPerKg}`;
   };
 
   return (
-    <div className="fixed inset-0 z-50 flex items-center justify-center p-3 sm:p-4 bg-forest-950/65 backdrop-blur-md overflow-y-auto">
-      <div className="relative w-full max-w-2xl glass-modal rounded-xl sm:rounded-2xl shadow-2xl overflow-hidden my-auto max-h-[92vh] flex flex-col animate-in fade-in zoom-in-95 duration-150">
+    <div 
+      onClick={onClose}
+      className="fixed inset-0 z-50 flex items-center justify-center p-3 sm:p-4 bg-forest-950/65 backdrop-blur-md overflow-y-auto cursor-pointer"
+    >
+      <div 
+        onClick={(e) => e.stopPropagation()}
+        className="relative w-full max-w-2xl glass-modal rounded-xl sm:rounded-2xl shadow-2xl overflow-hidden my-auto max-h-[92vh] flex flex-col animate-in fade-in zoom-in-95 duration-150 cursor-default"
+      >
         {/* Modal Header */}
         <div className="flex items-center justify-between px-4 sm:px-6 py-3.5 sm:py-4 border-b border-wheat-200/50 bg-gradient-to-r from-forest-900/95 to-forest-800/95 backdrop-blur-md text-wheat-50 shrink-0">
           <div className="flex items-center gap-2.5 sm:gap-3">

@@ -443,7 +443,8 @@ export default function Landing() {
             </Link>
             <a
               href="#how-it-works"
-              className="inline-flex items-center justify-center gap-2 px-6 py-3.5 glass-card glass-card-hover text-forest-800 rounded-xl font-semibold text-sm sm:text-base transition-all active:scale-[0.99]"
+              onClick={(e) => scrollToSection(e, "how-it-works")}
+              className="inline-flex items-center justify-center gap-2 px-6 py-3.5 glass-card glass-card-hover text-forest-800 rounded-xl font-semibold text-sm sm:text-base transition-all active:scale-[0.99] cursor-pointer"
             >
               <span>See How It Works</span>
             </a>
@@ -1054,13 +1055,25 @@ export default function Landing() {
               <Link to="/register" className="hover:text-forest-950 transition-colors py-1 px-1">
                 Platform
               </Link>
-              <a href="#how-it-works" className="hover:text-forest-950 transition-colors py-1 px-1">
+              <a
+                href="#how-it-works"
+                onClick={(e) => scrollToSection(e, "how-it-works")}
+                className="hover:text-forest-950 transition-colors py-1 px-1 cursor-pointer"
+              >
                 How It Works
               </a>
-              <a href="#features" className="hover:text-forest-950 transition-colors py-1 px-1">
+              <a
+                href="#features"
+                onClick={(e) => scrollToSection(e, "features")}
+                className="hover:text-forest-950 transition-colors py-1 px-1 cursor-pointer"
+              >
                 Features
               </a>
-              <a href="#impact" className="hover:text-forest-950 transition-colors py-1 px-1">
+              <a
+                href="#impact"
+                onClick={(e) => scrollToSection(e, "impact")}
+                className="hover:text-forest-950 transition-colors py-1 px-1 cursor-pointer"
+              >
                 Impact
               </a>
             </nav>

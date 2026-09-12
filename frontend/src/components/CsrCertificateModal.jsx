@@ -36,8 +36,14 @@ export default function CsrCertificateModal({ isOpen, onClose, metrics, user }) 
   };
 
   return (
-    <div className="fixed inset-0 z-50 flex items-center justify-center p-2 sm:p-4 md:p-6 bg-forest-950/70 backdrop-blur-md overflow-y-auto print:p-0 print:bg-white print:static animate-in fade-in duration-200">
-      <div className="relative w-full max-w-3xl glass-modal rounded-2xl shadow-2xl overflow-hidden flex flex-col max-h-[94vh] sm:max-h-[92vh] my-auto print:max-h-none print:overflow-visible print:my-0 print:border-0 print:shadow-none print:w-full border border-white/80">
+    <div 
+      onClick={onClose}
+      className="fixed inset-0 z-50 flex items-center justify-center p-2 sm:p-4 md:p-6 bg-forest-950/70 backdrop-blur-md overflow-y-auto print:p-0 print:bg-white print:static animate-in fade-in duration-200 cursor-pointer"
+    >
+      <div 
+        onClick={(e) => e.stopPropagation()}
+        className="relative w-full max-w-3xl glass-modal rounded-2xl shadow-2xl overflow-hidden flex flex-col max-h-[94vh] sm:max-h-[92vh] my-auto print:max-h-none print:overflow-visible print:my-0 print:border-0 print:shadow-none print:w-full border border-white/80 cursor-default"
+      >
         
         {/* Actions & Navigation Topbar (Hidden in Print) */}
         <div className="flex items-center justify-between px-3 sm:px-6 py-3 bg-gradient-to-r from-forest-900/95 via-forest-800/95 to-forest-800/95 backdrop-blur-md text-wheat-50 print:hidden shrink-0 gap-2 border-b border-forest-700/60">

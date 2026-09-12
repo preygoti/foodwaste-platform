@@ -1,6 +1,6 @@
 import { useState, useEffect } from "react";
 import { Link, useNavigate } from "react-router-dom";
-import { KeyRound, Mail, Lock, AlertCircle, CheckCircle2, ArrowLeft, Loader2, RefreshCw } from "lucide-react";
+import { KeyRound, Mail, Lock, AlertCircle, CheckCircle2, ArrowLeft, Loader2, RefreshCw, Eye, EyeOff } from "lucide-react";
 import { api } from "../api";
 
 export default function ForgotPassword() {
@@ -10,6 +10,8 @@ export default function ForgotPassword() {
   const [otp, setOtp] = useState("");
   const [newPassword, setNewPassword] = useState("");
   const [confirmPassword, setConfirmPassword] = useState("");
+  const [showNewPassword, setShowNewPassword] = useState(false);
+  const [showConfirmPassword, setShowConfirmPassword] = useState(false);
   const [error, setError] = useState("");
   const [successMsg, setSuccessMsg] = useState("");
   const [busy, setBusy] = useState(false);
@@ -297,14 +299,22 @@ export default function ForgotPassword() {
                 <div className="relative">
                   <Lock className="w-4 h-4 text-forest-800/40 absolute left-3.5 top-3" />
                   <input
-                    type="password"
+                    type={showNewPassword ? "text" : "password"}
                     required
                     minLength={6}
                     placeholder="••••••••"
                     value={newPassword}
                     onChange={(e) => setNewPassword(e.target.value)}
-                    className="w-full border border-wheat-200 rounded-xl pl-10 pr-3.5 py-2.5 text-sm focus:outline-none focus:ring-2 focus:ring-forest-400 bg-white"
+                    className="w-full border border-wheat-200 rounded-xl pl-10 pr-11 py-2.5 text-sm focus:outline-none focus:ring-2 focus:ring-forest-400 bg-white"
                   />
+                  <button
+                    type="button"
+                    onClick={() => setShowNewPassword((prev) => !prev)}
+                    className="absolute right-2.5 top-1/2 -translate-y-1/2 w-8 h-8 flex items-center justify-center text-forest-800/50 hover:text-forest-800 rounded-lg hover:bg-wheat-100 transition-colors cursor-pointer touch-manipulation"
+                    aria-label={showNewPassword ? "Hide password" : "Show password"}
+                  >
+                    {showNewPassword ? <EyeOff className="w-4 h-4" /> : <Eye className="w-4 h-4 text-forest-700" />}
+                  </button>
                 </div>
               </div>
 
@@ -315,14 +325,22 @@ export default function ForgotPassword() {
                 <div className="relative">
                   <Lock className="w-4 h-4 text-forest-800/40 absolute left-3.5 top-3" />
                   <input
-                    type="password"
+                    type={showConfirmPassword ? "text" : "password"}
                     required
                     minLength={6}
                     placeholder="••••••••"
                     value={confirmPassword}
                     onChange={(e) => setConfirmPassword(e.target.value)}
-                    className="w-full border border-wheat-200 rounded-xl pl-10 pr-3.5 py-2.5 text-sm focus:outline-none focus:ring-2 focus:ring-forest-400 bg-white"
+                    className="w-full border border-wheat-200 rounded-xl pl-10 pr-11 py-2.5 text-sm focus:outline-none focus:ring-2 focus:ring-forest-400 bg-white"
                   />
+                  <button
+                    type="button"
+                    onClick={() => setShowConfirmPassword((prev) => !prev)}
+                    className="absolute right-2.5 top-1/2 -translate-y-1/2 w-8 h-8 flex items-center justify-center text-forest-800/50 hover:text-forest-800 rounded-lg hover:bg-wheat-100 transition-colors cursor-pointer touch-manipulation"
+                    aria-label={showConfirmPassword ? "Hide password" : "Show password"}
+                  >
+                    {showConfirmPassword ? <EyeOff className="w-4 h-4" /> : <Eye className="w-4 h-4 text-forest-700" />}
+                  </button>
                 </div>
               </div>
 

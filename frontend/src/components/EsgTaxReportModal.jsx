@@ -56,8 +56,14 @@ export default function EsgTaxReportModal({ isOpen, onClose, analytics }) {
   }
 
   return (
-    <div className="fixed inset-0 z-50 flex items-center justify-center p-2 sm:p-4 bg-forest-950/65 backdrop-blur-md overflow-y-auto print:p-0 print:bg-white print:static animate-in fade-in duration-200">
-      <div className="glass-modal rounded-2xl w-full max-w-2xl shadow-2xl overflow-hidden animate-in fade-in zoom-in-95 duration-200 flex flex-col max-h-[94vh] sm:max-h-[92vh] my-auto print:my-0 print:border-0 print:shadow-none">
+    <div 
+      onClick={onClose}
+      className="fixed inset-0 z-50 flex items-center justify-center p-2 sm:p-4 bg-forest-950/65 backdrop-blur-md overflow-y-auto print:p-0 print:bg-white print:static animate-in fade-in duration-200 cursor-pointer"
+    >
+      <div 
+        onClick={(e) => e.stopPropagation()}
+        className="glass-modal rounded-2xl w-full max-w-2xl shadow-2xl overflow-hidden animate-in fade-in zoom-in-95 duration-200 flex flex-col max-h-[94vh] sm:max-h-[92vh] my-auto print:my-0 print:border-0 print:shadow-none cursor-default"
+      >
         {/* Header (Hidden when printing) */}
         <div className="p-3.5 sm:p-5 border-b border-wheat-200/60 flex items-center justify-between bg-wheat-50/70 backdrop-blur-sm print:hidden shrink-0 gap-2">
           <div className="flex items-center gap-2 sm:gap-2.5 min-w-0">

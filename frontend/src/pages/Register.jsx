@@ -11,6 +11,8 @@ import {
   KeyRound,
   RotateCw,
   Sparkles,
+  Eye,
+  EyeOff,
 } from "lucide-react";
 import { useAuth } from "../AuthContext";
 import { api } from "../api";
@@ -27,6 +29,7 @@ export default function Register() {
   });
   const [error, setError] = useState("");
   const [busy, setBusy] = useState(false);
+  const [showPassword, setShowPassword] = useState(false);
 
   // Email OTP verification state
   const [otpCode, setOtpCode] = useState("");
@@ -324,15 +327,25 @@ export default function Register() {
               <label className="block text-xs uppercase tracking-wide text-forest-800/70 font-semibold mb-1.5">
                 Password * (min 6 chars)
               </label>
-              <input
-                type="password"
-                required
-                minLength={6}
-                placeholder="••••••••"
-                value={form.password}
-                onChange={update("password")}
-                className="w-full border border-wheat-200 rounded-xl px-3.5 py-2.5 text-sm focus:outline-none focus:ring-2 focus:ring-forest-400 bg-white"
-              />
+              <div className="relative">
+                <input
+                  type={showPassword ? "text" : "password"}
+                  required
+                  minLength={6}
+                  placeholder="••••••••"
+                  value={form.password}
+                  onChange={update("password")}
+                  className="w-full border border-wheat-200 rounded-xl pl-3.5 pr-11 py-2.5 text-sm focus:outline-none focus:ring-2 focus:ring-forest-400 bg-white"
+                />
+                <button
+                  type="button"
+                  onClick={() => setShowPassword((prev) => !prev)}
+                  className="absolute right-2.5 top-1/2 -translate-y-1/2 w-8 h-8 flex items-center justify-center text-forest-800/50 hover:text-forest-800 rounded-lg hover:bg-wheat-100 transition-colors cursor-pointer touch-manipulation"
+                  aria-label={showPassword ? "Hide password" : "Show password"}
+                >
+                  {showPassword ? <EyeOff className="w-4 h-4" /> : <Eye className="w-4 h-4 text-forest-700" />}
+                </button>
+              </div>
             </div>
 
             <div>

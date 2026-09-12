@@ -45,8 +45,14 @@ export default function PickupQrModal({ isOpen, onClose, pickup }) {
   };
 
   return (
-    <div className="fixed inset-0 z-50 flex items-center justify-center p-3 sm:p-4 bg-forest-950/65 backdrop-blur-md overflow-y-auto print:p-0 print:bg-white print:static animate-in fade-in duration-200">
-      <div className="relative glass-modal rounded-2xl w-full max-w-lg shadow-2xl overflow-hidden my-auto animate-in fade-in zoom-in-95 duration-150 print:max-w-none print:shadow-none print:border-0 print:w-full">
+    <div 
+      onClick={onClose}
+      className="fixed inset-0 z-50 flex items-center justify-center p-3 sm:p-4 bg-forest-950/65 backdrop-blur-md overflow-y-auto print:p-0 print:bg-white print:static animate-in fade-in duration-200 cursor-pointer"
+    >
+      <div 
+        onClick={(e) => e.stopPropagation()}
+        className="relative glass-modal rounded-2xl w-full max-w-lg shadow-2xl overflow-hidden my-auto animate-in fade-in zoom-in-95 duration-150 print:max-w-none print:shadow-none print:border-0 print:w-full cursor-default"
+      >
         {/* Compact Header */}
         <div className="px-4 sm:px-5 py-3 bg-gradient-to-r from-forest-900/95 via-forest-800/95 to-forest-800/95 backdrop-blur-md text-wheat-50 flex items-center justify-between shrink-0">
           <div className="flex items-center gap-2">
