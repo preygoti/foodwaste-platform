@@ -208,15 +208,25 @@ export default function AnalyticsPage() {
 
         <div className="flex flex-col sm:flex-row items-stretch sm:items-center gap-2 sm:gap-2.5 w-full sm:w-auto">
           <button
+            type="button"
             onClick={() => setShowEsgModal(true)}
-            className="inline-flex items-center justify-center gap-2 px-4 py-2.5 bg-emerald-700 hover:bg-emerald-800 text-wheat-50 rounded-xl text-xs sm:text-sm font-semibold shadow-xs transition-all active:scale-[0.99] w-full sm:w-auto"
+            onTouchEnd={(e) => {
+              if (e && e.cancelable) e.preventDefault();
+              setShowEsgModal(true);
+            }}
+            className="inline-flex items-center justify-center gap-2 px-4 py-2.5 bg-emerald-700 md:hover:bg-emerald-800 active:bg-emerald-900 text-wheat-50 rounded-xl text-xs sm:text-sm font-semibold shadow-xs transition-colors cursor-pointer select-none touch-manipulation w-full sm:w-auto"
           >
             <Receipt className="w-4 h-4 text-emerald-200" />
             <span>Official ESG Tax Statement</span>
           </button>
           <button
+            type="button"
             onClick={() => setShowCertModal(true)}
-            className="inline-flex items-center justify-center gap-2 px-4 py-2.5 bg-forest-800 text-wheat-50 rounded-xl text-xs sm:text-sm font-semibold hover:bg-forest-700 shadow-xs transition-all active:scale-[0.99] w-full sm:w-auto"
+            onTouchEnd={(e) => {
+              if (e && e.cancelable) e.preventDefault();
+              setShowCertModal(true);
+            }}
+            className="inline-flex items-center justify-center gap-2 px-4 py-2.5 bg-forest-800 text-wheat-50 rounded-xl text-xs sm:text-sm font-semibold md:hover:bg-forest-700 active:bg-forest-950 shadow-xs transition-colors cursor-pointer select-none touch-manipulation w-full sm:w-auto"
           >
             <Award className="w-4 h-4 text-amber-300" />
             <span>CSR Certificate</span>
