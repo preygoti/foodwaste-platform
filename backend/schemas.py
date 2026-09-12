@@ -293,3 +293,126 @@ class QrHandshakeResponse(BaseModel):
     meals_provided: float
     verification_code: Optional[str] = None
 
+
+# ---------- Data Analytics Dashboard ----------
+
+class SalesTrendPoint(BaseModel):
+    period: str
+    total_quantity: float
+    total_revenue: float
+    categories: Optional[Dict[str, float]] = None
+
+class SalesTrendsResponse(BaseModel):
+    granularity: str
+    trends: List[SalesTrendPoint]
+    total_revenue: float
+    total_quantity: float
+    top_product: Optional[str] = None
+
+class WasteByReason(BaseModel):
+    reason: str
+    quantity: float
+    financial_loss: float
+    percentage: float
+
+class WasteByProduct(BaseModel):
+    product_name: str
+    category: str
+    total_wasted: float
+    unit: str
+    financial_loss: float
+    primary_reason: str
+
+class WasteAnalysisResponse(BaseModel):
+    total_waste_quantity: float
+    total_financial_loss: float
+    by_reason: List[WasteByReason]
+    by_product: List[WasteByProduct]
+    daily_trends: List[Dict[str, Any]]
+
+class SupplierStat(BaseModel):
+    supplier: str
+    total_quantity: float
+    total_cost: float
+    order_count: int
+
+class PurchaseSummaryResponse(BaseModel):
+    total_quantity: float
+    total_cost: float
+    total_orders: int
+    by_supplier: List[SupplierStat]
+    monthly_trends: List[Dict[str, Any]]
+
+class ProductPerformanceItem(BaseModel):
+    product_name: str
+    category: str
+    unit: str
+    total_sales_qty: float
+    total_revenue: float
+    total_waste_qty: float
+    waste_rate_pct: float
+    avg_daily_sales: float
+    profitability_score: float
+    risk_level: str
+
+class FinancialOverviewResponse(BaseModel):
+    total_revenue: float
+    total_purchase_cost: float
+    total_waste_loss: float
+    gross_margin: float
+    gross_margin_pct: float
+    by_category: List[Dict[str, Any]]
+
+class DemandForecastItem(BaseModel):
+    date: str
+    predicted_qty: float
+    confidence: float
+
+class ProductForecast(BaseModel):
+    product_name: str
+    category: str
+    unit: str
+    avg_daily_demand: float
+    trend: str
+    weekend_multiplier: float
+    daily_forecast: List[DemandForecastItem]
+
+class DemandForecastResponse(BaseModel):
+    days_ahead: int
+    forecasts: List[ProductForecast]
+
+class WastePredictionItem(BaseModel):
+    product_name: str
+    category: str
+    waste_risk_score: float
+    waste_probability_pct: float
+    predicted_waste_qty: float
+    primary_waste_reason: str
+    recommended_action: str
+    days_since_last_waste: int
+    historical_waste_total: float
+    financial_loss_estimate: float
+
+class WastePredictionResponse(BaseModel):
+    predictions: List[WastePredictionItem]
+    high_risk_count: int
+    total_predicted_loss: float
+
+class InventoryHealthItem(BaseModel):
+    product_name: str
+    category: str
+    unit: str
+    current_stock: float
+    avg_days_to_expiry: float
+    stockout_risk: bool
+    reorder_alert: bool
+    avg_daily_demand: float
+    days_of_stock_remaining: float
+
+class InventoryHealthResponse(BaseModel):
+    products: List[InventoryHealthItem]
+    total_stock_value: float
+    stockout_risk_count: int
+    reorder_alert_count: int
+
+

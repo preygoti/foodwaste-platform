@@ -9,6 +9,7 @@ import BusinessListingsPage from "./pages/BusinessListingsPage";
 import BrowseListingsPage from "./pages/BrowseListingsPage";
 import MyPickupsPage from "./pages/MyPickupsPage";
 import AnalyticsPage from "./pages/AnalyticsPage";
+import DataAnalyticsPage from "./pages/DataAnalyticsPage";
 
 function Protected({ role, children }) {
   const { user, loading } = useAuth();
@@ -37,6 +38,7 @@ function AppRoutes() {
 
       <Route path="/dashboard/inventory" element={<Protected role="business"><InventoryPage /></Protected>} />
       <Route path="/dashboard/listings" element={<Protected role="business"><BusinessListingsPage /></Protected>} />
+      <Route path="/dashboard/data-analytics" element={<Protected role="business"><DataAnalyticsPage /></Protected>} />
 
       <Route path="/dashboard/browse" element={<Protected role="ngo"><BrowseListingsPage /></Protected>} />
       <Route path="/dashboard/pickups" element={<Protected role="ngo"><MyPickupsPage /></Protected>} />

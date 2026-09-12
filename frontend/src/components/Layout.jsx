@@ -11,6 +11,7 @@ import {
   LogOut,
   Building2,
   Shield,
+  BarChart3,
 } from "lucide-react";
 import { useAuth } from "../AuthContext";
 
@@ -51,7 +52,8 @@ export default function Layout({ children }) {
   const businessLinks = [
     { to: "/dashboard/inventory", label: "Inventory", eyebrow: "01", icon: Package },
     { to: "/dashboard/listings", label: "Surplus Listings", eyebrow: "02", icon: Store },
-    { to: "/dashboard/analytics", label: "Impact & Analytics", eyebrow: "03", icon: TrendingUp },
+    { to: "/dashboard/data-analytics", label: "Data Analytics", eyebrow: "03", icon: BarChart3 },
+    { to: "/dashboard/analytics", label: "Impact & Analytics", eyebrow: "04", icon: TrendingUp },
   ];
 
   const ngoLinks = [

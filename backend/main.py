@@ -25,6 +25,11 @@ from risk_engine import (
 )
 from email_service import send_otp_email
 from vision_engine import run_food_vision_classifier
+from prediction_engine import (
+    get_sales_trends, get_waste_analysis, get_purchase_summary,
+    get_product_performance, get_financial_overview, get_demand_forecast,
+    get_waste_predictions, get_inventory_health,
+)
 
 Base.metadata.create_all(bind=engine)
 
@@ -1167,3 +1172,121 @@ def food_rescue_dashboard(
         recent_rescue_operations=recent_ops,
     )
 
+
+# ===== DATA ANALYTICS ENDPOINTS (New CSV-Driven Analytics) =====
+
+DATA_DIR = os.path.join(os.path.dirname(os.path.abspath(__file__)), "data")
+
+
+@app.get("/analytics/sales-trends")
+async def analytics_sales_trends(
+    granularity: str = "daily",
+    current_user: models.User = Depends(get_current_user),
+):
+    """Sales trends aggregated by daily, weekly, or monthly granularity."""
+    try:
+        result = get_sales_trends(DATA_DIR, granularity=granularity)
+        return result
+    except Exception as e:
+        raise HTTPException(status_code=500, detail=f"Failed to compute sales trends: {str(e)}")
+
+
+@app.get("/analytics/waste-analysis")
+async def analytics_waste_analysis(
+    current_user: models.User = Depends(get_current_user),
+):
+    """Waste patterns by reason, product, category, and daily trends."""
+    try:
+        result = get_waste_analysis(DATA_DIR)
+        return result
+    except Exception as e:
+        raise HTTPException(status_code=500, detail=f"Failed to compute waste analysis: {str(e)}")
+
+
+@app.get("/analytics/purchase-summary")
+async def analytics_purchase_summary(
+    current_user: models.User = Depends(get_current_user),
+):
+    """Purchase history with supplier breakdown and cost trends."""
+    try:
+        result = get_purchase_summary(DATA_DIR)
+        return result
+    except Exception as e:
+        raise HTTPException(status_code=500, detail=f"Failed to compute purchase summary: {str(e)}")
+
+
+@app.get("/analytics/product-performance")
+async def analytics_product_performance(
+    current_user: models.User = Depends(get_current_user),
+):
+    """Per-product KPIs: sales velocity, waste rate, profitability."""
+    try:
+        result = get_product_performance(DATA_DIR)
+        return result
+    except Exception as e:
+        raise HTTPException(status_code=500, detail=f"Failed to compute product performance: {str(e)}")
+
+
+@app.get("/analytics/financial-overview")
+async def analytics_financial_overview(
+    current_user: models.User = Depends(get_current_user),
+):
+    """Revenue vs cost vs waste loss, net margins, category-level P&L."""
+    try:
+        result = get_financial_overview(DATA_DIR)
+        return result
+    except Exception as e:
+        raise HTTPException(status_code=500, detail=f"Failed to compute financial overview: {str(e)}")
+
+
+@app.get("/analytics/demand-forecast")
+async def analytics_demand_forecast(
+    days_ahead: int = 7,
+    product_name: Optional[str] = None,
+    current_user: models.User = Depends(get_current_user),
+):
+    """AI-predicted demand for next N days per product."""
+    try:
+        result = get_demand_forecast(DATA_DIR, product_name=product_name, days_ahead=days_ahead)
+        return result
+    except Exception as e:
+        raise HTTPException(status_code=500, detail=f"Failed to compute demand forecast: {str(e)}")
+
+
+@app.get("/analytics/waste-prediction")
+async def analytics_waste_prediction(
+    product_name: Optional[str] = None,
+    current_user: models.User = Depends(get_current_user),
+):
+    """AI-predicted waste risk per product based on historical patterns."""
+    try:
+        result = get_waste_predictions(DATA_DIR, product_name=product_name)
+        return result
+    except Exception as e:
+        raise HTTPException(status_code=500, detail=f"Failed to compute waste predictions: {str(e)}")
+
+
+@app.get("/analytics/inventory-health")
+async def analytics_inventory_health(
+    current_user: models.User = Depends(get_current_user),
+):
+    """Current stock levels, days-to-expiry distribution, stockout risk."""
+    try:
+        result = get_inventory_health(DATA_DIR)
+        return result
+    except Exception as e:
+        raise HTTPException(status_code=500, detail=f"Failed to compute inventory health: {str(e)}")
+
+
+@app.post("/analytics/seed-data")
+async def seed_analytics_data(
+    current_user: models.User = Depends(require_role("business")),
+    db: Session = Depends(get_db),
+):
+    """Seed the analytics tables with CSV data. Idempotent — skips if already populated."""
+    try:
+        from seed_data import seed_all
+        result = seed_all(db)
+        return {"status": "ok", "message": "Data seeding completed", "details": result}
+    except Exception as e:
+        raise HTTPException(status_code=500, detail=f"Failed to seed data: {str(e)}")

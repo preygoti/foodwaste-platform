@@ -120,3 +120,76 @@ class RegistrationOTP(Base):
     is_used = Column(Boolean, default=False, nullable=False)
     attempts = Column(Integer, default=0, nullable=False)
     created_at = Column(DateTime, default=datetime.utcnow, nullable=False)
+
+
+# ---------- Analytics Data Tables ----------
+
+class DailyProductMetric(Base):
+    __tablename__ = "daily_product_metrics"
+
+    id = Column(Integer, primary_key=True, index=True)
+    date = Column(Date, nullable=False)
+    organization_id = Column(String, nullable=False)
+    product_id = Column(String, nullable=False)
+    location_id = Column(String, default="")
+    product_name = Column(String, nullable=False, index=True)
+    category = Column(String, nullable=False)
+    unit = Column(String, default="kg")
+    opening_stock = Column(Float, default=0.0)
+    purchase_quantity = Column(Float, default=0.0)
+    sales_quantity = Column(Float, default=0.0)
+    waste_quantity = Column(Float, default=0.0)
+    donation_quantity = Column(Float, default=0.0)
+    closing_stock = Column(Float, default=0.0)
+    stockout_flag = Column(Boolean, default=False)
+    days_to_expiry = Column(Integer, default=0)
+    unit_cost = Column(Float, default=0.0)
+    promotion_flag = Column(Boolean, default=False)
+    is_weekend = Column(Boolean, default=False)
+    is_holiday = Column(Boolean, default=False)
+
+
+class SaleRecord(Base):
+    __tablename__ = "sale_records"
+
+    id = Column(Integer, primary_key=True, index=True)
+    sale_id = Column(String, unique=True, nullable=False)
+    date = Column(Date, nullable=False)
+    organization_id = Column(String, nullable=False)
+    product_id = Column(String, nullable=False)
+    location_id = Column(String, default="")
+    quantity_sold = Column(Float, nullable=False)
+    unit = Column(String, default="kg")
+    unit_price = Column(Float, default=0.0)
+    promotion_flag = Column(Boolean, default=False)
+
+
+class WasteEventRecord(Base):
+    __tablename__ = "waste_events"
+
+    id = Column(Integer, primary_key=True, index=True)
+    waste_id = Column(String, unique=True, nullable=False)
+    waste_date = Column(Date, nullable=False)
+    organization_id = Column(String, nullable=False)
+    product_id = Column(String, nullable=False)
+    batch_id = Column(String, default="")
+    location_id = Column(String, default="")
+    quantity_wasted = Column(Float, nullable=False)
+    unit = Column(String, default="kg")
+    waste_reason = Column(String, nullable=False)  # SPOILED or EXPIRED
+    unit_cost = Column(Float, default=0.0)
+
+
+class PurchaseRecord(Base):
+    __tablename__ = "purchase_records"
+
+    id = Column(Integer, primary_key=True, index=True)
+    purchase_id = Column(String, unique=True, nullable=False)
+    purchase_date = Column(Date, nullable=False)
+    received_date = Column(Date, nullable=True)
+    organization_id = Column(String, nullable=False)
+    product_id = Column(String, nullable=False)
+    batch_id = Column(String, default="")
+    quantity_received = Column(Float, nullable=False)
+    unit_cost = Column(Float, default=0.0)
+    supplier = Column(String, default="Unknown")

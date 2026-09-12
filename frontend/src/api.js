@@ -375,4 +375,72 @@ export const api = {
     clearApiCache("dashboard");
     return handle(res);
   },
+
+  // ===== DATA ANALYTICS ENDPOINTS =====
+
+  async getSalesTrends(granularity = "daily") {
+    const res = await safeFetch(
+      `${API_URL}/analytics/sales-trends?granularity=${granularity}`,
+      { headers: authHeaders() }
+    );
+    return handle(res);
+  },
+
+  async getWasteAnalysis() {
+    const res = await safeFetch(`${API_URL}/analytics/waste-analysis`, {
+      headers: authHeaders(),
+    });
+    return handle(res);
+  },
+
+  async getPurchaseSummary() {
+    const res = await safeFetch(`${API_URL}/analytics/purchase-summary`, {
+      headers: authHeaders(),
+    });
+    return handle(res);
+  },
+
+  async getProductPerformance() {
+    const res = await safeFetch(`${API_URL}/analytics/product-performance`, {
+      headers: authHeaders(),
+    });
+    return handle(res);
+  },
+
+  async getFinancialOverview() {
+    const res = await safeFetch(`${API_URL}/analytics/financial-overview`, {
+      headers: authHeaders(),
+    });
+    return handle(res);
+  },
+
+  async getDemandForecast(daysAhead = 7, productName = null) {
+    let url = `${API_URL}/analytics/demand-forecast?days_ahead=${daysAhead}`;
+    if (productName) url += `&product_name=${encodeURIComponent(productName)}`;
+    const res = await safeFetch(url, { headers: authHeaders() });
+    return handle(res);
+  },
+
+  async getWastePredictions(productName = null) {
+    let url = `${API_URL}/analytics/waste-prediction`;
+    if (productName) url += `?product_name=${encodeURIComponent(productName)}`;
+    const res = await safeFetch(url, { headers: authHeaders() });
+    return handle(res);
+  },
+
+  async getInventoryHealth() {
+    const res = await safeFetch(`${API_URL}/analytics/inventory-health`, {
+      headers: authHeaders(),
+    });
+    return handle(res);
+  },
+
+  async seedAnalyticsData() {
+    const res = await safeFetch(`${API_URL}/analytics/seed-data`, {
+      method: "POST",
+      headers: authHeaders(),
+    });
+    return handle(res);
+  },
 };
+
