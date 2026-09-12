@@ -131,7 +131,10 @@ export default function Layout({ children }) {
       {/* ------------------------------------------------------------- */}
       {/* MOBILE STICKY TOPBAR (< 1024px)                               */}
       {/* ------------------------------------------------------------- */}
-      <header className="lg:hidden sticky top-0 z-40 bg-forest-900/90 backdrop-blur-xl text-wheat-100 px-4 sm:px-6 py-3 flex items-center justify-between border-b border-forest-600/50 shadow-md">
+      {/* Mobile Top Overscroll Guard: keeps header green when over-scrolling on mobile */}
+      <div className="lg:hidden fixed top-0 left-0 right-0 h-48 -translate-y-full bg-forest-900 pointer-events-none z-40" />
+
+      <header className="lg:hidden sticky top-0 z-40 bg-forest-900 text-wheat-100 px-4 sm:px-6 py-3 flex items-center justify-between border-b border-forest-700/80 shadow-md">
         <div className="flex items-center gap-2.5 sm:gap-3 min-w-0">
           <button
             type="button"

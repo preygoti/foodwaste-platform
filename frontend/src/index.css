@@ -27,6 +27,9 @@ html, body {
   touch-action: manipulation;
   min-height: 100%;
   min-height: 100dvh;
+  overscroll-behavior-y: none;
+  -ms-overflow-style: none !important;
+  scrollbar-width: none !important;
 }
 
 button, a, [role="button"], input, select, textarea {
@@ -147,50 +150,16 @@ select.text-center option {
   text-align: center !important;
 }
 
-/* Modern refined scrollbars: visible on hover/scrolling on desktop tables, hidden on mobile touch devices */
-@media (hover: hover) and (pointer: fine) {
-  .overflow-x-auto::-webkit-scrollbar,
-  .overflow-y-auto::-webkit-scrollbar {
-    display: block !important;
-    width: 6px !important;
-    height: 6px !important;
-  }
-  .overflow-x-auto::-webkit-scrollbar-track,
-  .overflow-y-auto::-webkit-scrollbar-track {
-    background: rgba(240, 244, 240, 0.6);
-    border-radius: 4px;
-  }
-  .overflow-x-auto::-webkit-scrollbar-thumb,
-  .overflow-y-auto::-webkit-scrollbar-thumb {
-    background: rgba(46, 125, 50, 0.25);
-    border-radius: 4px;
-  }
-  .overflow-x-auto::-webkit-scrollbar-thumb:hover,
-  .overflow-y-auto::-webkit-scrollbar-thumb:hover {
-    background: rgba(46, 125, 50, 0.5);
-  }
-}
-
-@media (hover: none) or (pointer: coarse) {
-  ::-webkit-scrollbar {
-    display: none !important;
-    width: 0px !important;
-    height: 0px !important;
-  }
-  html, body, *, .no-scrollbar {
-    -ms-overflow-style: none !important;
-    scrollbar-width: none !important;
-  }
-}
-
-.no-scrollbar::-webkit-scrollbar {
+/* Completely hide and remove visible scrollbars across laptop, desktop & mobile while maintaining scroll ability */
+::-webkit-scrollbar {
   display: none !important;
   width: 0px !important;
   height: 0px !important;
 }
-.no-scrollbar {
-  -ms-overflow-style: none !important;
-  scrollbar-width: none !important;
+
+html, body, *, .no-scrollbar {
+  -ms-overflow-style: none !important;  /* IE and Edge */
+  scrollbar-width: none !important;  /* Firefox */
 }
 
 /* Safe Area Inset Utility Classes */
