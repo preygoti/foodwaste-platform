@@ -12,7 +12,6 @@ import {
   Building2,
   Shield,
   BarChart3,
-  RefreshCw,
 } from "lucide-react";
 import { useAuth } from "../AuthContext";
 
@@ -116,63 +115,6 @@ export default function Layout({ children }) {
     };
   }, [mobileMenuOpen]);
 
-  // Mobile Pull-To-Refresh Gesture
-  const [pullDistance, setPullDistance] = useState(0);
-  const [isRefreshing, setIsRefreshing] = useState(false);
-  const touchPullStart = useRef(0);
-  const isPulling = useRef(false);
-
-  useEffect(() => {
-    const onTouchStart = (e) => {
-      if (window.scrollY <= 2 && e.touches && e.touches[0]) {
-        touchPullStart.current = e.touches[0].clientY;
-        isPulling.current = true;
-      } else {
-        isPulling.current = false;
-      }
-    };
-
-    const onTouchMove = (e) => {
-      if (!isPulling.current || isRefreshing || mobileMenuOpen) return;
-      if (!e.touches || !e.touches[0]) return;
-
-      const currentY = e.touches[0].clientY;
-      const diff = currentY - touchPullStart.current;
-
-      if (diff > 0 && window.scrollY <= 2) {
-        const distance = Math.min(diff * 0.45, 75);
-        setPullDistance(distance);
-      } else {
-        setPullDistance(0);
-        isPulling.current = false;
-      }
-    };
-
-    const onTouchEnd = () => {
-      if (!isPulling.current) return;
-      isPulling.current = false;
-      if (pullDistance >= 50 && !isRefreshing) {
-        setIsRefreshing(true);
-        setPullDistance(45);
-        setTimeout(() => {
-          window.location.reload();
-        }, 350);
-      } else {
-        setPullDistance(0);
-      }
-    };
-
-    window.addEventListener("touchstart", onTouchStart, { passive: true });
-    window.addEventListener("touchmove", onTouchMove, { passive: true });
-    window.addEventListener("touchend", onTouchEnd, { passive: true });
-
-    return () => {
-      window.removeEventListener("touchstart", onTouchStart);
-      window.removeEventListener("touchmove", onTouchMove);
-      window.removeEventListener("touchend", onTouchEnd);
-    };
-  }, [pullDistance, isRefreshing, mobileMenuOpen]);
-
   const businessLinks = [
     { to: "/dashboard/inventory", label: "Inventory", eyebrow: "01", icon: Package },
     { to: "/dashboard/listings", label: "Surplus Listings", eyebrow: "02", icon: Store },
@@ -200,28 +142,6 @@ export default function Layout({ children }) {
       {/* ------------------------------------------------------------- */}
       {/* Mobile Top Overscroll Guard: keeps header green when over-scrolling on mobile */}
       <div className="lg:hidden fixed top-0 left-0 right-0 h-48 -translate-y-full bg-forest-900 pointer-events-none z-40" />
-
-      {/* Mobile Pull-To-Refresh Dropdown Badge */}
-      <div
-        className="lg:hidden fixed left-1/2 -translate-x-1/2 z-30 transition-opacity duration-150 pointer-events-none"
-        style={{
-          top: "calc(3.5rem + 10px)",
-          opacity: pullDistance > 10 ? 1 : 0,
-          transform: `translate(-50%, ${pullDistance}px) scale(${Math.min(Math.max(pullDistance / 40, 0.5), 1)})`,
-        }}
-      >
-        <div className="flex items-center gap-2 px-3.5 py-1.5 rounded-full bg-forest-900 text-wheat-100 shadow-xl border border-forest-600/70 text-xs font-mono">
-          <RefreshCw
-            className={`w-3.5 h-3.5 text-forest-400 ${
-              isRefreshing ? "animate-spin" : ""
-            }`}
-            style={{
-              transform: isRefreshing ? undefined : `rotate(${pullDistance * 5}deg)`,
-            }}
-          />
-          <span>{isRefreshing ? "Refreshing..." : pullDistance >= 50 ? "Release to refresh" : "Pull down to refresh"}</span>
-        </div>
-      </div>
 
       <header className="lg:hidden sticky top-0 z-40 bg-forest-900 text-wheat-100 px-4 sm:px-6 h-14 min-h-[56px] max-h-[56px] flex items-center justify-between border-b border-forest-700/80 shadow-md box-border shrink-0 overflow-hidden">
         <div className="flex items-center gap-2.5 sm:gap-3 min-w-0">

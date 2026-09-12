@@ -27,6 +27,7 @@ html, body {
   touch-action: manipulation;
   min-height: 100%;
   min-height: 100dvh;
+  overscroll-behavior-y: none;
   -ms-overflow-style: none !important;
   scrollbar-width: none !important;
 }
