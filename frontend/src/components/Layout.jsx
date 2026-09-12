@@ -203,11 +203,11 @@ export default function Layout({ children }) {
 
       {/* Mobile Pull-To-Refresh Dropdown Badge */}
       <div
-        className="lg:hidden fixed left-1/2 -translate-x-1/2 z-30 transition-all pointer-events-none"
+        className="lg:hidden fixed left-1/2 -translate-x-1/2 z-30 transition-opacity duration-150 pointer-events-none"
         style={{
-          top: `calc(3.5rem + ${pullDistance}px)`,
+          top: "calc(3.5rem + 10px)",
           opacity: pullDistance > 10 ? 1 : 0,
-          transform: `translate(-50%, -50%) scale(${Math.min(Math.max(pullDistance / 40, 0.5), 1)})`,
+          transform: `translate(-50%, ${pullDistance}px) scale(${Math.min(Math.max(pullDistance / 40, 0.5), 1)})`,
         }}
       >
         <div className="flex items-center gap-2 px-3.5 py-1.5 rounded-full bg-forest-900 text-wheat-100 shadow-xl border border-forest-600/70 text-xs font-mono">
@@ -223,7 +223,7 @@ export default function Layout({ children }) {
         </div>
       </div>
 
-      <header className="lg:hidden sticky top-0 z-40 bg-forest-900 text-wheat-100 px-4 sm:px-6 py-3 flex items-center justify-between border-b border-forest-700/80 shadow-md">
+      <header className="lg:hidden sticky top-0 z-40 bg-forest-900 text-wheat-100 px-4 sm:px-6 h-14 min-h-[56px] max-h-[56px] flex items-center justify-between border-b border-forest-700/80 shadow-md box-border shrink-0 overflow-hidden">
         <div className="flex items-center gap-2.5 sm:gap-3 min-w-0">
           <button
             type="button"
