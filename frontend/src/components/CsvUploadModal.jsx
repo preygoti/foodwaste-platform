@@ -365,20 +365,27 @@ export default function CsvUploadModal({ isOpen, open, onClose, onSuccess }) {
         {/* Content */}
         <div className="p-4 sm:p-6 space-y-4 sm:space-y-6 overflow-y-auto flex-1">
           {/* Sample template banner */}
-          <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-3 p-4 rounded-lg bg-forest-50 border border-forest-100 text-forest-800">
-            <div className="flex items-start gap-3">
+          <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-3 p-3.5 sm:p-4 rounded-xl bg-forest-50/90 border border-forest-200/80 text-forest-800">
+            <div className="flex items-start gap-2.5 sm:gap-3 min-w-0">
               <FileText className="w-5 h-5 text-forest-600 shrink-0 mt-0.5" />
-              <div>
-                <p className="text-sm font-medium">Need the correct column format?</p>
-                <p className="text-xs text-forest-800/70 mt-0.5">
-                  Headers: <code className="font-mono text-[11px] bg-white px-1.5 py-0.5 rounded border border-forest-100">item_name, category, quantity, unit, expiry_date, avg_daily_usage, storage_location</code>
-                </p>
+              <div className="min-w-0 flex-1">
+                <p className="text-xs sm:text-sm font-semibold text-forest-900">Required CSV Columns</p>
+                <div className="flex flex-wrap items-center gap-1.5 mt-1.5">
+                  {["item_name", "category", "quantity", "unit", "expiry_date", "avg_daily_usage", "storage_location"].map((col) => (
+                    <span
+                      key={col}
+                      className="inline-flex items-center px-1.5 py-0.5 rounded bg-white text-forest-900 border border-forest-200 font-mono text-[10px] sm:text-[11px] font-medium shadow-2xs"
+                    >
+                      {col}
+                    </span>
+                  ))}
+                </div>
               </div>
             </div>
             <button
               type="button"
               onClick={downloadSampleCsv}
-              className="inline-flex items-center justify-center gap-1.5 px-3 py-1.5 text-xs font-medium text-forest-800 bg-white border border-forest-400/40 rounded-md hover:bg-forest-100/50 transition-colors shrink-0 shadow-sm"
+              className="inline-flex items-center justify-center gap-1.5 px-3 py-1.5 text-xs font-semibold text-forest-800 bg-white border border-forest-300 rounded-lg hover:bg-forest-100/60 active:bg-forest-200 transition-colors shrink-0 shadow-xs cursor-pointer select-none self-start sm:self-center"
             >
               <Download className="w-3.5 h-3.5 text-forest-600" />
               Sample CSV
