@@ -336,7 +336,7 @@ export default function AnalyticsPage() {
       {/* Middle Grid: Category Breakdown Bar Chart + Top Donor Partners */}
       <div className="grid grid-cols-1 lg:grid-cols-3 gap-6 mb-8">
         {/* Left 2 Cols: Category Chart */}
-        <div className="lg:col-span-2 bg-white border border-wheat-200 rounded-xl p-5 sm:p-6 shadow-2xs">
+        <div className="lg:col-span-2 bg-white border border-wheat-200 rounded-xl p-4 sm:p-6 shadow-2xs">
           <div className="flex items-center justify-between mb-4">
             <div>
               <h3 className="font-display text-lg text-forest-800 font-semibold">
@@ -351,21 +351,24 @@ export default function AnalyticsPage() {
             </span>
           </div>
 
-          <div className="w-full h-72">
+          <div className="w-full h-72 sm:h-80">
             <ResponsiveContainer width="100%" height="100%">
-              <BarChart data={categoryChartData} margin={{ top: 15, right: 10, left: -10, bottom: 25 }}>
+              <BarChart data={categoryChartData} margin={{ top: 15, right: 15, left: 15, bottom: 45 }}>
                 <CartesianGrid strokeDasharray="3 3" stroke="#ece1c8" vertical={false} />
                 <XAxis
                   dataKey="category"
-                  tick={{ fontSize: 11, fill: "#1f3a2ecc", fontFamily: "IBM Plex Mono, monospace" }}
+                  tick={{ fontSize: 10, fill: "#1f3a2ecc", fontFamily: "IBM Plex Mono, monospace" }}
                   axisLine={{ stroke: "#ece1c8" }}
                   tickLine={false}
                   interval={0}
-                  angle={-15}
+                  angle={-25}
                   textAnchor="end"
+                  height={50}
+                  dx={-2}
                 />
                 <YAxis
-                  tick={{ fontSize: 11, fill: "#1f3a2ecc", fontFamily: "IBM Plex Mono, monospace" }}
+                  width={38}
+                  tick={{ fontSize: 10, fill: "#1f3a2ecc", fontFamily: "IBM Plex Mono, monospace" }}
                   axisLine={{ stroke: "#ece1c8" }}
                   tickLine={false}
                 />
