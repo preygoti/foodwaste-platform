@@ -164,14 +164,14 @@ const DataAnalyticsPage = () => {
           </div>
         </Card3D>
         
-        <Card3D className="bg-gradient-to-br from-blue-50 to-blue-100 border border-blue-200">
+        <Card3D className="bg-gradient-to-br from-wheat-100 to-wheat-200 border border-wheat-300">
           <div className="flex justify-between items-start">
             <div>
-              <p className="text-blue-800 font-mono text-sm mb-1 uppercase tracking-wider">Purchase Cost</p>
-              <h3 className="font-display text-3xl text-blue-900">{formatCurrency(financials?.total_purchase_cost)}</h3>
+              <p className="text-charcoal-700 font-mono text-sm mb-1 uppercase tracking-wider">Purchase Cost</p>
+              <h3 className="font-display text-3xl text-charcoal-900">{formatCurrency(financials?.total_purchase_cost)}</h3>
             </div>
-            <div className="p-3 bg-blue-200 rounded-full">
-              <ShoppingCart className="w-6 h-6 text-blue-700" />
+            <div className="p-3 bg-wheat-300 rounded-full">
+              <ShoppingCart className="w-6 h-6 text-charcoal-700" />
             </div>
           </div>
         </Card3D>
@@ -229,7 +229,7 @@ const DataAnalyticsPage = () => {
           </div>
         </div>
         
-        <div className="h-80 w-full">
+        <div className="h-64 sm:h-80 w-full">
           <ResponsiveContainer width="100%" height="100%">
             <AreaChart data={salesTrends?.trends || []} margin={{ top: 10, right: 30, left: 0, bottom: 0 }}>
               <defs>
@@ -414,7 +414,7 @@ const DataAnalyticsPage = () => {
               </div>
             </div>
             
-            <div className="h-80 w-full">
+            <div className="h-64 sm:h-80 w-full">
               <ResponsiveContainer width="100%" height="100%">
                 <ComposedChart data={currentForecast.daily_forecast} margin={{ top: 10, right: 30, left: 0, bottom: 0 }}>
                   <CartesianGrid strokeDasharray="3 3" vertical={false} stroke="#e7e5e4" />

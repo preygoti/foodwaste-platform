@@ -292,20 +292,20 @@ export default function Register() {
                   We sent a 6-digit confirmation code to <strong>{form.email}</strong>.
                 </p>
 
-                <div className="flex gap-2">
+                <div className="flex flex-col sm:flex-row gap-2">
                   <input
                     type="text"
                     maxLength={6}
                     placeholder="000000"
                     value={otpCode}
                     onChange={(e) => setOtpCode(e.target.value.replace(/\D/g, "").slice(0, 6))}
-                    className="w-full bg-white border border-forest-300 rounded-lg px-3 py-2 text-center font-mono text-lg tracking-widest font-bold text-forest-900 focus:outline-none focus:ring-2 focus:ring-forest-500 shadow-2xs"
+                    className="w-full bg-white border border-forest-300 rounded-lg px-3 py-2 text-center font-mono text-base sm:text-lg tracking-widest font-bold text-forest-900 focus:outline-none focus:ring-2 focus:ring-forest-500 shadow-2xs"
                   />
                   <button
                     type="button"
                     onClick={handleVerifyOtp}
                     disabled={otpVerifying || otpCode.trim().length !== 6}
-                    className="inline-flex items-center justify-center gap-1 px-4 py-2 bg-emerald-700 hover:bg-emerald-800 text-white rounded-lg text-xs font-semibold disabled:opacity-50 transition-all shadow-2xs shrink-0"
+                    className="inline-flex items-center justify-center gap-1.5 px-4 py-2.5 sm:py-2 bg-forest-700 hover:bg-forest-800 text-white rounded-lg text-xs font-semibold disabled:opacity-50 transition-all shadow-2xs shrink-0 w-full sm:w-auto"
                   >
                     {otpVerifying ? (
                       <Loader2 className="w-3.5 h-3.5 animate-spin" />

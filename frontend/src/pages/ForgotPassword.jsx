@@ -126,19 +126,19 @@ export default function ForgotPassword() {
           </p>
         </div>
 
-        <div className="glass-modal rounded-2xl p-6 sm:p-8 space-y-6">
+        <div className="glass-modal rounded-2xl p-5 sm:p-8 space-y-6">
           {/* Progress Indicator */}
-          <div className="flex items-center justify-between pb-4 border-b border-wheat-200/60 text-xs font-mono">
-            <span className={`font-semibold ${step >= 1 ? "text-forest-800" : "text-forest-800/30"}`}>
+          <div className="flex items-center justify-between pb-4 border-b border-wheat-200/60 text-[11px] sm:text-xs font-mono gap-1">
+            <span className={`font-semibold truncate ${step >= 1 ? "text-forest-800" : "text-forest-800/30"}`}>
               1. Email
             </span>
-            <span className="text-wheat-300">&rarr;</span>
-            <span className={`font-semibold ${step >= 2 ? "text-forest-800" : "text-forest-800/30"}`}>
-              2. OTP Code
+            <span className="text-wheat-300 shrink-0">&rarr;</span>
+            <span className={`font-semibold truncate ${step >= 2 ? "text-forest-800" : "text-forest-800/30"}`}>
+              2. OTP
             </span>
-            <span className="text-wheat-300">&rarr;</span>
-            <span className={`font-semibold ${step >= 3 ? "text-forest-800" : "text-forest-800/30"}`}>
-              3. New Password
+            <span className="text-wheat-300 shrink-0">&rarr;</span>
+            <span className={`font-semibold truncate ${step >= 3 ? "text-forest-800" : "text-forest-800/30"}`}>
+              3. Password
             </span>
           </div>
 
@@ -237,7 +237,7 @@ export default function ForgotPassword() {
                   placeholder="123456"
                   value={otp}
                   onChange={(e) => setOtp(e.target.value.replace(/\D/g, ""))}
-                  className="w-full border border-wheat-200 rounded-xl px-3.5 py-3 text-center text-xl tracking-[0.4em] font-mono font-bold focus:outline-none focus:ring-2 focus:ring-forest-400 bg-white"
+                  className="w-full border border-wheat-200 rounded-xl px-3.5 py-3 text-center text-lg sm:text-xl tracking-[0.2em] sm:tracking-[0.4em] font-mono font-bold focus:outline-none focus:ring-2 focus:ring-forest-400 bg-white"
                 />
               </div>
 

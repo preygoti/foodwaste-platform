@@ -15,8 +15,8 @@
 html, body {
   margin: 0;
   padding: 0;
-  background-color: #fbf8f1;
-  color: #1f3a2e;
+  background-color: #f8faf8;
+  color: #1f2937;
   font-family: 'Public Sans', -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif;
   overflow-x: clip;
   width: 100%;
@@ -26,6 +26,22 @@ html, body {
   -webkit-tap-highlight-color: transparent;
   min-height: 100%;
   min-height: 100dvh;
+}
+
+/* Global text safety - prevent overflow on small viewports */
+*, ::before, ::after {
+  box-sizing: border-box;
+}
+
+p, span, h1, h2, h3, h4, h5, h6, a, button, label, li, td, th {
+  overflow-wrap: break-word;
+}
+
+/* Ensure touch targets have accessible minimum tap height on mobile */
+@media (max-width: 767px) {
+  button, a.button, [role="button"] {
+    min-height: 38px;
+  }
 }
 
 /* Prevent iOS Safari auto-zoom on input focus and ensure bounded box-sizing */
@@ -115,16 +131,50 @@ select.text-center option {
   text-align: center !important;
 }
 
-/* Hide scrollbars across the entire application on both mobile and desktop */
-::-webkit-scrollbar {
+/* Modern refined scrollbars: visible on hover/scrolling on desktop tables, hidden on mobile touch devices */
+@media (hover: hover) and (pointer: fine) {
+  .overflow-x-auto::-webkit-scrollbar,
+  .overflow-y-auto::-webkit-scrollbar {
+    display: block !important;
+    width: 6px !important;
+    height: 6px !important;
+  }
+  .overflow-x-auto::-webkit-scrollbar-track,
+  .overflow-y-auto::-webkit-scrollbar-track {
+    background: rgba(240, 244, 240, 0.6);
+    border-radius: 4px;
+  }
+  .overflow-x-auto::-webkit-scrollbar-thumb,
+  .overflow-y-auto::-webkit-scrollbar-thumb {
+    background: rgba(46, 125, 50, 0.25);
+    border-radius: 4px;
+  }
+  .overflow-x-auto::-webkit-scrollbar-thumb:hover,
+  .overflow-y-auto::-webkit-scrollbar-thumb:hover {
+    background: rgba(46, 125, 50, 0.5);
+  }
+}
+
+@media (hover: none) or (pointer: coarse) {
+  ::-webkit-scrollbar {
+    display: none !important;
+    width: 0px !important;
+    height: 0px !important;
+  }
+  html, body, *, .no-scrollbar {
+    -ms-overflow-style: none !important;
+    scrollbar-width: none !important;
+  }
+}
+
+.no-scrollbar::-webkit-scrollbar {
   display: none !important;
   width: 0px !important;
   height: 0px !important;
 }
-
-html, body, *, .no-scrollbar {
-  -ms-overflow-style: none !important;  /* IE and Edge */
-  scrollbar-width: none !important;  /* Firefox */
+.no-scrollbar {
+  -ms-overflow-style: none !important;
+  scrollbar-width: none !important;
 }
 
 /* Safe Area Inset Utility Classes */

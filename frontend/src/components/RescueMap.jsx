@@ -597,7 +597,7 @@ export default function RescueMap({
 
         {/* Selected Donor Popover Card */}
         {activeListing && (
-          <div className="absolute bottom-4 right-4 max-w-sm w-[90%] sm:w-88 z-[1000] bg-white border border-wheat-200 rounded-2xl p-4 shadow-lg animate-in fade-in slide-in-from-bottom-2 duration-200">
+          <div className="absolute bottom-4 right-4 max-w-sm w-[90%] sm:w-80 md:w-88 z-[1000] bg-white border border-wheat-200 rounded-2xl p-4 shadow-lg animate-in fade-in slide-in-from-bottom-2 duration-200">
             <div className="flex items-start justify-between gap-2">
               <div>
                 <div className="flex items-center gap-1.5 mb-1 flex-wrap">
@@ -705,7 +705,7 @@ export default function RescueMap({
 
         {/* Route Drawer Overlay */}
         {showRouteDrawer && (
-          <div className="absolute inset-y-0 right-0 w-full sm:w-88 z-[1001] bg-white border-l border-wheat-200 shadow-2xl flex flex-col animate-in slide-in-from-right duration-200">
+          <div className="absolute inset-y-0 right-0 w-full sm:w-80 md:w-88 z-[1001] bg-white border-l border-wheat-200 shadow-2xl flex flex-col animate-in slide-in-from-right duration-200">
             <div className="p-4 border-b border-wheat-200 flex items-center justify-between bg-forest-900 text-wheat-50">
               <div className="flex items-center gap-2">
                 <Route className="w-5 h-5 text-gold-400" />

@@ -582,19 +582,18 @@ export default function BrowseListingsPage() {
                       placeholder="e.g. 25"
                       value={mealsEstimate}
                       onChange={(e) => setMealsEstimate(e.target.value)}
-                      style={{ textAlign: "center", display: "inline-flex", alignItems: "center", justifyContent: "center" }}
-                      className="w-[150px] h-8 max-w-full mx-auto box-border border border-wheat-200 rounded-xl px-2.5 py-0 text-xs text-center focus:outline-none focus:ring-2 focus:ring-forest-400 bg-white shadow-xs"
+                      className="w-36 h-9 max-w-full mx-auto box-border border border-wheat-200 rounded-xl px-3 text-xs sm:text-sm text-center focus:outline-none focus:ring-2 focus:ring-forest-400 bg-white shadow-xs inline-flex items-center justify-center font-mono"
                     />
-                    <p className="text-[10px] text-forest-800/50 mt-0.5 text-center">
+                    <p className="text-[10px] text-forest-800/50 mt-1 text-center">
                       ~2.5 community meals per unit.
                     </p>
                   </div>
 
                   {/* Side-by-Side Row: Date & Time */}
-                  <div className="grid grid-cols-2 gap-2.5 w-full box-border pt-0.5">
+                  <div className="grid grid-cols-1 xs:grid-cols-2 gap-2.5 w-full box-border pt-0.5">
                     {/* Field 2: Proposed Pickup Date */}
                     <div className="flex flex-col items-center text-center box-border min-w-0">
-                      <label className="block text-[11px] uppercase tracking-wide text-forest-800/70 font-semibold mb-0.5 text-center truncate w-full">
+                      <label className="block text-[11px] uppercase tracking-wide text-forest-800/70 font-semibold mb-1 text-center truncate w-full">
                         Pickup Date *
                       </label>
                       <input
@@ -602,22 +601,20 @@ export default function BrowseListingsPage() {
                         required
                         value={pickupDate}
                         onChange={(e) => setPickupDate(e.target.value)}
-                        style={{ textAlign: "center", display: "inline-flex", alignItems: "center", justifyContent: "center" }}
-                        className="w-full h-8 box-border bg-white border border-wheat-200 rounded-xl px-2 py-0 text-xs text-forest-900 focus:outline-none focus:ring-2 focus:ring-forest-400 font-mono text-center shadow-xs"
+                        className="w-full h-9 box-border bg-white border border-wheat-200 rounded-xl px-2.5 text-xs sm:text-sm text-forest-900 focus:outline-none focus:ring-2 focus:ring-forest-400 font-mono text-center shadow-xs inline-flex items-center justify-center"
                       />
                     </div>
 
                     {/* Field 3: Proposed Pickup Time Window */}
                     <div className="flex flex-col items-center text-center box-border min-w-0">
-                      <label className="block text-[11px] uppercase tracking-wide text-forest-800/70 font-semibold mb-0.5 text-center truncate w-full">
+                      <label className="block text-[11px] uppercase tracking-wide text-forest-800/70 font-semibold mb-1 text-center truncate w-full">
                         Pickup Time *
                       </label>
                       <select
                         required
                         value={pickupTime}
                         onChange={(e) => setPickupTime(e.target.value)}
-                        style={{ textAlign: "center", textAlignLast: "center", display: "inline-flex", alignItems: "center", justifyContent: "center" }}
-                        className="w-full h-8 box-border bg-white border border-wheat-200 rounded-xl px-2 py-0 text-xs text-forest-900 focus:outline-none focus:ring-2 focus:ring-forest-400 font-mono text-center cursor-pointer shadow-xs"
+                        className="w-full h-9 box-border bg-white border border-wheat-200 rounded-xl px-2.5 text-xs sm:text-sm text-forest-900 focus:outline-none focus:ring-2 focus:ring-forest-400 font-mono text-center cursor-pointer shadow-xs inline-flex items-center justify-center"
                       >
                         <option value="08:00" style={{ textAlign: "center" }}>08:00 AM</option>
                         <option value="09:00" style={{ textAlign: "center" }}>09:00 AM</option>
