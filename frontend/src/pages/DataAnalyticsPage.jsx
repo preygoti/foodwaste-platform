@@ -25,29 +25,61 @@ const PIE_COLORS = [COLORS.tomato[2], COLORS.gold[3], COLORS.forest[3], COLORS.w
 const DataAnalyticsPage = () => {
   const { user } = useAuth();
   
-  // State for all API data
-  const [loading, setLoading] = useState(true);
-  const [error, setError] = useState(null);
+  // Cache-initialized states for instant page transitions without white-screen flashing
+  const [financials, setFinancials] = useState(() => {
+    try {
+      const cached = sessionStorage.getItem("hl_data_financials");
+      return cached ? JSON.parse(cached) : null;
+    } catch { return null; }
+  });
   
-  const [financials, setFinancials] = useState(null);
-  
-  const [salesTrends, setSalesTrends] = useState(null);
+  const [salesTrends, setSalesTrends] = useState(() => {
+    try {
+      const cached = sessionStorage.getItem("hl_data_sales_trends");
+      return cached ? JSON.parse(cached) : null;
+    } catch { return null; }
+  });
   const [salesGranularity, setSalesGranularity] = useState('daily');
   
-  const [wasteAnalysis, setWasteAnalysis] = useState(null);
-  const [productPerformance, setProductPerformance] = useState([]);
+  const [wasteAnalysis, setWasteAnalysis] = useState(() => {
+    try {
+      const cached = sessionStorage.getItem("hl_data_waste_analysis");
+      return cached ? JSON.parse(cached) : null;
+    } catch { return null; }
+  });
+
+  const [productPerformance, setProductPerformance] = useState(() => {
+    try {
+      const cached = sessionStorage.getItem("hl_data_product_perf");
+      return cached ? JSON.parse(cached) : [];
+    } catch { return []; }
+  });
   
-  const [demandForecast, setDemandForecast] = useState(null);
+  const [demandForecast, setDemandForecast] = useState(() => {
+    try {
+      const cached = sessionStorage.getItem("hl_data_demand_forecast");
+      return cached ? JSON.parse(cached) : null;
+    } catch { return null; }
+  });
   const [forecastDays, setForecastDays] = useState(7);
   const [selectedForecastProduct, setSelectedForecastProduct] = useState('');
   
-  const [wastePredictions, setWastePredictions] = useState(null);
+  const [wastePredictions, setWastePredictions] = useState(() => {
+    try {
+      const cached = sessionStorage.getItem("hl_data_waste_predictions");
+      return cached ? JSON.parse(cached) : null;
+    } catch { return null; }
+  });
+
+  const [loading, setLoading] = useState(!financials);
+  const [isSyncing, setIsSyncing] = useState(false);
+  const [error, setError] = useState(null);
 
   const fetchAllData = useCallback(async () => {
-    setLoading(true);
+    if (!financials) setLoading(true);
+    setIsSyncing(true);
     setError(null);
     try {
-      // Parallel fetch for initial data load
       const [
         financialData,
         salesData,
@@ -57,10 +89,10 @@ const DataAnalyticsPage = () => {
         predictionsData
       ] = await Promise.all([
         api.getFinancialOverview(),
-        api.getSalesTrends(salesGranularity),
+        api.getSalesTrends('daily'),
         api.getWasteAnalysis(),
         api.getProductPerformance(),
-        api.getDemandForecast(forecastDays),
+        api.getDemandForecast(7),
         api.getWastePredictions()
       ]);
 
@@ -71,71 +103,112 @@ const DataAnalyticsPage = () => {
       setDemandForecast(forecastData);
       setWastePredictions(predictionsData);
 
-      if (forecastData?.forecasts?.length > 0 && !selectedForecastProduct) {
-        setSelectedForecastProduct(forecastData.forecasts[0].product_name);
+      if (forecastData?.forecasts?.length > 0) {
+        setSelectedForecastProduct(prev => prev || forecastData.forecasts[0].product_name);
       }
+
+      // Persist in session cache for seamless instant navigation
+      try {
+        sessionStorage.setItem("hl_data_financials", JSON.stringify(financialData));
+        sessionStorage.setItem("hl_data_sales_trends", JSON.stringify(salesData));
+        sessionStorage.setItem("hl_data_waste_analysis", JSON.stringify(wasteData));
+        sessionStorage.setItem("hl_data_product_perf", JSON.stringify(performanceData));
+        sessionStorage.setItem("hl_data_demand_forecast", JSON.stringify(forecastData));
+        sessionStorage.setItem("hl_data_waste_predictions", JSON.stringify(predictionsData));
+      } catch {}
     } catch (err) {
       console.error("Failed to fetch analytics data:", err);
-      setError("Failed to load analytics dashboard. Please try again later.");
+      if (!financials) {
+        setError("Failed to load analytics dashboard. Please try again later.");
+      }
     } finally {
       setLoading(false);
+      setIsSyncing(false);
     }
-  }, [salesGranularity, forecastDays, selectedForecastProduct]);
+  }, [financials]);
 
   useEffect(() => {
     fetchAllData();
-  }, [fetchAllData]);
+  }, []);
 
-  // Effect specifically for granularity change to avoid full reload if API supports it
+  // Granularity change handler
   useEffect(() => {
-    if (!loading && salesTrends?.granularity !== salesGranularity) {
-       api.getSalesTrends(salesGranularity).then(setSalesTrends).catch(console.error);
+    if (salesGranularity && salesTrends?.granularity !== salesGranularity) {
+       api.getSalesTrends(salesGranularity)
+         .then(data => {
+           setSalesTrends(data);
+           try { sessionStorage.setItem("hl_data_sales_trends", JSON.stringify(data)); } catch {}
+         })
+         .catch(console.error);
     }
-  }, [salesGranularity, loading]);
+  }, [salesGranularity]);
 
+  // Forecast days change handler
   useEffect(() => {
-    if (!loading && demandForecast?.days_ahead !== forecastDays) {
-       api.getDemandForecast(forecastDays).then(data => {
-           setDemandForecast(data);
-           if (!data.forecasts.find(f => f.product_name === selectedForecastProduct) && data.forecasts.length > 0) {
-               setSelectedForecastProduct(data.forecasts[0].product_name);
-           }
-       }).catch(console.error);
+    if (forecastDays && demandForecast?.days_ahead !== forecastDays) {
+       api.getDemandForecast(forecastDays)
+         .then(data => {
+            setDemandForecast(data);
+            try { sessionStorage.setItem("hl_data_demand_forecast", JSON.stringify(data)); } catch {}
+            if (!data.forecasts.find(f => f.product_name === selectedForecastProduct) && data.forecasts.length > 0) {
+                setSelectedForecastProduct(data.forecasts[0].product_name);
+            }
+         })
+         .catch(console.error);
     }
-  }, [forecastDays, loading]);
-
+  }, [forecastDays]);
 
   const formatCurrency = (val) => new Intl.NumberFormat('en-US', { style: 'currency', currency: 'USD' }).format(val || 0);
   const formatNumber = (val) => new Intl.NumberFormat('en-US').format(val || 0);
 
-  if (loading && !financials) {
-    return (
-      <div className="flex h-[80vh] items-center justify-center">
-        <div className="flex flex-col items-center text-forest-600">
-          <Loader2 className="h-12 w-12 animate-spin mb-4" />
-          <p className="font-mono text-lg animate-pulse">Crunching numbers...</p>
-        </div>
-      </div>
-    );
-  }
-
-  if (error) {
-    return (
-      <div className="p-8">
-        <div className="glass-card border-tomato-500 bg-tomato-500/10 p-6 flex flex-col items-center text-center max-w-lg mx-auto">
-          <AlertTriangle className="h-12 w-12 text-tomato-500 mb-4" />
-          <h2 className="font-display text-2xl text-tomato-600 mb-2">Oops! Something went wrong</h2>
-          <p className="text-gray-700 font-body mb-6">{error}</p>
-          <button onClick={fetchAllData} className="bg-tomato-500 hover:bg-tomato-600 text-white px-6 py-2 rounded-full font-medium transition-colors">
-            Try Again
-          </button>
-        </div>
-      </div>
-    );
-  }
-
   // Find the selected forecast product data
   const currentForecast = demandForecast?.forecasts?.find(f => f.product_name === selectedForecastProduct) || demandForecast?.forecasts?.[0];
+
+  if (loading && !financials) {
+    return (
+      <Layout>
+        <div className="space-y-8 animate-pulse p-2 sm:p-4">
+          <div className="flex flex-col md:flex-row md:items-end justify-between gap-4 mb-8">
+            <div>
+              <div className="h-9 w-64 bg-forest-200/60 rounded-lg mb-2" />
+              <div className="h-5 w-80 bg-gray-200/60 rounded-lg" />
+            </div>
+            <div className="h-8 w-36 bg-gray-200/50 rounded-lg" />
+          </div>
+
+          <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-4 sm:gap-6">
+            {[1, 2, 3, 4].map(i => (
+              <div key={i} className="h-28 bg-white/70 border border-wheat-200/80 rounded-2xl p-5" />
+            ))}
+          </div>
+
+          <div className="h-80 bg-white/70 border border-wheat-200/80 rounded-2xl p-6" />
+
+          <div className="grid grid-cols-1 lg:grid-cols-2 gap-6">
+            <div className="h-80 bg-white/70 border border-wheat-200/80 rounded-2xl p-6" />
+            <div className="h-80 bg-white/70 border border-wheat-200/80 rounded-2xl p-6" />
+          </div>
+        </div>
+      </Layout>
+    );
+  }
+
+  if (error && !financials) {
+    return (
+      <Layout>
+        <div className="p-8">
+          <div className="glass-card border-tomato-500 bg-tomato-500/10 p-6 flex flex-col items-center text-center max-w-lg mx-auto">
+            <AlertTriangle className="h-12 w-12 text-tomato-500 mb-4" />
+            <h2 className="font-display text-2xl text-tomato-600 mb-2">Oops! Something went wrong</h2>
+            <p className="text-gray-700 font-body mb-6">{error}</p>
+            <button onClick={fetchAllData} className="bg-tomato-500 hover:bg-tomato-600 text-white px-6 py-2 rounded-full font-medium transition-colors">
+              Try Again
+            </button>
+          </div>
+        </div>
+      </Layout>
+    );
+  }
 
   return (
     <Layout>
