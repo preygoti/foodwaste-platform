@@ -141,16 +141,16 @@ export default function Layout({ children }) {
       {/* MOBILE STICKY TOPBAR (< 1024px)                               */}
       {/* ------------------------------------------------------------- */}
       {/* Mobile Top Overscroll Guard: keeps header green when over-scrolling on mobile */}
-      <div className="lg:hidden fixed top-0 left-0 right-0 h-48 -translate-y-full bg-forest-900 pointer-events-none z-40" />
+      <div className="lg:hidden fixed top-0 left-0 right-0 h-48 -translate-y-full bg-forest-800 pointer-events-none z-40" />
 
-      <header className="lg:hidden sticky top-0 z-40 bg-forest-900 text-wheat-100 px-4 sm:px-6 h-16 min-h-[64px] max-h-[64px] flex items-center justify-between border-b border-forest-700/80 shadow-md box-border shrink-0 overflow-hidden">
+      <header className="lg:hidden sticky top-0 z-40 bg-forest-800 text-wheat-100 px-4 sm:px-6 h-16 min-h-[64px] max-h-[64px] flex items-center justify-between border-b border-forest-600/50 shadow-md box-border shrink-0 overflow-hidden">
         {/* Left: Menu Hamburger + Brand Badge + Title */}
         <div className="flex items-center gap-2.5 sm:gap-3 min-w-0">
           <button
             type="button"
             onClick={handleToggleMenu}
             onTouchEnd={handleToggleMenu}
-            className="w-10 h-10 min-w-[40px] min-h-[40px] flex items-center justify-center rounded-xl text-wheat-100 md:hover:bg-forest-700/80 active:bg-forest-700 transition-colors cursor-pointer select-none touch-manipulation relative z-10"
+            className="w-10 h-10 min-w-[40px] min-h-[40px] flex items-center justify-center rounded-xl text-wheat-100 md:hover:bg-forest-700/80 active:bg-forest-900/60 transition-colors cursor-pointer select-none touch-manipulation relative z-10"
             aria-label={mobileMenuOpen ? "Close navigation menu" : "Open navigation menu"}
             aria-expanded={mobileMenuOpen}
           >
@@ -158,7 +158,7 @@ export default function Layout({ children }) {
           </button>
 
           {/* HL Logo Icon */}
-          <div className="w-8 h-8 rounded-lg bg-forest-800 text-wheat-50 flex items-center justify-center font-display italic font-bold text-sm shadow-xs border border-forest-700/60 shrink-0">
+          <div className="w-8 h-8 rounded-lg bg-white/15 text-white flex items-center justify-center font-display italic font-bold text-sm shadow-xs border border-white/25 shrink-0">
             HL
           </div>
 
@@ -166,7 +166,7 @@ export default function Layout({ children }) {
             <span className="font-display italic text-base sm:text-lg tracking-tight font-semibold block leading-tight text-white truncate">
               Harvest Ledger
             </span>
-            <span className="text-[10px] uppercase tracking-wider text-forest-100/70 font-mono block truncate -mt-0.5">
+            <span className="text-[10px] uppercase tracking-wider text-forest-100/75 font-mono block truncate -mt-0.5">
               {user?.role === "business" ? "Business Portal" : "NGO Food Bank"}
             </span>
           </div>
@@ -180,7 +180,7 @@ export default function Layout({ children }) {
           <button
             type="button"
             onClick={handleSignOut}
-            className="w-9 h-9 min-w-[36px] min-h-[36px] flex items-center justify-center text-wheat-100/80 hover:text-tomato-400 rounded-xl hover:bg-forest-700/60 active:bg-forest-700 transition-colors cursor-pointer select-none touch-manipulation"
+            className="w-9 h-9 min-w-[36px] min-h-[36px] flex items-center justify-center text-wheat-100/80 hover:text-tomato-400 rounded-xl hover:bg-forest-700/60 active:bg-forest-900/60 transition-colors cursor-pointer select-none touch-manipulation"
             aria-label="Sign out"
           >
             <LogOut className="w-4 h-4" />
