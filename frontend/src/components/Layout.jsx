@@ -78,9 +78,9 @@ export default function Layout({ children }) {
         <div className="flex items-center gap-2.5 sm:gap-3 min-w-0">
           <button
             type="button"
-            onClick={() => setMobileMenuOpen(true)}
-            className="w-10 h-10 min-w-[40px] flex items-center justify-center rounded-xl text-wheat-100 hover:bg-forest-700/80 active:bg-forest-600 transition-colors"
-            aria-label="Open navigation menu"
+            onClick={() => setMobileMenuOpen((prev) => !prev)}
+            className="w-11 h-11 min-w-[44px] min-h-[44px] flex items-center justify-center rounded-xl text-wheat-100 hover:bg-forest-700/80 active:bg-forest-600 transition-colors cursor-pointer select-none touch-manipulation relative z-10"
+            aria-label={mobileMenuOpen ? "Close navigation menu" : "Open navigation menu"}
             aria-expanded={mobileMenuOpen}
           >
             <Menu className="w-5 h-5" />
@@ -102,7 +102,7 @@ export default function Layout({ children }) {
           <button
             type="button"
             onClick={handleSignOut}
-            className="w-9 h-9 flex items-center justify-center text-wheat-100/70 hover:text-tomato-400 rounded-xl hover:bg-forest-700/60 transition-colors"
+            className="w-9 h-9 flex items-center justify-center text-wheat-100/70 hover:text-tomato-400 rounded-xl hover:bg-forest-700/60 transition-colors cursor-pointer"
             aria-label="Sign out"
           >
             <LogOut className="w-4 h-4" />
@@ -122,10 +122,13 @@ export default function Layout({ children }) {
       )}
 
       <aside
-        className={`lg:hidden fixed inset-y-0 left-0 z-50 w-72 max-w-[85vw] glass-forest text-wheat-100 flex flex-col shadow-2xl transition-transform duration-300 ease-in-out pb-safe border-r border-white/15 ${
-          mobileMenuOpen ? "translate-x-0" : "-translate-x-full"
+        className={`lg:hidden fixed inset-y-0 left-0 z-50 w-72 max-w-[85vw] glass-forest text-wheat-100 flex flex-col shadow-2xl transition-all duration-300 ease-in-out pb-safe border-r border-white/15 ${
+          mobileMenuOpen
+            ? "translate-x-0 opacity-100 pointer-events-auto visible"
+            : "-translate-x-full opacity-0 pointer-events-none invisible"
         }`}
         aria-label="Mobile Navigation"
+        aria-hidden={!mobileMenuOpen}
       >
         {/* Drawer Header */}
         <div className="px-5 py-4 border-b border-forest-600/60 flex items-center justify-between">

@@ -208,9 +208,9 @@ export default function Landing() {
             {/* Mobile Menu Button */}
             <button
               type="button"
-              onClick={() => setMobileMenuOpen(true)}
-              className="md:hidden p-2 rounded-lg text-forest-800 hover:bg-wheat-100 transition-colors"
-              aria-label="Open Navigation Menu"
+              onClick={() => setMobileMenuOpen((prev) => !prev)}
+              className="md:hidden w-11 h-11 min-w-[44px] min-h-[44px] flex items-center justify-center rounded-xl text-forest-800 hover:bg-wheat-100 active:bg-wheat-200 transition-colors cursor-pointer select-none touch-manipulation"
+              aria-label={mobileMenuOpen ? "Close Navigation Menu" : "Open Navigation Menu"}
               aria-expanded={mobileMenuOpen}
             >
               <Menu className="w-5 h-5" />
