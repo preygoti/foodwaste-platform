@@ -21,9 +21,10 @@ export default function Layout({ children }) {
   const location = useLocation();
   const [mobileMenuOpen, setMobileMenuOpen] = useState(false);
 
-  // Close mobile drawer whenever route changes
+  // Close mobile drawer and restore scroll whenever route changes
   useEffect(() => {
     setMobileMenuOpen(false);
+    document.body.style.overflow = "";
   }, [location.pathname]);
 
   // Handle escape key to close drawer
@@ -170,23 +171,26 @@ export default function Layout({ children }) {
         <nav className="flex-1 px-3 py-4 space-y-1.5 overflow-y-auto">
           {links.map((l) => {
             const Icon = l.icon;
+            const isActive = location.pathname === l.to;
             return (
-              <NavLink
+              <button
                 key={l.to}
-                to={l.to}
-                onClick={() => setMobileMenuOpen(false)}
-                className={({ isActive }) =>
-                  `flex items-center gap-3 px-3.5 py-3 rounded-xl text-sm font-medium transition-all ${
-                    isActive
-                      ? "bg-white/15 backdrop-blur-sm text-white border border-white/20 shadow-sm"
-                      : "text-wheat-100/80 hover:bg-white/10 hover:text-white"
-                  }`
-                }
+                type="button"
+                onClick={() => {
+                  setMobileMenuOpen(false);
+                  document.body.style.overflow = "";
+                  navigate(l.to);
+                }}
+                className={`w-full flex items-center gap-3 px-3.5 py-3 rounded-xl text-sm font-medium transition-all text-left cursor-pointer select-none touch-manipulation ${
+                  isActive
+                    ? "bg-white/15 backdrop-blur-sm text-white border border-white/20 shadow-sm font-semibold"
+                    : "text-wheat-100/80 hover:bg-white/10 hover:text-white active:bg-white/20"
+                }`}
               >
                 <span className="font-mono text-xs text-forest-100/50 w-5">{l.eyebrow}</span>
                 <Icon className="w-4 h-4 text-forest-100/70" />
                 <span className="flex-1">{l.label}</span>
-              </NavLink>
+              </button>
             );
           })}
         </nav>
