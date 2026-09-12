@@ -143,36 +143,44 @@ export default function Layout({ children }) {
       {/* Mobile Top Overscroll Guard: keeps header green when over-scrolling on mobile */}
       <div className="lg:hidden fixed top-0 left-0 right-0 h-48 -translate-y-full bg-forest-900 pointer-events-none z-40" />
 
-      <header className="lg:hidden sticky top-0 z-40 bg-forest-900 text-wheat-100 px-4 sm:px-6 h-14 min-h-[56px] max-h-[56px] flex items-center justify-between border-b border-forest-700/80 shadow-md box-border shrink-0 overflow-hidden">
+      <header className="lg:hidden sticky top-0 z-40 bg-forest-900 text-wheat-100 px-4 sm:px-6 h-16 min-h-[64px] max-h-[64px] flex items-center justify-between border-b border-forest-700/80 shadow-md box-border shrink-0 overflow-hidden">
+        {/* Left: Menu Hamburger + Brand Badge + Title */}
         <div className="flex items-center gap-2.5 sm:gap-3 min-w-0">
           <button
             type="button"
             onClick={handleToggleMenu}
             onTouchEnd={handleToggleMenu}
-            className="w-11 h-11 min-w-[44px] min-h-[44px] flex items-center justify-center rounded-xl text-wheat-100 md:hover:bg-forest-700/80 active:bg-forest-600 transition-colors cursor-pointer select-none touch-manipulation relative z-10"
+            className="w-10 h-10 min-w-[40px] min-h-[40px] flex items-center justify-center rounded-xl text-wheat-100 md:hover:bg-forest-700/80 active:bg-forest-700 transition-colors cursor-pointer select-none touch-manipulation relative z-10"
             aria-label={mobileMenuOpen ? "Close navigation menu" : "Open navigation menu"}
             aria-expanded={mobileMenuOpen}
           >
             <Menu className="w-5 h-5" />
           </button>
+
+          {/* HL Logo Icon */}
+          <div className="w-8 h-8 rounded-lg bg-forest-800 text-wheat-50 flex items-center justify-center font-display italic font-bold text-sm shadow-xs border border-forest-700/60 shrink-0">
+            HL
+          </div>
+
           <div className="min-w-0">
-            <span className="font-display italic text-base sm:text-lg tracking-tight font-semibold block leading-tight truncate">
+            <span className="font-display italic text-base sm:text-lg tracking-tight font-semibold block leading-tight text-white truncate">
               Harvest Ledger
             </span>
-            <span className="text-[10px] uppercase tracking-wider text-forest-100/70 font-mono block truncate">
+            <span className="text-[10px] uppercase tracking-wider text-forest-100/70 font-mono block truncate -mt-0.5">
               {user?.role === "business" ? "Business Portal" : "NGO Food Bank"}
             </span>
           </div>
         </div>
 
+        {/* Right: Role Pill & Sign Out */}
         <div className="flex items-center gap-2 shrink-0">
-          <span className="px-2.5 py-1 rounded-full text-[10px] sm:text-[11px] font-mono capitalize glass-pill-dark text-wheat-100">
+          <span className="px-2.5 py-1 rounded-full text-[10px] sm:text-[11px] font-mono capitalize glass-pill-dark text-wheat-100 border border-white/15 shadow-xs">
             {user?.role}
           </span>
           <button
             type="button"
             onClick={handleSignOut}
-            className="w-9 h-9 flex items-center justify-center text-wheat-100/70 hover:text-tomato-400 rounded-xl hover:bg-forest-700/60 transition-colors cursor-pointer"
+            className="w-9 h-9 min-w-[36px] min-h-[36px] flex items-center justify-center text-wheat-100/80 hover:text-tomato-400 rounded-xl hover:bg-forest-700/60 active:bg-forest-700 transition-colors cursor-pointer select-none touch-manipulation"
             aria-label="Sign out"
           >
             <LogOut className="w-4 h-4" />
