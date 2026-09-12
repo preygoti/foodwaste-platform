@@ -68,19 +68,28 @@ export default function Layout({ children }) {
     }
     setMobileMenuOpen(false);
     document.body.style.overflow = "";
+    window.scrollTo({ top: 0, left: 0, behavior: "instant" });
+    if (document.documentElement) document.documentElement.scrollTop = 0;
+    if (document.body) document.body.scrollTop = 0;
     navigate(to);
   };
 
   const handleDrawerNavigateClick = (to) => (e) => {
     setMobileMenuOpen(false);
     document.body.style.overflow = "";
+    window.scrollTo({ top: 0, left: 0, behavior: "instant" });
+    if (document.documentElement) document.documentElement.scrollTop = 0;
+    if (document.body) document.body.scrollTop = 0;
     navigate(to);
   };
 
-  // Close mobile drawer and restore scroll whenever route changes
+  // Close mobile drawer and always reset page scroll to start/top on route change
   useEffect(() => {
     setMobileMenuOpen(false);
     document.body.style.overflow = "";
+    window.scrollTo({ top: 0, left: 0, behavior: "instant" });
+    if (document.documentElement) document.documentElement.scrollTop = 0;
+    if (document.body) document.body.scrollTop = 0;
   }, [location.pathname]);
 
   // Handle escape key to close drawer
