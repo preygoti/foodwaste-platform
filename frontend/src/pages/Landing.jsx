@@ -323,7 +323,7 @@ export default function Landing() {
           </h1>
 
           <p className="text-forest-800/75 text-base sm:text-lg leading-relaxed max-w-xl">
-            Harvest Ledger is the AI-driven commercial food waste management and surplus redistribution platform connecting restaurants, bakeries, and grocery stores with local NGOs — before it becomes waste.
+            Harvest Ledger is an AI-powered food waste management platform that helps restaurants, bakeries, and grocery stores track surplus food, predict waste risks, and connect with NGOs before food becomes waste.
           </p>
 
           <div className="flex flex-col sm:flex-row items-stretch sm:items-center gap-3 pt-2">
@@ -565,7 +565,7 @@ export default function Landing() {
               {
                 num: "05",
                 label: "Measure",
-                desc: "Track rescued meals, landfill diversion, and automated ESG telemetry.",
+                desc: "Track rescued meals, landfill diversion, and automated impact tracking.",
                 icon: BarChart3,
               },
             ].map((step, idx) => {
@@ -710,44 +710,44 @@ export default function Landing() {
             </p>
           </div>
 
-          {/* 6 Feature Cards Grid */}
+          {/* 6 Feature Cards Grid - Real Working Platform Features */}
           <div className="grid sm:grid-cols-2 lg:grid-cols-3 gap-6">
             {[
               {
                 num: "01",
-                title: "Smart Inventory Telemetry",
-                desc: "Keep surplus batches organized with precision quantities, categories, and real-time shelf-life telemetry.",
+                title: "Smart Inventory Management",
+                desc: "Track food quantities, categories, shelf life, and expiry information in one central place.",
                 icon: Package,
               },
               {
                 num: "02",
-                title: "AI Freshness Inspector",
-                desc: "Computer vision and automated multi-factor risk scoring to instantly assess perishable shelf-life.",
-                icon: Sparkles,
+                title: "AI Demand Forecasting",
+                desc: "Predict future food demand across 7, 14, and 30-day periods to help businesses make smarter inventory decisions.",
+                icon: TrendingUp,
               },
               {
                 num: "03",
-                title: "Zero-Waste Recipe Engine",
-                desc: "Generate creative, safe culinary repurposing recipes from on-hand surplus to prevent food waste.",
-                icon: Utensils,
+                title: "Smart Waste Prediction",
+                desc: "Identify food items at higher risk of becoming spoiled or expired before they become waste.",
+                icon: AlertTriangle,
               },
               {
                 num: "04",
-                title: "Live Radar Map & Routing",
-                desc: "Interactive proximity mapping to spot nearby community partners, NGOs, and food banks instantly.",
-                icon: Compass,
+                title: "Inventory Health Monitoring",
+                desc: "Detect stockout risks and receive smart reorder alerts to keep inventory balanced.",
+                icon: Activity,
               },
               {
                 num: "05",
-                title: "Cryptographic QR Handshake",
-                desc: "Secure pickup verification with one-time digital handshakes and chain-of-custody tracking.",
-                icon: ShieldCheck,
+                title: "Advanced Analytics",
+                desc: "Analyze sales trends, purchases, food waste, product performance, and financial impact in one dashboard.",
+                icon: BarChart3,
               },
               {
                 num: "06",
-                title: "ESG & CSR Tax Certification",
-                desc: "Automated tax receipts, landfill diversion analytics, and CSR compliance reports ready for audit.",
-                icon: FileText,
+                title: "Surplus & Pickup Management",
+                desc: "Create surplus listings, connect with NGOs, coordinate pickups, and verify handovers using secure QR codes.",
+                icon: ShieldCheck,
               },
             ].map((feat, idx) => {
               const FeatIcon = feat.icon;
@@ -831,10 +831,10 @@ export default function Landing() {
                 Pickups Completed
               </span>
               <p className="font-display font-bold text-2xl sm:text-3xl text-forest-800">
-                {platformMetrics?.completed_pickups_count ? `${platformMetrics.completed_pickups_count}` : "Verified Handshakes"}
+                {platformMetrics?.completed_pickups_count ? `${platformMetrics.completed_pickups_count}` : "Active Pickups"}
               </p>
               <p className="text-xs text-forest-800/60 leading-relaxed">
-                Coordinated donor-to-NGO handoffs completed with digital pass verification.
+                Coordinated donor-to-NGO handoffs completed with secure QR verification.
               </p>
             </div>
 
@@ -848,7 +848,7 @@ export default function Landing() {
                 Food At Risk Monitored
               </span>
               <p className="font-display font-bold text-2xl sm:text-3xl text-forest-800">
-                {platformMetrics?.items_at_risk_count ? `${platformMetrics.items_at_risk_count} Items` : "Live Telemetry"}
+                {platformMetrics?.items_at_risk_count ? `${platformMetrics.items_at_risk_count} Items` : "Risk Monitored"}
               </p>
               <p className="text-xs text-forest-800/60 leading-relaxed">
                 Active perishable batches tracked with automated risk scoring.
