@@ -146,6 +146,20 @@ export default function Landing() {
     };
   }, [mobileMenuOpen]);
 
+  const handleToggleMenu = (e) => {
+    if (e && e.cancelable && e.type === "touchend") {
+      e.preventDefault();
+    }
+    setMobileMenuOpen((prev) => !prev);
+  };
+
+  const handleCloseMenu = (e) => {
+    if (e && e.cancelable && e.type === "touchend") {
+      e.preventDefault();
+    }
+    setMobileMenuOpen(false);
+  };
+
   return (
     <div className="min-h-screen bg-wheat-50 text-forest-800 flex flex-col overflow-x-clip selection:bg-forest-800 selection:text-wheat-50 font-sans antialiased relative">
       {/* Ambient background light orbs for frosted glass refractions */}
@@ -154,37 +168,37 @@ export default function Landing() {
       <div aria-hidden="true" className="pointer-events-none absolute top-[700px] -left-20 w-80 h-80 bg-emerald-300/15 rounded-full blur-3xl" />
 
       {/* ------------------------------------------------------------- */}
-      {/* 1. NAVIGATION                                                 */}
+      {/* NAVIGATION / HEADER                                           */}
       {/* ------------------------------------------------------------- */}
-      <header className="sticky top-0 z-50 glass-header transition-all">
-        <div className="max-w-6xl w-full mx-auto px-4 sm:px-6 lg:px-8 py-3.5 flex items-center justify-between">
-          {/* Brand */}
-          <Link to="/" className="group flex items-center gap-2.5">
-            <div className="w-8 h-8 rounded-lg bg-forest-800 text-wheat-50 flex items-center justify-center font-display italic font-bold text-sm shadow-2xs group-hover:scale-105 transition-transform">
+      <header className="sticky top-0 z-40 bg-wheat-50/80 backdrop-blur-xl border-b border-wheat-200/80 transition-all">
+        <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 h-16 sm:h-20 flex items-center justify-between">
+          {/* Brand Logo & Name */}
+          <Link to="/" className="flex items-center gap-2.5 sm:gap-3 group select-none">
+            <div className="w-8 h-8 sm:w-10 sm:h-10 rounded-xl bg-forest-800 text-wheat-50 flex items-center justify-center font-display italic font-bold text-base sm:text-lg shadow-sm group-hover:bg-forest-700 transition-colors">
               HL
             </div>
             <div>
-              <span className="font-display italic text-lg sm:text-xl text-forest-800 font-bold tracking-tight block leading-none">
+              <span className="font-display italic text-lg sm:text-xl font-bold tracking-tight text-forest-800 block leading-tight">
                 HARVEST LEDGER
               </span>
-              <span className="text-[10px] font-mono tracking-wider text-forest-800/60 block mt-0.5">
-                Turn Surplus Into Impact
+              <span className="text-[9px] sm:text-[10px] uppercase font-mono tracking-wider text-forest-800/60 block -mt-0.5">
+                Surplus &bull; Redistribution
               </span>
             </div>
           </Link>
 
           {/* Desktop Navigation Links */}
-          <nav className="hidden md:flex items-center gap-7 text-xs font-semibold text-forest-800/75">
-            <a href="#hero" className="hover:text-forest-950 transition-colors">
+          <nav className="hidden md:flex items-center gap-6 lg:gap-8 text-xs lg:text-sm font-semibold text-forest-800/80">
+            <a href="#hero" className="hover:text-forest-800 transition-colors">
               Home
             </a>
-            <a href="#how-it-works" className="hover:text-forest-950 transition-colors">
+            <a href="#how-it-works" className="hover:text-forest-800 transition-colors">
               How It Works
             </a>
-            <a href="#features" className="hover:text-forest-950 transition-colors">
+            <a href="#features" className="hover:text-forest-800 transition-colors">
               Features
             </a>
-            <a href="#impact" className="hover:text-forest-950 transition-colors">
+            <a href="#impact" className="hover:text-forest-800 transition-colors">
               Impact
             </a>
           </nav>
@@ -193,13 +207,13 @@ export default function Landing() {
           <div className="flex items-center gap-3">
             <Link
               to="/login"
-              className="hidden sm:inline-flex px-3.5 py-1.5 text-xs font-semibold text-forest-800 hover:text-forest-950 hover:bg-wheat-100 rounded-lg transition-colors"
+              className="text-xs sm:text-sm font-semibold text-forest-800 hover:text-forest-600 transition-colors px-2 py-1"
             >
               Sign In
             </Link>
             <Link
               to="/register"
-              className="inline-flex items-center gap-1.5 px-4 py-2 text-xs font-semibold bg-forest-800 text-wheat-50 rounded-xl hover:bg-forest-700 shadow-sm transition-all active:scale-[0.98]"
+              className="inline-flex items-center gap-1.5 px-3.5 sm:px-4 py-2 sm:py-2.5 bg-forest-800 hover:bg-forest-700 text-wheat-50 rounded-xl text-xs sm:text-sm font-semibold shadow-xs transition-all active:scale-[0.99]"
             >
               <span>Get Started</span>
               <ArrowRight className="w-3.5 h-3.5 hidden sm:inline" />
@@ -208,8 +222,9 @@ export default function Landing() {
             {/* Mobile Menu Button */}
             <button
               type="button"
-              onClick={() => setMobileMenuOpen((prev) => !prev)}
-              className="md:hidden w-11 h-11 min-w-[44px] min-h-[44px] flex items-center justify-center rounded-xl text-forest-800 hover:bg-wheat-100 active:bg-wheat-200 transition-colors cursor-pointer select-none touch-manipulation"
+              onClick={handleToggleMenu}
+              onTouchEnd={handleToggleMenu}
+              className="md:hidden w-11 h-11 min-w-[44px] min-h-[44px] flex items-center justify-center rounded-xl text-forest-800 md:hover:bg-wheat-100 active:bg-wheat-200 transition-colors cursor-pointer select-none touch-manipulation"
               aria-label={mobileMenuOpen ? "Close Navigation Menu" : "Open Navigation Menu"}
               aria-expanded={mobileMenuOpen}
             >
@@ -223,11 +238,13 @@ export default function Landing() {
       {mobileMenuOpen && (
         <div
           className="fixed inset-0 z-50 bg-forest-950/60 backdrop-blur-md md:hidden animate-in fade-in duration-200"
-          onClick={() => setMobileMenuOpen(false)}
+          onClick={handleCloseMenu}
+          onTouchEnd={handleCloseMenu}
         >
           <div
             className="fixed inset-y-0 left-0 w-72 max-w-[80vw] glass-modal border-r border-wheat-200/80 shadow-2xl p-5 sm:p-6 flex flex-col justify-between box-border h-full max-h-[100dvh] overflow-y-auto pb-safe animate-in slide-in-from-left duration-250"
             onClick={(e) => e.stopPropagation()}
+            onTouchEnd={(e) => e.stopPropagation()}
           >
             <div className="space-y-6">
               <div className="flex items-center justify-between pb-4 border-b border-wheat-100">
@@ -246,8 +263,9 @@ export default function Landing() {
                 </div>
                 <button
                   type="button"
-                  onClick={() => setMobileMenuOpen(false)}
-                  className="p-1.5 text-forest-800/60 hover:text-forest-800 rounded-lg hover:bg-wheat-100 transition-colors"
+                  onClick={handleCloseMenu}
+                  onTouchEnd={handleCloseMenu}
+                  className="p-1.5 text-forest-800/60 hover:text-forest-800 rounded-lg md:hover:bg-wheat-100 active:bg-wheat-200 transition-colors cursor-pointer"
                   aria-label="Close Menu"
                 >
                   <X className="w-5 h-5" />
@@ -258,28 +276,32 @@ export default function Landing() {
                 <a
                   href="#hero"
                   onClick={() => setMobileMenuOpen(false)}
-                  className="block px-3 py-2.5 rounded-lg hover:bg-wheat-50 transition-colors"
+                  onTouchEnd={handleCloseMenu}
+                  className="block px-3 py-2.5 rounded-lg active:bg-wheat-200 md:hover:bg-wheat-100 transition-colors"
                 >
                   Home
                 </a>
                 <a
                   href="#how-it-works"
                   onClick={() => setMobileMenuOpen(false)}
-                  className="block px-3 py-2.5 rounded-lg hover:bg-wheat-50 transition-colors"
+                  onTouchEnd={handleCloseMenu}
+                  className="block px-3 py-2.5 rounded-lg active:bg-wheat-200 md:hover:bg-wheat-100 transition-colors"
                 >
                   How It Works
                 </a>
                 <a
                   href="#features"
                   onClick={() => setMobileMenuOpen(false)}
-                  className="block px-3 py-2.5 rounded-lg hover:bg-wheat-50 transition-colors"
+                  onTouchEnd={handleCloseMenu}
+                  className="block px-3 py-2.5 rounded-lg active:bg-wheat-200 md:hover:bg-wheat-100 transition-colors"
                 >
                   Features
                 </a>
                 <a
                   href="#impact"
                   onClick={() => setMobileMenuOpen(false)}
-                  className="block px-3 py-2.5 rounded-lg hover:bg-wheat-50 transition-colors"
+                  onTouchEnd={handleCloseMenu}
+                  className="block px-3 py-2.5 rounded-lg active:bg-wheat-200 md:hover:bg-wheat-100 transition-colors"
                 >
                   Impact
                 </a>
@@ -290,14 +312,16 @@ export default function Landing() {
               <Link
                 to="/login"
                 onClick={() => setMobileMenuOpen(false)}
-                className="w-full inline-flex items-center justify-center py-2.5 border border-wheat-300 text-forest-800 font-semibold text-xs rounded-xl hover:bg-wheat-50 transition-colors"
+                onTouchEnd={handleCloseMenu}
+                className="w-full inline-flex items-center justify-center py-2.5 border border-wheat-300 text-forest-800 font-semibold text-xs rounded-xl active:bg-wheat-200 md:hover:bg-wheat-50 transition-colors"
               >
                 Sign In
               </Link>
               <Link
                 to="/register"
                 onClick={() => setMobileMenuOpen(false)}
-                className="w-full inline-flex items-center justify-center gap-1.5 py-2.5 bg-forest-800 text-wheat-50 font-semibold text-xs rounded-xl hover:bg-forest-700 shadow-sm transition-colors"
+                onTouchEnd={handleCloseMenu}
+                className="w-full inline-flex items-center justify-center gap-1.5 py-2.5 bg-forest-800 text-wheat-50 font-semibold text-xs rounded-xl md:hover:bg-forest-700 active:bg-forest-900 shadow-sm transition-colors"
               >
                 <span>Get Started Free</span>
                 <ArrowRight className="w-3.5 h-3.5" />

@@ -1,4 +1,4 @@
-import { useState, useEffect } from "react";
+import { useState, useEffect, useRef } from "react";
 import { NavLink, useNavigate, useLocation } from "react-router-dom";
 import {
   Menu,
@@ -20,6 +20,62 @@ export default function Layout({ children }) {
   const navigate = useNavigate();
   const location = useLocation();
   const [mobileMenuOpen, setMobileMenuOpen] = useState(false);
+  const touchStartPos = useRef({ x: 0, y: 0 });
+
+  // Fast tap handler for hamburger toggle: fires on touchend without waiting for synthetic click
+  const handleToggleMenu = (e) => {
+    if (e) {
+      if (e.cancelable && e.type === "touchend") {
+        e.preventDefault();
+      }
+      e.stopPropagation();
+    }
+    setMobileMenuOpen((prev) => !prev);
+  };
+
+  const handleCloseMenu = (e) => {
+    if (e) {
+      if (e.cancelable && e.type === "touchend") {
+        e.preventDefault();
+      }
+      e.stopPropagation();
+    }
+    setMobileMenuOpen(false);
+    document.body.style.overflow = "";
+  };
+
+  const handleTouchStart = (e) => {
+    if (e.touches && e.touches[0]) {
+      touchStartPos.current = {
+        x: e.touches[0].clientX,
+        y: e.touches[0].clientY,
+      };
+    }
+  };
+
+  // Fast navigation for drawer items with touch cancellation for deliberate scrolling
+  const handleDrawerNavigateTouch = (to) => (e) => {
+    if (e && e.changedTouches && e.changedTouches[0]) {
+      const dx = Math.abs(e.changedTouches[0].clientX - touchStartPos.current.x);
+      const dy = Math.abs(e.changedTouches[0].clientY - touchStartPos.current.y);
+      // If user moved more than 8px, it was a menu scroll gesture, do NOT navigate
+      if (dx > 8 || dy > 8) {
+        return;
+      }
+    }
+    if (e && e.cancelable && e.type === "touchend") {
+      e.preventDefault();
+    }
+    setMobileMenuOpen(false);
+    document.body.style.overflow = "";
+    navigate(to);
+  };
+
+  const handleDrawerNavigateClick = (to) => (e) => {
+    setMobileMenuOpen(false);
+    document.body.style.overflow = "";
+    navigate(to);
+  };
 
   // Close mobile drawer and restore scroll whenever route changes
   useEffect(() => {
@@ -79,8 +135,9 @@ export default function Layout({ children }) {
         <div className="flex items-center gap-2.5 sm:gap-3 min-w-0">
           <button
             type="button"
-            onClick={() => setMobileMenuOpen((prev) => !prev)}
-            className="w-11 h-11 min-w-[44px] min-h-[44px] flex items-center justify-center rounded-xl text-wheat-100 hover:bg-forest-700/80 active:bg-forest-600 transition-colors cursor-pointer select-none touch-manipulation relative z-10"
+            onClick={handleToggleMenu}
+            onTouchEnd={handleToggleMenu}
+            className="w-11 h-11 min-w-[44px] min-h-[44px] flex items-center justify-center rounded-xl text-wheat-100 md:hover:bg-forest-700/80 active:bg-forest-600 transition-colors cursor-pointer select-none touch-manipulation relative z-10"
             aria-label={mobileMenuOpen ? "Close navigation menu" : "Open navigation menu"}
             aria-expanded={mobileMenuOpen}
           >
@@ -117,7 +174,8 @@ export default function Layout({ children }) {
       {mobileMenuOpen && (
         <div
           className="lg:hidden fixed inset-0 bg-forest-950/60 backdrop-blur-md z-40 transition-opacity animate-in fade-in duration-200"
-          onClick={() => setMobileMenuOpen(false)}
+          onClick={handleCloseMenu}
+          onTouchEnd={handleCloseMenu}
           aria-hidden="true"
         />
       )}
@@ -142,8 +200,10 @@ export default function Layout({ children }) {
             </p>
           </div>
           <button
-            onClick={() => setMobileMenuOpen(false)}
-            className="w-9 h-9 flex items-center justify-center rounded-xl text-wheat-100/70 hover:text-white hover:bg-forest-700/60 active:bg-forest-600 transition-colors"
+            type="button"
+            onClick={handleCloseMenu}
+            onTouchEnd={handleCloseMenu}
+            className="w-9 h-9 flex items-center justify-center rounded-xl text-wheat-100/70 hover:text-white md:hover:bg-forest-700/60 active:bg-forest-600 transition-colors cursor-pointer"
             aria-label="Close navigation menu"
           >
             <X className="w-5 h-5" />
@@ -168,7 +228,10 @@ export default function Layout({ children }) {
         </div>
 
         {/* Drawer Navigation Links */}
-        <nav className="flex-1 px-3 py-4 space-y-1.5 overflow-y-auto">
+        <nav
+          className="flex-1 px-3 py-4 space-y-1.5 overflow-y-auto"
+          onTouchStart={handleTouchStart}
+        >
           {links.map((l) => {
             const Icon = l.icon;
             const isActive = location.pathname === l.to;
@@ -176,15 +239,12 @@ export default function Layout({ children }) {
               <button
                 key={l.to}
                 type="button"
-                onClick={() => {
-                  setMobileMenuOpen(false);
-                  document.body.style.overflow = "";
-                  navigate(l.to);
-                }}
-                className={`w-full flex items-center gap-3 px-3.5 py-3 rounded-xl text-sm font-medium transition-all text-left cursor-pointer select-none touch-manipulation ${
+                onClick={handleDrawerNavigateClick(l.to)}
+                onTouchEnd={handleDrawerNavigateTouch(l.to)}
+                className={`w-full flex items-center gap-3 px-3.5 py-3 rounded-xl text-sm font-medium transition-colors text-left cursor-pointer select-none touch-manipulation ${
                   isActive
                     ? "bg-white/15 backdrop-blur-sm text-white border border-white/20 shadow-sm font-semibold"
-                    : "text-wheat-100/80 hover:bg-white/10 hover:text-white active:bg-white/20"
+                    : "text-wheat-100/80 md:hover:bg-white/10 md:hover:text-white active:bg-white/20"
                 }`}
               >
                 <span className="font-mono text-xs text-forest-100/50 w-5">{l.eyebrow}</span>
@@ -247,10 +307,10 @@ export default function Layout({ children }) {
                 key={l.to}
                 to={l.to}
                 className={({ isActive }) =>
-                  `flex items-center gap-3 px-3.5 py-3 rounded-xl text-sm font-medium transition-all ${
+                  `flex items-center gap-3 px-3.5 py-3 rounded-xl text-sm font-medium transition-colors cursor-pointer select-none touch-manipulation ${
                     isActive
                       ? "bg-white/15 backdrop-blur-md text-white shadow-sm font-semibold border border-white/20"
-                      : "text-wheat-100/80 hover:bg-white/10 hover:text-white"
+                      : "text-wheat-100/80 md:hover:bg-white/10 md:hover:text-white active:bg-white/20"
                   }`
                 }
               >

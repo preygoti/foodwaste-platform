@@ -34,6 +34,16 @@ button, a, [role="button"], input, select, textarea {
   -webkit-tap-highlight-color: transparent;
 }
 
+/* Prevent sticky hover & 2-tap delays on mobile touch devices */
+@media (hover: none) and (pointer: coarse) {
+  button:hover:not(:active),
+  a:hover:not(:active),
+  [role="button"]:hover:not(:active) {
+    background-color: transparent;
+    color: inherit;
+  }
+}
+
 /* Global text safety - prevent overflow on small viewports */
 *, ::before, ::after {
   box-sizing: border-box;
