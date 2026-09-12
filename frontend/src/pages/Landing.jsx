@@ -1,5 +1,5 @@
 import { useState, useEffect, useRef } from "react";
-import { Link } from "react-router-dom";
+import { Link, useNavigate } from "react-router-dom";
 import {
   ArrowRight,
   Package,
@@ -101,7 +101,9 @@ function useCountUp(targetNumber, isVisible, duration = 1600) {
 }
 
 export default function Landing() {
+  const navigate = useNavigate();
   const [mobileMenuOpen, setMobileMenuOpen] = useState(false);
+  const [activeSection, setActiveSection] = useState("hero");
   const [platformMetrics, setPlatformMetrics] = useState(null);
 
   // Section reveal refs
@@ -146,17 +148,69 @@ export default function Landing() {
     };
   }, [mobileMenuOpen]);
 
-  const handleToggleMenu = (e) => {
-    if (e && e.cancelable && e.type === "touchend") {
-      e.preventDefault();
-    }
+  // Scrollspy: dynamically track active section based on scroll position
+  useEffect(() => {
+    const sectionIds = ["hero", "how-it-works", "features", "impact"];
+    const handleScroll = () => {
+      const scrollPosition = window.scrollY + 140; // Offset for sticky header
+      for (let i = sectionIds.length - 1; i >= 0; i--) {
+        const el = document.getElementById(sectionIds[i]);
+        if (el) {
+          const top = el.offsetTop;
+          if (scrollPosition >= top) {
+            setActiveSection(sectionIds[i]);
+            return;
+          }
+        }
+      }
+      setActiveSection("hero");
+    };
+
+    window.addEventListener("scroll", handleScroll, { passive: true });
+    handleScroll();
+    return () => window.removeEventListener("scroll", handleScroll);
+  }, []);
+
+  // Smooth scroll handler with sticky header height compensation
+  const scrollToSection = (e, sectionId) => {
+    if (e) e.preventDefault();
+    setMobileMenuOpen(false);
+
+    setTimeout(() => {
+      if (sectionId === "hero") {
+        window.scrollTo({ top: 0, behavior: "smooth" });
+        window.history.pushState(null, "", "#hero");
+        setActiveSection("hero");
+        return;
+      }
+
+      const element = document.getElementById(sectionId);
+      if (element) {
+        const headerOffset = 80;
+        const elementPosition = element.getBoundingClientRect().top;
+        const offsetPosition = elementPosition + window.pageYOffset - headerOffset;
+
+        window.scrollTo({
+          top: offsetPosition,
+          behavior: "smooth",
+        });
+
+        window.history.pushState(null, "", `#${sectionId}`);
+        setActiveSection(sectionId);
+      }
+    }, 80);
+  };
+
+  const handleActionNavigation = (path) => {
+    setMobileMenuOpen(false);
+    navigate(path);
+  };
+
+  const handleToggleMenu = () => {
     setMobileMenuOpen((prev) => !prev);
   };
 
-  const handleCloseMenu = (e) => {
-    if (e && e.cancelable && e.type === "touchend") {
-      e.preventDefault();
-    }
+  const handleCloseMenu = () => {
     setMobileMenuOpen(false);
   };
 
@@ -170,171 +224,200 @@ export default function Landing() {
       {/* ------------------------------------------------------------- */}
       {/* NAVIGATION / HEADER                                           */}
       {/* ------------------------------------------------------------- */}
-      <header className="sticky top-0 z-40 bg-wheat-50/80 backdrop-blur-xl border-b border-wheat-200/80 transition-all">
-        <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 h-16 sm:h-20 flex items-center justify-between">
-          {/* Brand Logo & Name */}
-          <Link to="/" className="flex items-center gap-2.5 sm:gap-3 group select-none">
-            <div className="w-8 h-8 sm:w-10 sm:h-10 rounded-xl bg-forest-800 text-wheat-50 flex items-center justify-center font-display italic font-bold text-base sm:text-lg shadow-sm group-hover:bg-forest-700 transition-colors">
+      <header className="sticky top-0 z-40 bg-[#FFFFFF] border-b border-gray-200/80 shadow-xs transition-all">
+        <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 h-18 sm:h-20 flex items-center justify-between">
+          {/* LEFT SIDE: HL Logo + HARVEST LEDGER */}
+          <Link
+            to="/"
+            onClick={(e) => scrollToSection(e, "hero")}
+            className="flex items-center gap-2.5 sm:gap-3 group select-none shrink-0"
+            aria-label="Harvest Ledger Home"
+          >
+            <div className="w-9 h-9 sm:w-10 sm:h-10 rounded-xl bg-[#166534] text-white flex items-center justify-center font-display italic font-bold text-base sm:text-lg shadow-sm group-hover:bg-[#15803D] transition-colors">
               HL
             </div>
             <div>
-              <span className="font-display italic text-lg sm:text-xl font-bold tracking-tight text-forest-800 block leading-tight">
+              <span className="font-display italic text-lg sm:text-xl font-bold tracking-tight text-[#1F2937] block leading-tight">
                 HARVEST LEDGER
               </span>
-              <span className="text-[9px] sm:text-[10px] uppercase font-mono tracking-wider text-forest-800/60 block -mt-0.5">
+              <span className="text-[9px] sm:text-[10px] uppercase font-mono tracking-wider text-[#64748B] block -mt-0.5">
                 Surplus &bull; Redistribution
               </span>
             </div>
           </Link>
 
-          {/* Desktop Navigation Links */}
-          <nav className="hidden md:flex items-center gap-6 lg:gap-8 text-xs lg:text-sm font-semibold text-forest-800/80">
-            <a href="#hero" className="hover:text-forest-800 transition-colors">
-              Home
-            </a>
-            <a href="#how-it-works" className="hover:text-forest-800 transition-colors">
-              How It Works
-            </a>
-            <a href="#features" className="hover:text-forest-800 transition-colors">
-              Features
-            </a>
-            <a href="#impact" className="hover:text-forest-800 transition-colors">
-              Impact
-            </a>
+          {/* CENTER: Desktop Navigation Links (Visible on Laptop & Desktop: lg:flex) */}
+          <nav className="hidden lg:flex items-center gap-8 text-sm font-semibold text-[#64748B]">
+            {[
+              { id: "hero", label: "Home" },
+              { id: "how-it-works", label: "How It Works" },
+              { id: "features", label: "Features" },
+              { id: "impact", label: "Impact" },
+            ].map((item) => {
+              const isActive = activeSection === item.id;
+              return (
+                <a
+                  key={item.id}
+                  href={`#${item.id}`}
+                  onClick={(e) => scrollToSection(e, item.id)}
+                  className={`relative py-1 transition-colors hover:text-[#166534] ${
+                    isActive ? "text-[#166534] font-bold" : "text-[#64748B]"
+                  }`}
+                >
+                  {item.label}
+                  {isActive && (
+                    <span className="absolute -bottom-1.5 left-0 right-0 h-0.5 bg-[#166534] rounded-full" />
+                  )}
+                </a>
+              );
+            })}
           </nav>
 
-          {/* Right Action & Mobile Menu Toggle */}
+          {/* RIGHT SIDE: Action Buttons (Desktop) & Hamburger Menu (Mobile/Tablet) */}
           <div className="flex items-center gap-3">
-            <Link
-              to="/login"
-              className="text-xs sm:text-sm font-semibold text-forest-800 hover:text-forest-600 transition-colors px-2 py-1"
-            >
-              Sign In
-            </Link>
-            <Link
-              to="/register"
-              className="inline-flex items-center gap-1.5 px-3.5 sm:px-4 py-2 sm:py-2.5 bg-forest-800 hover:bg-forest-700 text-wheat-50 rounded-xl text-xs sm:text-sm font-semibold shadow-xs transition-all active:scale-[0.99]"
-            >
-              <span>Get Started</span>
-              <ArrowRight className="w-3.5 h-3.5 hidden sm:inline" />
-            </Link>
-
-            {/* Mobile Menu Button */}
-            <button
-              type="button"
-              onClick={handleToggleMenu}
-              onTouchEnd={handleToggleMenu}
-              className="md:hidden w-11 h-11 min-w-[44px] min-h-[44px] flex items-center justify-center rounded-xl text-forest-800 md:hover:bg-wheat-100 active:bg-wheat-200 transition-colors cursor-pointer select-none touch-manipulation"
-              aria-label={mobileMenuOpen ? "Close Navigation Menu" : "Open Navigation Menu"}
-              aria-expanded={mobileMenuOpen}
-            >
-              <Menu className="w-5 h-5" />
-            </button>
-          </div>
-        </div>
-      </header>
-
-      {/* Mobile Drawer Backdrop & Navigation */}
-      {mobileMenuOpen && (
-        <div
-          className="fixed inset-0 z-50 bg-forest-950/60 backdrop-blur-md md:hidden animate-in fade-in duration-200"
-          onClick={handleCloseMenu}
-          onTouchEnd={handleCloseMenu}
-        >
-          <div
-            className="fixed inset-y-0 left-0 w-72 max-w-[80vw] glass-modal border-r border-wheat-200/80 shadow-2xl p-5 sm:p-6 flex flex-col justify-between box-border h-full max-h-[100dvh] overflow-y-auto pb-safe animate-in slide-in-from-left duration-250"
-            onClick={(e) => e.stopPropagation()}
-            onTouchEnd={(e) => e.stopPropagation()}
-          >
-            <div className="space-y-6">
-              <div className="flex items-center justify-between pb-4 border-b border-wheat-100">
-                <div className="flex items-center gap-2">
-                  <div className="w-7 h-7 rounded-lg bg-forest-800 text-wheat-50 flex items-center justify-center font-display italic font-bold text-xs shadow-2xs">
-                    HL
-                  </div>
-                  <div>
-                    <span className="font-display italic text-base font-bold text-forest-800 block leading-tight">
-                      HARVEST LEDGER
-                    </span>
-                    <span className="text-[10px] font-mono text-forest-800/60 block">
-                      Turn Surplus Into Impact
-                    </span>
-                  </div>
-                </div>
-                <button
-                  type="button"
-                  onClick={handleCloseMenu}
-                  onTouchEnd={handleCloseMenu}
-                  className="p-1.5 text-forest-800/60 hover:text-forest-800 rounded-lg md:hover:bg-wheat-100 active:bg-wheat-200 transition-colors cursor-pointer"
-                  aria-label="Close Menu"
-                >
-                  <X className="w-5 h-5" />
-                </button>
-              </div>
-
-              <nav className="space-y-1.5 text-sm font-semibold text-forest-800">
-                <a
-                  href="#hero"
-                  onClick={() => setMobileMenuOpen(false)}
-                  onTouchEnd={handleCloseMenu}
-                  className="block px-3 py-2.5 rounded-lg active:bg-wheat-200 md:hover:bg-wheat-100 transition-colors"
-                >
-                  Home
-                </a>
-                <a
-                  href="#how-it-works"
-                  onClick={() => setMobileMenuOpen(false)}
-                  onTouchEnd={handleCloseMenu}
-                  className="block px-3 py-2.5 rounded-lg active:bg-wheat-200 md:hover:bg-wheat-100 transition-colors"
-                >
-                  How It Works
-                </a>
-                <a
-                  href="#features"
-                  onClick={() => setMobileMenuOpen(false)}
-                  onTouchEnd={handleCloseMenu}
-                  className="block px-3 py-2.5 rounded-lg active:bg-wheat-200 md:hover:bg-wheat-100 transition-colors"
-                >
-                  Features
-                </a>
-                <a
-                  href="#impact"
-                  onClick={() => setMobileMenuOpen(false)}
-                  onTouchEnd={handleCloseMenu}
-                  className="block px-3 py-2.5 rounded-lg active:bg-wheat-200 md:hover:bg-wheat-100 transition-colors"
-                >
-                  Impact
-                </a>
-              </nav>
-            </div>
-
-            <div className="space-y-2.5 pt-4 border-t border-wheat-100 mt-auto">
+            {/* Desktop Action Buttons (Visible on lg:flex) */}
+            <div className="hidden lg:flex items-center gap-3">
               <Link
                 to="/login"
-                onClick={() => setMobileMenuOpen(false)}
-                onTouchEnd={handleCloseMenu}
-                className="w-full inline-flex items-center justify-center py-2.5 border border-wheat-300 text-forest-800 font-semibold text-xs rounded-xl active:bg-wheat-200 md:hover:bg-wheat-50 transition-colors"
+                className="px-4 py-2 bg-white border border-[#166534] text-[#166534] rounded-xl text-sm font-semibold hover:bg-[#166534]/5 active:bg-[#166534]/10 transition-colors shadow-2xs"
               >
                 Sign In
               </Link>
               <Link
                 to="/register"
-                onClick={() => setMobileMenuOpen(false)}
-                onTouchEnd={handleCloseMenu}
-                className="w-full inline-flex items-center justify-center gap-1.5 py-2.5 bg-forest-800 text-wheat-50 font-semibold text-xs rounded-xl md:hover:bg-forest-700 active:bg-forest-900 shadow-sm transition-colors"
+                className="inline-flex items-center gap-1.5 px-5 py-2.5 bg-[#166534] hover:bg-[#15803D] active:bg-[#14532d] text-white rounded-xl text-sm font-semibold shadow-xs transition-colors"
               >
-                <span>Get Started Free</span>
-                <ArrowRight className="w-3.5 h-3.5" />
+                <span>Get Started</span>
+                <ArrowRight className="w-4 h-4" />
               </Link>
             </div>
+
+            {/* Mobile & Tablet Hamburger Menu Button (< lg) */}
+            <button
+              type="button"
+              onClick={handleToggleMenu}
+              className="lg:hidden w-11 h-11 min-w-[44px] min-h-[44px] flex items-center justify-center rounded-xl text-[#1F2937] hover:bg-gray-100 active:bg-gray-200 transition-colors cursor-pointer select-none touch-manipulation"
+              aria-label={mobileMenuOpen ? "Close Navigation Menu" : "Open Navigation Menu"}
+              aria-expanded={mobileMenuOpen}
+            >
+              <Menu className="w-6 h-6 text-[#1F2937]" />
+            </button>
           </div>
         </div>
-      )}
+      </header>
+
+      {/* ------------------------------------------------------------- */}
+      {/* MOBILE SIDEBAR & BACKDROP (< lg)                              */}
+      {/* ------------------------------------------------------------- */}
+      <div
+        className={`fixed inset-0 z-50 transition-opacity duration-300 ${
+          mobileMenuOpen
+            ? "opacity-100 pointer-events-auto"
+            : "opacity-0 pointer-events-none"
+        }`}
+        aria-hidden={!mobileMenuOpen}
+      >
+        {/* Dark transparent overlay behind the sidebar */}
+        <div
+          className="absolute inset-0 bg-black/50 backdrop-blur-xs transition-opacity"
+          onClick={handleCloseMenu}
+          aria-label="Close menu overlay"
+        />
+
+        {/* Sidebar container (Smooth slide-in from the LEFT) */}
+        <aside
+          className={`absolute inset-y-0 left-0 w-72 sm:w-80 max-w-[85vw] bg-white flex flex-col justify-between shadow-2xl transition-transform duration-300 ease-out z-10 ${
+            mobileMenuOpen ? "translate-x-0" : "-translate-x-full"
+          }`}
+          role="dialog"
+          aria-modal="true"
+          aria-label="Mobile Navigation"
+        >
+          {/* 1. HL Logo + HARVEST LEDGER and 2. Close button X */}
+          <div className="p-5 sm:p-6 border-b border-gray-100 flex items-center justify-between">
+            <Link
+              to="/"
+              onClick={(e) => scrollToSection(e, "hero")}
+              className="flex items-center gap-2.5 min-w-0"
+            >
+              <div className="w-8 h-8 rounded-lg bg-[#166534] text-white flex items-center justify-center font-display italic font-bold text-sm shadow-xs shrink-0">
+                HL
+              </div>
+              <div className="min-w-0">
+                <span className="font-display italic text-base font-bold text-[#1F2937] block leading-tight truncate">
+                  HARVEST LEDGER
+                </span>
+                <span className="text-[9px] font-mono uppercase tracking-wider text-[#64748B] block truncate">
+                  Surplus &bull; Redistribution
+                </span>
+              </div>
+            </Link>
+
+            <button
+              type="button"
+              onClick={handleCloseMenu}
+              className="w-10 h-10 min-w-[40px] min-h-[40px] flex items-center justify-center rounded-xl text-[#64748B] hover:text-[#1F2937] hover:bg-gray-100 active:bg-gray-200 transition-colors cursor-pointer touch-manipulation shrink-0 ml-2"
+              aria-label="Close navigation menu"
+            >
+              <X className="w-5 h-5 text-[#1F2937]" />
+            </button>
+          </div>
+
+          {/* Navigation Links: 3. Home, 4. How It Works, 5. Features, 6. Impact */}
+          <nav className="p-5 sm:p-6 space-y-2 flex-1 overflow-y-auto">
+            {[
+              { id: "hero", label: "Home" },
+              { id: "how-it-works", label: "How It Works" },
+              { id: "features", label: "Features" },
+              { id: "impact", label: "Impact" },
+            ].map((item) => {
+              const isActive = activeSection === item.id;
+              return (
+                <button
+                  key={item.id}
+                  type="button"
+                  onClick={(e) => scrollToSection(e, item.id)}
+                  className={`w-full text-left px-4 py-3 rounded-xl text-base font-semibold transition-all flex items-center justify-between cursor-pointer touch-manipulation ${
+                    isActive
+                      ? "bg-[#166534]/10 text-[#166534] border-l-4 border-[#166534] pl-3.5"
+                      : "text-[#1F2937] hover:text-[#166534] hover:bg-[#166534]/5 active:bg-[#166534]/10"
+                  }`}
+                >
+                  <span>{item.label}</span>
+                  {isActive && <span className="w-2 h-2 rounded-full bg-[#166534]" />}
+                </button>
+              );
+            })}
+          </nav>
+
+          {/* Divider and Actions: 7. Sign In, 8. Get Started */}
+          <div className="p-5 sm:p-6 border-t border-gray-200 space-y-3 bg-white mt-auto">
+            {/* Sign In Button */}
+            <button
+              type="button"
+              onClick={() => handleActionNavigation("/login")}
+              className="w-full py-3 px-4 bg-white border-2 border-[#166534] text-[#166534] rounded-xl text-sm font-semibold text-center hover:bg-[#166534]/5 active:bg-[#166534]/10 transition-colors cursor-pointer shadow-2xs touch-manipulation"
+            >
+              Sign In
+            </button>
+
+            {/* Get Started Button */}
+            <button
+              type="button"
+              onClick={() => handleActionNavigation("/register")}
+              className="w-full py-3 px-4 bg-[#166534] hover:bg-[#15803D] active:bg-[#14532d] text-white rounded-xl text-sm font-semibold text-center shadow-xs transition-colors cursor-pointer flex items-center justify-center gap-1.5 touch-manipulation"
+            >
+              <span>Get Started</span>
+              <ArrowRight className="w-4 h-4" />
+            </button>
+          </div>
+        </aside>
+      </div>
 
       {/* ------------------------------------------------------------- */}
       {/* 2. HERO SECTION & 3. HERO VISUAL                              */}
       {/* ------------------------------------------------------------- */}
-      <section id="hero" className="relative max-w-6xl w-full mx-auto px-4 sm:px-6 lg:px-8 pt-10 sm:pt-16 pb-16 sm:pb-24 grid md:grid-cols-12 gap-8 lg:gap-12 items-center">
+      <section id="hero" className="relative max-w-6xl w-full mx-auto px-4 sm:px-6 lg:px-8 pt-10 sm:pt-16 pb-16 sm:pb-24 grid md:grid-cols-12 gap-8 lg:gap-12 items-center scroll-mt-24">
         {/* Left Hero Content */}
         <div className="md:col-span-7 space-y-6 animate-in fade-in slide-in-from-bottom-3 duration-500">
           <div className="inline-flex items-center gap-2 px-3 py-1 rounded-full glass-pill text-forest-800 font-mono text-xs">
@@ -541,7 +624,7 @@ export default function Landing() {
       {/* ------------------------------------------------------------- */}
       {/* 5. HOW IT WORKS (UNIFIED 5-STEP LIFECYCLE)                    */}
       {/* ------------------------------------------------------------- */}
-      <section id="how-it-works" ref={howItWorksRef} className="py-16 sm:py-24 bg-wheat-50/70 backdrop-blur-sm border-b border-wheat-200/80 scroll-mt-14 relative">
+      <section id="how-it-works" ref={howItWorksRef} className="py-16 sm:py-24 bg-wheat-50/70 backdrop-blur-sm border-b border-wheat-200/80 scroll-mt-24 relative">
         <div aria-hidden="true" className="pointer-events-none absolute bottom-10 left-10 w-80 h-80 bg-emerald-400/10 rounded-full blur-3xl" />
         <div className="max-w-6xl mx-auto px-4 sm:px-6 lg:px-8 space-y-12 relative z-10">
           {/* Heading */}
@@ -716,7 +799,7 @@ export default function Landing() {
       {/* ------------------------------------------------------------- */}
       {/* 8. FEATURES SECTION                                           */}
       {/* ------------------------------------------------------------- */}
-      <section id="features" ref={featuresRef} className="py-16 sm:py-24 bg-white/60 backdrop-blur-md border-b border-wheat-200/80 scroll-mt-14 relative">
+      <section id="features" ref={featuresRef} className="py-16 sm:py-24 bg-white/60 backdrop-blur-md border-b border-wheat-200/80 scroll-mt-24 relative">
         <div aria-hidden="true" className="pointer-events-none absolute top-1/2 left-1/3 w-96 h-96 bg-gold-400/10 rounded-full blur-3xl" />
         <div className="max-w-6xl mx-auto px-4 sm:px-6 lg:px-8 space-y-12 relative z-10">
           {/* Heading */}
@@ -809,7 +892,7 @@ export default function Landing() {
       {/* ------------------------------------------------------------- */}
       {/* 9. IMPACT SECTION                                             */}
       {/* ------------------------------------------------------------- */}
-      <section id="impact" ref={impactRef} className="py-16 sm:py-24 bg-wheat-50/70 backdrop-blur-sm border-b border-wheat-200/80 scroll-mt-14 relative">
+      <section id="impact" ref={impactRef} className="py-16 sm:py-24 bg-wheat-50/70 backdrop-blur-sm border-b border-wheat-200/80 scroll-mt-24 relative">
         <div className="max-w-6xl mx-auto px-4 sm:px-6 lg:px-8 space-y-12">
           {/* Heading */}
           <div className={`text-center max-w-2xl mx-auto space-y-3 transition-all duration-700 ${
