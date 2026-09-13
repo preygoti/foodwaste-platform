@@ -135,6 +135,17 @@ export default function VerifyQrModal({ isOpen, onClose, onVerified }) {
     };
   }, [isOpen, successData]);
 
+  useEffect(() => {
+    if (!isOpen) return;
+    const handleKeyDown = (e) => {
+      if (e.key === "Escape") {
+        handleDone();
+      }
+    };
+    window.addEventListener("keydown", handleKeyDown);
+    return () => window.removeEventListener("keydown", handleKeyDown);
+  }, [isOpen]);
+
   if (!isOpen) return null;
 
   function extractVerificationDetails(input) {
@@ -233,7 +244,13 @@ export default function VerifyQrModal({ isOpen, onClose, onVerified }) {
 
   return (
     <div 
-      onClick={handleCloseModal}
+      onClick={(e) => {
+        if (e.target === e.currentTarget) {
+          e.preventDefault();
+          e.stopPropagation();
+          handleCloseModal();
+        }
+      }}
       className="fixed inset-0 z-50 flex items-center justify-center p-3 sm:p-4 bg-forest-950/65 backdrop-blur-md overflow-y-auto animate-in fade-in duration-200 cursor-pointer"
     >
       <div 

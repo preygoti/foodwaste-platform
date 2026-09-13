@@ -1,4 +1,4 @@
-import { useState, useRef } from "react";
+import { useState, useRef, useEffect } from "react";
 import Papa from "papaparse";
 import { Upload, Download, FileText, CheckCircle2, AlertCircle, X, Loader2 } from "lucide-react";
 import { api } from "../api";
@@ -171,6 +171,17 @@ export default function CsvUploadModal({ isOpen, open, onClose, onSuccess }) {
   const [isDragging, setIsDragging] = useState(false);
   const fileInputRef = useRef(null);
 
+  useEffect(() => {
+    if (!show) return;
+    const handleKeyDown = (e) => {
+      if (e.key === "Escape") {
+        handleClose();
+      }
+    };
+    window.addEventListener("keydown", handleKeyDown);
+    return () => window.removeEventListener("keydown", handleKeyDown);
+  }, [show]);
+
   if (!show) return null;
 
   const downloadSampleCsv = () => {
@@ -339,7 +350,13 @@ export default function CsvUploadModal({ isOpen, open, onClose, onSuccess }) {
 
   return (
     <div 
-      onClick={handleClose}
+      onClick={(e) => {
+        if (e.target === e.currentTarget) {
+          e.preventDefault();
+          e.stopPropagation();
+          handleClose();
+        }
+      }}
       className="fixed inset-0 z-50 flex items-center justify-center p-3 sm:p-4 bg-forest-950/65 backdrop-blur-md overflow-y-auto cursor-pointer"
     >
       <div 

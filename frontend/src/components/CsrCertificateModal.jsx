@@ -37,7 +37,13 @@ export default function CsrCertificateModal({ isOpen, onClose, metrics, user }) 
 
   return (
     <div 
-      onClick={onClose}
+      onClick={(e) => {
+        if (e.target === e.currentTarget) {
+          e.preventDefault();
+          e.stopPropagation();
+          onClose();
+        }
+      }}
       className="fixed inset-0 z-50 flex items-center justify-center p-2 sm:p-4 md:p-6 bg-forest-950/70 backdrop-blur-md overflow-y-auto print:p-0 print:bg-white print:static animate-in fade-in duration-200 cursor-pointer"
     >
       <div 

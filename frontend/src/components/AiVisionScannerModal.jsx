@@ -97,6 +97,18 @@ export default function AiVisionScannerModal({ isOpen, onClose, onAutofill }) {
     };
   }, [isOpen, mode, imagePreview]);
 
+  // Handle Escape key to close modal
+  useEffect(() => {
+    if (!isOpen) return;
+    const handleKeyDown = (e) => {
+      if (e.key === "Escape") {
+        onClose();
+      }
+    };
+    window.addEventListener("keydown", handleKeyDown);
+    return () => window.removeEventListener("keydown", handleKeyDown);
+  }, [isOpen, onClose]);
+
   if (!isOpen) return null;
 
   const handleCapture = () => {
@@ -118,6 +130,67 @@ export default function AiVisionScannerModal({ isOpen, onClose, onAutofill }) {
 
     runAiInspection(dataUrl);
   };
+
+  const handleRetake = () => {
+    setImagePreview(null);
+    setResult(null);
+    setError("");
+  };
+
+  const handleReset = handleRetake;
+
+  const handleAnalyze = async () => {
+    if (!imagePreview) return;
+    setError("");
+    setAnalyzing(true);
+    try {
+      // Clean base64 data for transmission
+      const base64Data = imagePreview.includes(",")
+        ? imagePreview.split(",")[1]
+        : imagePreview;
+
+      const res = await api.analyzeVision(base64Data, {
+        categoryHint: selectedCategory,
+        customPrompt: itemHint.trim()
+          ? `User note: ${itemHint.trim()}. Focus on fresh edible produce and perishables.`
+          : undefined,
+      });
+
+      setResult(res);
+
+      // Pre-fill editable inputs with AI results
+      setEditedName(res.detected_item || "Scanned Food Item");
+      setEditedCategory(res.category || "produce");
+      setEditedQty(String(res.estimated_quantity_kg || 5));
+      setEditedUnit("kg");
+      setEditedExpiry(res.suggested_expiry_date || "");
+      setEditedLocation("Surat Central Cold Storage");
+    } catch (err) {
+      console.error("AI Vision scan error:", err);
+      setError(
+        err.message ||
+          "AI vision analysis failed. Check your internet connection or try a clearer photo."
+      );
+    } finally {
+      setAnalyzing(false);
+    }
+  };
+
+  const handleApplyToInventory = () => {
+    if (!result) return;
+    onAutofill({
+      name: editedName || result.detected_item,
+      category: editedCategory || result.category || "produce",
+      quantity: parseFloat(editedQty) || 5,
+      unit: editedUnit || "kg",
+      expiry_date: editedExpiry || result.suggested_expiry_date,
+      storage_location: editedLocation || "",
+      avg_daily_usage: "2",
+    });
+    onClose();
+  };
+
+  const handleApplyAutofill = handleApplyToInventory;
 
   const handleFileUpload = (e) => {
     const file = e.target.files?.[0];
@@ -168,29 +241,15 @@ export default function AiVisionScannerModal({ isOpen, onClose, onAutofill }) {
     }
   };
 
-  const handleReset = () => {
-    setImagePreview(null);
-    setResult(null);
-    setError("");
-  };
-
-  const handleApplyAutofill = () => {
-    if (!onAutofill) return;
-    onAutofill({
-      name: editedName,
-      category: editedCategory,
-      quantity: editedQty,
-      unit: editedUnit,
-      expiry_date: editedExpiry,
-      storage_location: editedLocation || "",
-      avg_daily_usage: "2",
-    });
-    onClose();
-  };
-
   return (
     <div 
-      onClick={onClose}
+      onClick={(e) => {
+        if (e.target === e.currentTarget) {
+          e.preventDefault();
+          e.stopPropagation();
+          onClose();
+        }
+      }}
       className="fixed inset-0 z-50 flex items-center justify-center p-3 sm:p-4 bg-forest-950/65 backdrop-blur-md overflow-y-auto animate-in fade-in duration-200 cursor-pointer"
     >
       <div 

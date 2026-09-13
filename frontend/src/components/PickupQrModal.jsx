@@ -1,4 +1,4 @@
-import { useState } from "react";
+import { useState, useEffect } from "react";
 import {
   QrCode,
   X,
@@ -14,6 +14,15 @@ import { useAuth } from "../AuthContext";
 export default function PickupQrModal({ isOpen, onClose, pickup }) {
   const { user } = useAuth();
   const [copied, setCopied] = useState(false);
+
+  useEffect(() => {
+    if (!isOpen || !pickup) return;
+    const handleKeyDown = (e) => {
+      if (e.key === "Escape") onClose();
+    };
+    window.addEventListener("keydown", handleKeyDown);
+    return () => window.removeEventListener("keydown", handleKeyDown);
+  }, [isOpen, pickup, onClose]);
 
   if (!isOpen || !pickup) return null;
 
@@ -46,7 +55,13 @@ export default function PickupQrModal({ isOpen, onClose, pickup }) {
 
   return (
     <div 
-      onClick={onClose}
+      onClick={(e) => {
+        if (e.target === e.currentTarget) {
+          e.preventDefault();
+          e.stopPropagation();
+          onClose();
+        }
+      }}
       className="fixed inset-0 z-50 flex items-center justify-center p-3 sm:p-4 bg-forest-950/65 backdrop-blur-md overflow-y-auto print:p-0 print:bg-white print:static animate-in fade-in duration-200 cursor-pointer"
     >
       <div 

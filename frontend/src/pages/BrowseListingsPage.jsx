@@ -204,6 +204,15 @@ export default function BrowseListingsPage() {
     }
   }, [user?.id, user?.role]);
 
+  useEffect(() => {
+    if (!selectedListing) return;
+    const handleKeyDown = (e) => {
+      if (e.key === "Escape") setSelectedListing(null);
+    };
+    window.addEventListener("keydown", handleKeyDown);
+    return () => window.removeEventListener("keydown", handleKeyDown);
+  }, [selectedListing]);
+
   if (user?.role && user.role !== "ngo") {
     return (
       <Layout>
@@ -510,7 +519,13 @@ export default function BrowseListingsPage() {
       {/* ------------------------------------------------------------- */}
       {selectedListing && (
         <div 
-          onClick={() => setSelectedListing(null)}
+          onClick={(e) => {
+            if (e.target === e.currentTarget) {
+              e.preventDefault();
+              e.stopPropagation();
+              setSelectedListing(null);
+            }
+          }}
           className="fixed inset-0 z-50 flex items-center justify-center p-3 sm:p-4 bg-black/60 backdrop-blur-md overflow-x-hidden overflow-y-auto animate-in fade-in duration-150 cursor-pointer"
         >
           <div 

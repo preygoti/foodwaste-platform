@@ -104,6 +104,17 @@ export default function BarcodeScannerModal({ isOpen, open, onClose, onSuccess, 
     }
   }, [show, activeTab, scannedCode]);
 
+  useEffect(() => {
+    if (!show) return;
+    const handleKeyDown = (e) => {
+      if (e.key === "Escape") {
+        handleModalClose();
+      }
+    };
+    window.addEventListener("keydown", handleKeyDown);
+    return () => window.removeEventListener("keydown", handleKeyDown);
+  }, [show]);
+
   const resetState = () => {
     setScannedCode("");
     setIsSmartMatched(false);
@@ -383,7 +394,13 @@ export default function BarcodeScannerModal({ isOpen, open, onClose, onSuccess, 
 
   return (
     <div 
-      onClick={handleModalClose}
+      onClick={(e) => {
+        if (e.target === e.currentTarget) {
+          e.preventDefault();
+          e.stopPropagation();
+          handleModalClose();
+        }
+      }}
       className="fixed inset-0 z-50 flex items-center justify-center p-3 sm:p-4 bg-forest-950/65 backdrop-blur-md overflow-y-auto cursor-pointer"
     >
       <div 

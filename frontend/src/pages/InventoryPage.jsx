@@ -231,6 +231,18 @@ export default function InventoryPage() {
     }
   }, [user]);
 
+  useEffect(() => {
+    if (!showAddModal && !listingModalItem) return;
+    const handleKeyDown = (e) => {
+      if (e.key === "Escape") {
+        if (showAddModal) setShowAddModal(false);
+        if (listingModalItem) setListingModalItem(null);
+      }
+    };
+    window.addEventListener("keydown", handleKeyDown);
+    return () => window.removeEventListener("keydown", handleKeyDown);
+  }, [showAddModal, listingModalItem]);
+
   if (user && user.role !== "business") {
     return (
       <Layout>
@@ -959,7 +971,13 @@ export default function InventoryPage() {
       {/* ------------------------------------------------------------- */}
       {showAddModal && (
         <div 
-          onClick={() => setShowAddModal(false)}
+          onClick={(e) => {
+            if (e.target === e.currentTarget) {
+              e.preventDefault();
+              e.stopPropagation();
+              setShowAddModal(false);
+            }
+          }}
           className="fixed inset-0 z-50 flex items-center justify-center p-3 sm:p-4 bg-black/60 backdrop-blur-sm overflow-y-auto cursor-pointer"
         >
           <div 
@@ -1125,7 +1143,13 @@ export default function InventoryPage() {
       {/* ------------------------------------------------------------- */}
       {listingModalItem && (
         <div 
-          onClick={() => setListingModalItem(null)}
+          onClick={(e) => {
+            if (e.target === e.currentTarget) {
+              e.preventDefault();
+              e.stopPropagation();
+              setListingModalItem(null);
+            }
+          }}
           className="fixed inset-0 z-50 flex items-center justify-center p-3 sm:p-4 bg-black/60 backdrop-blur-md overflow-y-auto animate-in fade-in duration-200 cursor-pointer"
         >
           <div 

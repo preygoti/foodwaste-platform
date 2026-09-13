@@ -1,4 +1,4 @@
-import { useState, useMemo } from "react";
+import { useState, useMemo, useEffect } from "react";
 import { Sparkles, Utensils, X, Clock, Flame, BookOpen, ShieldCheck, Copy, Check } from "lucide-react";
 
 /** Built-in Zero-Waste Culinary Intelligence Matrix */
@@ -131,6 +131,15 @@ export default function RescueChefModal({ item, onClose }) {
     return CULINARY_RECIPES[cat] || CULINARY_RECIPES.general;
   }, [item]);
 
+  useEffect(() => {
+    if (!item) return;
+    const handleKeyDown = (e) => {
+      if (e.key === "Escape") onClose();
+    };
+    window.addEventListener("keydown", handleKeyDown);
+    return () => window.removeEventListener("keydown", handleKeyDown);
+  }, [item, onClose]);
+
   if (!item) return null;
 
   const handleCopyRecipe = (recipe) => {
@@ -149,7 +158,13 @@ Yield: ${recipe.yieldPerKg}`;
 
   return (
     <div 
-      onClick={onClose}
+      onClick={(e) => {
+        if (e.target === e.currentTarget) {
+          e.preventDefault();
+          e.stopPropagation();
+          onClose();
+        }
+      }}
       className="fixed inset-0 z-50 flex items-center justify-center p-3 sm:p-4 bg-forest-950/65 backdrop-blur-md overflow-y-auto cursor-pointer"
     >
       <div 
