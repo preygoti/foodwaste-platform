@@ -1,5 +1,5 @@
 import { useState, useEffect, useRef } from "react";
-import { Html5Qrcode } from "html5-qrcode";
+import { Html5Qrcode, Html5QrcodeSupportedFormats } from "html5-qrcode";
 import {
   Scan,
   X,
@@ -16,6 +16,8 @@ import { api } from "../api";
 
 export default function VerifyQrModal({ isOpen, onClose, onVerified }) {
   const [scanning, setScanning] = useState(false);
+  const [cameraReady, setCameraReady] = useState(false);
+  const [cameraError, setCameraError] = useState("");
   const [manualCode, setManualCode] = useState("");
   const [verifying, setVerifying] = useState(false);
   const [successData, setSuccessData] = useState(null);
@@ -25,42 +27,109 @@ export default function VerifyQrModal({ isOpen, onClose, onVerified }) {
   useEffect(() => {
     if (!isOpen || successData) return;
 
+    let isMounted = true;
     let html5QrCode = null;
     const scannerId = "handshake-qr-reader";
+    setCameraError("");
+    setCameraReady(false);
 
     // Small delay to ensure DOM element exists
-    const timer = setTimeout(() => {
+    const timer = setTimeout(async () => {
       try {
-        html5QrCode = new Html5Qrcode(scannerId);
+        const formatsToSupport = [
+          Html5QrcodeSupportedFormats.QR_CODE,
+          Html5QrcodeSupportedFormats.DATA_MATRIX,
+          Html5QrcodeSupportedFormats.CODE_128,
+          Html5QrcodeSupportedFormats.UPC_A,
+          Html5QrcodeSupportedFormats.EAN_13,
+        ];
+
+        html5QrCode = new Html5Qrcode(scannerId, {
+          formatsToSupport,
+          verbose: false,
+          experimentalFeatures: {
+            useBarCodeDetectorIfSupported: true,
+          },
+        });
         scannerRef.current = html5QrCode;
 
-        html5QrCode
-          .start(
+        const scanConfig = {
+          fps: 15,
+          qrbox: (viewfinderWidth, viewfinderHeight) => {
+            const minDim = Math.min(viewfinderWidth, viewfinderHeight);
+            const size = Math.max(Math.floor(minDim * 0.72), 160);
+            return { width: size, height: size };
+          },
+        };
+
+        const onScanSuccess = (decodedText) => {
+          handleQrScanSuccess(decodedText);
+        };
+
+        // Multi-tier camera startup: Environment (Back) -> User (Front/Webcam) -> First Available Device ID
+        let started = false;
+        try {
+          await html5QrCode.start(
             { facingMode: "environment" },
-            { fps: 10, qrbox: { width: 220, height: 220 } },
-            (decodedText) => {
-              handleQrScanSuccess(decodedText);
-            },
-            (errorMessage) => {
-              // scanning frame ignore
+            scanConfig,
+            onScanSuccess,
+            () => {}
+          );
+          started = true;
+        } catch (envErr) {
+          console.warn("Environment camera unavailable, falling back to user/webcam:", envErr);
+          try {
+            await html5QrCode.start(
+              { facingMode: "user" },
+              scanConfig,
+              onScanSuccess,
+              () => {}
+            );
+            started = true;
+          } catch (userErr) {
+            console.warn("User camera unavailable, querying connected devices:", userErr);
+            const devices = await Html5Qrcode.getCameras().catch(() => []);
+            if (devices && devices.length > 0) {
+              await html5QrCode.start(
+                devices[0].id,
+                scanConfig,
+                onScanSuccess,
+                () => {}
+              );
+              started = true;
+            } else {
+              throw userErr;
             }
-          )
-          .then(() => setScanning(true))
-          .catch((err) => {
-            console.warn("Camera start failed, fallback to manual code entry:", err);
-            setScanning(false);
-          });
-      } catch (e) {
-        console.warn("Html5Qrcode init error:", e);
+          }
+        }
+
+        if (isMounted && started) {
+          setScanning(true);
+          setCameraReady(true);
+        }
+      } catch (err) {
+        console.warn("Camera start failed, falling back to PIN manual entry:", err);
+        if (isMounted) {
+          setScanning(false);
+          setCameraReady(false);
+          setCameraError("Camera unavailable or permission not granted. Please enter the 6-digit PIN below.");
+        }
       }
-    }, 200);
+    }, 180);
 
     return () => {
+      isMounted = false;
       clearTimeout(timer);
       if (scannerRef.current) {
         try {
-          scannerRef.current.stop().then(() => scannerRef.current.clear());
-        } catch (e) {}
+          if (scannerRef.current.isScanning) {
+            scannerRef.current.stop().then(() => {
+              try { scannerRef.current?.clear(); } catch (_) {}
+            }).catch(() => {});
+          } else {
+            try { scannerRef.current?.clear(); } catch (_) {}
+          }
+        } catch (_) {}
         scannerRef.current = null;
       }
     };
@@ -153,7 +222,13 @@ export default function VerifyQrModal({ isOpen, onClose, onVerified }) {
     setSuccessData(null);
     setManualCode("");
     setError("");
+    setCameraError("");
+    setCameraReady(false);
     onClose();
+  };
+
+  const handleCloseModal = () => {
+    handleDone();
   };
 
   return (
@@ -247,13 +322,41 @@ export default function VerifyQrModal({ isOpen, onClose, onVerified }) {
           ) : (
             /* Scanner & Manual Input Screen */
             <div className="space-y-4">
-              <div className="relative aspect-square max-w-[280px] mx-auto rounded-2xl overflow-hidden bg-black border border-wheat-200 shadow-inner">
-                <div id="handshake-qr-reader" className="w-full h-full" />
+              <div className="relative w-full max-w-[320px] mx-auto rounded-2xl overflow-hidden bg-forest-950 border border-wheat-200/80 shadow-md">
+                <div id="handshake-qr-reader" className="w-full relative overflow-hidden" />
+
+                {/* Camera Initializing State */}
+                {!cameraReady && !cameraError && (
+                  <div className="p-8 flex flex-col items-center justify-center text-wheat-100 space-y-3 min-h-[220px]">
+                    <div className="w-8 h-8 rounded-full border-2 border-forest-400 border-t-transparent animate-spin" />
+                    <p className="text-xs font-mono text-wheat-200">Opening camera feed...</p>
+                  </div>
+                )}
+
+                {/* Camera Error / Permission Fallback */}
+                {cameraError && (
+                  <div className="p-5 text-center text-xs text-tomato-400 space-y-2 bg-tomato-950/40 w-full">
+                    <AlertCircle className="w-5 h-5 mx-auto text-tomato-400" />
+                    <p>{cameraError}</p>
+                    <p className="text-[11px] text-wheat-100/70 font-mono">Enter the 6-digit PIN below</p>
+                  </div>
+                )}
+
+                {/* Verifying Status Overlay */}
                 {verifying && (
-                  <div className="absolute inset-0 bg-forest-900/80 backdrop-blur-xs flex flex-col items-center justify-center text-wheat-50 space-y-2 z-10">
+                  <div className="absolute inset-0 bg-forest-900/85 backdrop-blur-xs flex flex-col items-center justify-center text-wheat-50 space-y-2 z-20">
                     <RefreshCw className="w-8 h-8 animate-spin text-gold-400" />
                     <p className="text-xs font-mono font-semibold">
                       Verifying 6-digit handshake PIN...
+                    </p>
+                  </div>
+                )}
+
+                {/* Reticle footer info */}
+                {cameraReady && !cameraError && (
+                  <div className="p-2.5 bg-forest-900/90 text-center w-full border-t border-forest-800">
+                    <p className="text-[11px] font-mono text-wheat-100/80">
+                      Center driver's QR pass inside the frame
                     </p>
                   </div>
                 )}

@@ -1,5 +1,5 @@
 import { useEffect, useRef, useState } from "react";
-import { Html5Qrcode } from "html5-qrcode";
+import { Html5Qrcode, Html5QrcodeSupportedFormats } from "html5-qrcode";
 import {
   Scan,
   Camera,
@@ -34,6 +34,16 @@ const PRODUCT_BARCODE_LOOKUP = {
   "028400070560": { name: "Lay's Classic Potato Chips", category: "general", unit: "bags", defaultUsage: 1.0 },
   "036000291452": { name: "Fresh Farm Strawberries (500g)", category: "produce", unit: "packs", defaultUsage: 1.5 },
 };
+
+function lookupProduct(rawCode) {
+  const code = String(rawCode).trim();
+  if (PRODUCT_BARCODE_LOOKUP[code]) return PRODUCT_BARCODE_LOOKUP[code];
+  const withZero = "0" + code;
+  if (PRODUCT_BARCODE_LOOKUP[withZero]) return PRODUCT_BARCODE_LOOKUP[withZero];
+  const withoutZero = code.replace(/^0+/, "");
+  if (PRODUCT_BARCODE_LOOKUP[withoutZero]) return PRODUCT_BARCODE_LOOKUP[withoutZero];
+  return null;
+}
 
 function getSuggestedExpiryDate(category) {
   const date = new Date();
@@ -118,27 +128,87 @@ export default function BarcodeScannerModal({ isOpen, open, onClose, onSuccess, 
         await stopScanner();
       }
 
-      const html5QrCode = new Html5Qrcode(readerElementId);
+      const formatsToSupport = [
+        Html5QrcodeSupportedFormats.QR_CODE,
+        Html5QrcodeSupportedFormats.UPC_A,
+        Html5QrcodeSupportedFormats.UPC_E,
+        Html5QrcodeSupportedFormats.UPC_EAN_EXTENSION,
+        Html5QrcodeSupportedFormats.EAN_13,
+        Html5QrcodeSupportedFormats.EAN_8,
+        Html5QrcodeSupportedFormats.CODE_128,
+        Html5QrcodeSupportedFormats.CODE_39,
+        Html5QrcodeSupportedFormats.CODE_93,
+        Html5QrcodeSupportedFormats.CODABAR,
+        Html5QrcodeSupportedFormats.ITF,
+        Html5QrcodeSupportedFormats.DATA_MATRIX,
+        Html5QrcodeSupportedFormats.AZTEC,
+      ];
+
+      const html5QrCode = new Html5Qrcode(readerElementId, {
+        formatsToSupport,
+        verbose: false,
+        experimentalFeatures: {
+          useBarCodeDetectorIfSupported: true,
+        },
+      });
       html5QrCodeRef.current = html5QrCode;
 
-      const config = {
-        fps: 10,
-        qrbox: { width: 250, height: 250 },
-        aspectRatio: 1.0,
+      const scanConfig = {
+        fps: 15,
+        qrbox: (viewfinderWidth, viewfinderHeight) => {
+          const width = Math.min(Math.floor(viewfinderWidth * 0.88), 340);
+          const height = Math.min(Math.floor(viewfinderHeight * 0.65), 220);
+          return {
+            width: Math.max(width, 180),
+            height: Math.max(height, 100),
+          };
+        },
       };
 
-      await html5QrCode.start(
-        { facingMode: "environment" },
-        config,
-        (decodedText) => {
-          handleDetectedCode(decodedText);
-        },
-        () => {
-          // ignore frame scanning failures
-        }
-      );
+      const onScanSuccess = (decodedText) => {
+        handleDetectedCode(decodedText);
+      };
 
-      setScannerStarted(true);
+      // Multi-tier camera startup: Environment (Back) -> User (Front/Webcam) -> First Available Device ID
+      let started = false;
+      try {
+        await html5QrCode.start(
+          { facingMode: "environment" },
+          scanConfig,
+          onScanSuccess,
+          () => {}
+        );
+        started = true;
+      } catch (envErr) {
+        console.warn("Environment camera unavailable, falling back to user camera:", envErr);
+        try {
+          await html5QrCode.start(
+            { facingMode: "user" },
+            scanConfig,
+            onScanSuccess,
+            () => {}
+          );
+          started = true;
+        } catch (userErr) {
+          console.warn("User camera unavailable, querying connected devices:", userErr);
+          const devices = await Html5Qrcode.getCameras().catch(() => []);
+          if (devices && devices.length > 0) {
+            await html5QrCode.start(
+              devices[0].id,
+              scanConfig,
+              onScanSuccess,
+              () => {}
+            );
+            started = true;
+          } else {
+            throw userErr;
+          }
+        }
+      }
+
+      if (started) {
+        setScannerStarted(true);
+      }
     } catch (err) {
       console.warn("Camera init error:", err);
       setScannerStarted(false);
@@ -181,7 +251,11 @@ export default function BarcodeScannerModal({ isOpen, open, onClose, onSuccess, 
 
     await stopScanner();
     setScannedCode(cleanCode);
-    resolveCodeInformation(cleanCode);
+    const resolvedData = resolveCodeInformation(cleanCode);
+    if (onDetected && resolvedData) {
+      onDetected(resolvedData);
+      handleModalClose();
+    }
   };
 
   const resolveCodeInformation = (code) => {
@@ -196,7 +270,7 @@ export default function BarcodeScannerModal({ isOpen, open, onClose, onSuccess, 
         const exp = parsed.expiry_date || getSuggestedExpiryDate(cat);
         const usage = parsed.avg_daily_usage ? String(parsed.avg_daily_usage) : "1";
 
-        setItemForm({
+        const resolved = {
           name,
           category: CATEGORIES.includes(cat) ? cat : "general",
           quantity: qty,
@@ -204,16 +278,17 @@ export default function BarcodeScannerModal({ isOpen, open, onClose, onSuccess, 
           expiry_date: exp,
           avg_daily_usage: usage,
           storage_location: parsed.storage_location || "",
-        });
+        };
+        setItemForm(resolved);
         setIsSmartMatched(true);
-        return;
+        return resolved;
       } catch (_) {}
     }
 
-    // 2. Try lookup dictionary
-    if (PRODUCT_BARCODE_LOOKUP[code]) {
-      const match = PRODUCT_BARCODE_LOOKUP[code];
-      setItemForm({
+    // 2. Try lookup dictionary with normalized code
+    const match = lookupProduct(code);
+    if (match) {
+      const resolved = {
         name: match.name,
         category: match.category,
         quantity: "5",
@@ -221,25 +296,38 @@ export default function BarcodeScannerModal({ isOpen, open, onClose, onSuccess, 
         expiry_date: getSuggestedExpiryDate(match.category),
         avg_daily_usage: String(match.defaultUsage || 1),
         storage_location: "Main Storage",
-      });
+      };
+      setItemForm(resolved);
       setIsSmartMatched(true);
-      return;
+      return resolved;
     }
 
     // 3. Fallback for unindexed barcode
     setIsSmartMatched(false);
-    setItemForm((prev) => ({
-      ...prev,
+    const fallback = {
       name: `Item (Barcode: ${code})`,
       category: "general",
+      quantity: "1",
+      unit: "kg",
       expiry_date: getSuggestedExpiryDate("general"),
+      avg_daily_usage: "1",
+      storage_location: "",
+    };
+    setItemForm((prev) => ({
+      ...prev,
+      ...fallback,
     }));
+    return fallback;
   };
 
   const handleManualCodeSubmit = (e) => {
     e.preventDefault();
     if (!scannedCode.trim()) return;
-    resolveCodeInformation(scannedCode.trim());
+    const resolvedData = resolveCodeInformation(scannedCode.trim());
+    if (onDetected && resolvedData) {
+      onDetected(resolvedData);
+      handleModalClose();
+    }
   };
 
   const handleFormChange = (field) => (e) => {
@@ -295,7 +383,7 @@ export default function BarcodeScannerModal({ isOpen, open, onClose, onSuccess, 
 
   return (
     <div 
-      onClick={handleClose}
+      onClick={handleModalClose}
       className="fixed inset-0 z-50 flex items-center justify-center p-3 sm:p-4 bg-forest-950/65 backdrop-blur-md overflow-y-auto cursor-pointer"
     >
       <div 
@@ -365,13 +453,21 @@ export default function BarcodeScannerModal({ isOpen, open, onClose, onSuccess, 
           {/* 1. Camera Viewfinder View */}
           {!scannedCode && activeTab === "camera" && (
             <div className="space-y-4">
-              <div className="relative rounded-xl overflow-hidden bg-forest-900 border border-forest-800 flex flex-col items-center justify-center min-h-[280px]">
-                <div id={readerElementId} className="w-full max-w-sm overflow-hidden" />
+              <div className="relative w-full max-w-sm mx-auto rounded-2xl overflow-hidden bg-forest-950 border border-forest-800 shadow-md">
+                <div id={readerElementId} className="w-full relative overflow-hidden" />
+
+                {!scannerStarted && !cameraError && (
+                  <div className="p-8 flex flex-col items-center justify-center text-wheat-100 space-y-3 min-h-[220px]">
+                    <div className="w-8 h-8 rounded-full border-2 border-forest-400 border-t-transparent animate-spin" />
+                    <p className="text-xs font-mono text-wheat-200">Starting barcode scanner...</p>
+                  </div>
+                )}
 
                 {/* Overlay instructions */}
-                <div className="p-3 bg-forest-900/90 text-center w-full border-t border-forest-800">
-                  <p className="text-xs font-mono text-wheat-100/80">
-                    Align barcode or QR code inside the box to scan
+                <div className="p-2.5 bg-forest-900/90 text-center w-full border-t border-forest-800">
+                  <p className="text-[11px] font-mono text-wheat-100/90 flex items-center justify-center gap-1.5">
+                    <Scan className="w-3.5 h-3.5 text-gold-400 shrink-0" />
+                    <span>Align product barcode or QR code inside the box</span>
                   </p>
                 </div>
               </div>
@@ -433,7 +529,11 @@ export default function BarcodeScannerModal({ isOpen, open, onClose, onSuccess, 
                       key={code}
                       onClick={() => {
                         setScannedCode(code);
-                        resolveCodeInformation(code);
+                        const resolvedData = resolveCodeInformation(code);
+                        if (onDetected && resolvedData) {
+                          onDetected(resolvedData);
+                          handleModalClose();
+                        }
                       }}
                       className="text-[11px] font-mono px-2 py-1 bg-white border border-wheat-200 rounded text-forest-800 hover:border-forest-600 transition-colors"
                     >

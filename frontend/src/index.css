@@ -377,3 +377,45 @@ html, body, *, .no-scrollbar {
 .animate-mesh-pulse-delayed {
   animation: meshPulse 10s ease-in-out infinite 3s;
 }
+
+/* Scanner Viewfinder Normalization for Html5Qrcode on all devices */
+#handshake-qr-reader,
+#harvest-qr-reader {
+  width: 100% !important;
+  border: none !important;
+  position: relative !important;
+  overflow: hidden !important;
+  background: transparent !important;
+}
+
+#handshake-qr-reader video,
+#harvest-qr-reader video {
+  width: 100% !important;
+  height: auto !important;
+  max-height: 420px !important;
+  object-fit: cover !important;
+  display: block !important;
+  margin: 0 auto !important;
+  border-radius: 0.75rem !important;
+}
+
+#handshake-qr-reader__scan_region,
+#harvest-qr-reader__scan_region {
+  position: relative !important;
+  display: flex !important;
+  align-items: center !important;
+  justify-content: center !important;
+  width: 100% !important;
+}
+
+#handshake-qr-reader__scan_region video,
+#harvest-qr-reader__scan_region video {
+  border-radius: 0.875rem !important;
+}
+
+#handshake-qr-reader img[alt="Info icon"],
+#harvest-qr-reader img[alt="Info icon"],
+#handshake-qr-reader__header_message,
+#harvest-qr-reader__header_message {
+  display: none !important;
+}
