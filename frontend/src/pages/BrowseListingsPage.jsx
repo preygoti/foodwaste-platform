@@ -509,9 +509,13 @@ export default function BrowseListingsPage() {
       {/* CLAIM SURPLUS MODAL (100% Contained, Mobile-First Layout)     */}
       {/* ------------------------------------------------------------- */}
       {selectedListing && (
-        <div className="fixed inset-0 z-50 flex items-center justify-center p-3 sm:p-4 bg-black/60 backdrop-blur-md overflow-x-hidden overflow-y-auto animate-in fade-in duration-150">
+        <div 
+          onClick={() => setSelectedListing(null)}
+          className="fixed inset-0 z-50 flex items-center justify-center p-3 sm:p-4 bg-black/60 backdrop-blur-md overflow-x-hidden overflow-y-auto animate-in fade-in duration-150 cursor-pointer"
+        >
           <div 
-            className="relative bg-white border border-wheat-200 rounded-2xl shadow-2xl overflow-hidden my-auto flex flex-col box-border w-full max-w-[420px]"
+            onClick={(e) => e.stopPropagation()}
+            className="relative bg-white border border-wheat-200 rounded-2xl shadow-2xl overflow-hidden my-auto flex flex-col box-border w-full max-w-[420px] cursor-default"
           >
             {/* Header */}
             <div className="flex items-center justify-between px-4 py-2.5 border-b border-wheat-200 bg-gradient-to-r from-forest-900 via-forest-800 to-forest-800 text-wheat-50 shrink-0 overflow-hidden box-border">
@@ -535,9 +539,9 @@ export default function BrowseListingsPage() {
             </div>
 
             {/* Form Body */}
-            <form onSubmit={handleClaimSubmit} className="p-3 sm:p-3.5 space-y-2.5 overflow-x-hidden box-border flex-1">
+            <form onSubmit={handleClaimSubmit} className="p-3.5 sm:p-4 space-y-3 overflow-x-hidden box-border flex-1">
               {/* Item Info Card */}
-              <div className="p-2 sm:p-2.5 rounded-xl bg-wheat-50 border border-wheat-200 text-xs text-forest-800 space-y-1 box-border overflow-hidden w-full">
+              <div className="p-2.5 sm:p-3 rounded-xl bg-wheat-50 border border-wheat-200 text-xs text-forest-800 space-y-1 box-border overflow-hidden w-full">
                 <div className="flex items-start justify-between gap-2">
                   <div className="min-w-0 flex-1">
                     <p className="font-semibold text-xs sm:text-sm text-forest-900 truncate">{selectedListing.title}</p>
@@ -570,81 +574,87 @@ export default function BrowseListingsPage() {
                 <>
                   {/* Field 1: Estimated Meal Portions */}
                   <div className="w-full flex flex-col items-center text-center box-border">
-                    <label className="block text-[11px] uppercase tracking-wide text-forest-800/70 font-semibold mb-0.5 text-center">
+                    <label className="block text-[11px] uppercase tracking-wider text-forest-800/70 font-semibold mb-1 text-center">
                       Estimated Meal Portions *
                     </label>
-                    <input
-                      type="number"
-                      step="any"
-                      required
-                      min="1"
-                      placeholder="e.g. 25"
-                      value={mealsEstimate}
-                      onChange={(e) => setMealsEstimate(e.target.value)}
-                      className="w-36 h-9 max-w-full mx-auto box-border border border-wheat-200 rounded-xl px-3 text-xs sm:text-sm text-center focus:outline-none focus:ring-2 focus:ring-forest-400 bg-white shadow-xs inline-flex items-center justify-center font-mono"
-                    />
+                    <div className="w-full max-w-[280px] mx-auto flex flex-col items-center">
+                      <input
+                        type="number"
+                        step="any"
+                        required
+                        min="1"
+                        placeholder="e.g. 25"
+                        value={mealsEstimate}
+                        onChange={(e) => setMealsEstimate(e.target.value)}
+                        className="w-36 h-10 max-w-full mx-auto box-border border border-wheat-300 rounded-xl px-3 text-sm text-center focus:outline-none focus:ring-2 focus:ring-forest-400 bg-white shadow-2xs font-mono font-medium"
+                      />
+                    </div>
                     <p className="text-[10px] text-forest-800/50 mt-1 text-center">
                       ~2.5 community meals per unit.
                     </p>
                   </div>
 
-                  {/* Side-by-Side Row: Date & Time */}
-                  <div className="grid grid-cols-1 xs:grid-cols-2 gap-2.5 w-full box-border pt-0.5">
+                  {/* Centered Controls: Proposed Pickup Date & Time Window */}
+                  <div className="w-full space-y-2.5 pt-0.5 box-border">
                     {/* Field 2: Proposed Pickup Date */}
-                    <div className="flex flex-col items-center text-center box-border min-w-0">
-                      <label className="block text-[11px] uppercase tracking-wide text-forest-800/70 font-semibold mb-1 text-center truncate w-full">
+                    <div className="w-full flex flex-col items-center text-center box-border">
+                      <label className="block text-[11px] uppercase tracking-wider text-forest-800/70 font-semibold mb-1 text-center">
                         Pickup Date *
                       </label>
-                      <input
-                        type="date"
-                        required
-                        value={pickupDate}
-                        onChange={(e) => setPickupDate(e.target.value)}
-                        className="w-full h-9 box-border bg-white border border-wheat-200 rounded-xl px-2.5 text-xs sm:text-sm text-forest-900 focus:outline-none focus:ring-2 focus:ring-forest-400 font-mono text-center shadow-xs inline-flex items-center justify-center"
-                      />
+                      <div className="w-full max-w-[280px] mx-auto">
+                        <input
+                          type="date"
+                          required
+                          value={pickupDate}
+                          onChange={(e) => setPickupDate(e.target.value)}
+                          className="w-full h-10 box-border bg-white border border-wheat-300 rounded-xl px-3 text-xs sm:text-sm text-forest-900 focus:outline-none focus:ring-2 focus:ring-forest-400 font-mono text-center shadow-2xs cursor-pointer"
+                        />
+                      </div>
                     </div>
 
                     {/* Field 3: Proposed Pickup Time Window */}
-                    <div className="flex flex-col items-center text-center box-border min-w-0">
-                      <label className="block text-[11px] uppercase tracking-wide text-forest-800/70 font-semibold mb-1 text-center truncate w-full">
+                    <div className="w-full flex flex-col items-center text-center box-border">
+                      <label className="block text-[11px] uppercase tracking-wider text-forest-800/70 font-semibold mb-1 text-center">
                         Pickup Time *
                       </label>
-                      <select
-                        required
-                        value={pickupTime}
-                        onChange={(e) => setPickupTime(e.target.value)}
-                        className="w-full h-9 box-border bg-white border border-wheat-200 rounded-xl px-2.5 text-xs sm:text-sm text-forest-900 focus:outline-none focus:ring-2 focus:ring-forest-400 font-mono text-center cursor-pointer shadow-xs inline-flex items-center justify-center"
-                      >
-                        <option value="08:00" style={{ textAlign: "center" }}>08:00 AM</option>
-                        <option value="09:00" style={{ textAlign: "center" }}>09:00 AM</option>
-                        <option value="10:00" style={{ textAlign: "center" }}>10:00 AM (Rec.)</option>
-                        <option value="11:00" style={{ textAlign: "center" }}>11:00 AM</option>
-                        <option value="12:00" style={{ textAlign: "center" }}>12:00 PM</option>
-                        <option value="13:00" style={{ textAlign: "center" }}>01:00 PM</option>
-                        <option value="14:00" style={{ textAlign: "center" }}>02:00 PM</option>
-                        <option value="15:00" style={{ textAlign: "center" }}>03:00 PM</option>
-                        <option value="16:00" style={{ textAlign: "center" }}>04:00 PM</option>
-                        <option value="17:00" style={{ textAlign: "center" }}>05:00 PM</option>
-                        <option value="18:00" style={{ textAlign: "center" }}>06:00 PM</option>
-                        <option value="19:00" style={{ textAlign: "center" }}>07:00 PM</option>
-                        <option value="20:00" style={{ textAlign: "center" }}>08:00 PM</option>
-                      </select>
+                      <div className="w-full max-w-[280px] mx-auto">
+                        <select
+                          required
+                          value={pickupTime}
+                          onChange={(e) => setPickupTime(e.target.value)}
+                          className="w-full h-10 box-border bg-white border border-wheat-300 rounded-xl px-3 text-xs sm:text-sm text-forest-900 focus:outline-none focus:ring-2 focus:ring-forest-400 font-mono text-center cursor-pointer shadow-2xs"
+                        >
+                          <option value="08:00">08:00 AM</option>
+                          <option value="09:00">09:00 AM</option>
+                          <option value="10:00">10:00 AM (Recommended)</option>
+                          <option value="11:00">11:00 AM</option>
+                          <option value="12:00">12:00 PM</option>
+                          <option value="13:00">01:00 PM</option>
+                          <option value="14:00">02:00 PM</option>
+                          <option value="15:00">03:00 PM</option>
+                          <option value="16:00">04:00 PM</option>
+                          <option value="17:00">05:00 PM</option>
+                          <option value="18:00">06:00 PM</option>
+                          <option value="19:00">07:00 PM</option>
+                          <option value="20:00">08:00 PM</option>
+                        </select>
+                      </div>
                     </div>
                   </div>
 
                   {/* Action Buttons */}
-                  <div className="flex items-center justify-center gap-2 pt-2 border-t border-wheat-200 w-full box-border">
+                  <div className="flex items-center justify-center gap-2.5 pt-2.5 border-t border-wheat-200 w-full box-border">
                     <button
                       type="button"
                       onClick={() => setSelectedListing(null)}
-                      className="px-4 py-1.5 text-xs font-semibold text-forest-800/70 hover:text-forest-800 rounded-xl bg-wheat-100 hover:bg-wheat-200 transition-colors text-center box-border"
+                      className="px-5 py-2 text-xs font-semibold text-forest-800/70 hover:text-forest-800 rounded-xl bg-wheat-100 hover:bg-wheat-200 transition-colors text-center box-border cursor-pointer"
                     >
                       Cancel
                     </button>
                     <button
                       type="submit"
                       disabled={claiming}
-                      className="inline-flex items-center justify-center gap-1 px-5 py-1.5 rounded-xl text-xs font-bold bg-forest-800 text-wheat-50 hover:bg-forest-700 disabled:opacity-50 shadow-sm transition-all text-center box-border"
+                      className="inline-flex items-center justify-center gap-1 px-6 py-2 rounded-xl text-xs font-bold bg-forest-800 text-wheat-50 hover:bg-forest-700 active:scale-[0.99] disabled:opacity-50 shadow-sm transition-all text-center box-border cursor-pointer"
                     >
                       {claiming ? "Submitting..." : "Confirm Claim"}
                     </button>
