@@ -251,11 +251,11 @@ export default function VerifyQrModal({ isOpen, onClose, onVerified }) {
           handleCloseModal();
         }
       }}
-      className="fixed inset-0 z-50 flex items-center justify-center p-3 sm:p-4 bg-forest-950/65 backdrop-blur-md overflow-y-auto animate-in fade-in duration-200 cursor-pointer"
+      className="fixed inset-0 z-50 flex items-center justify-center p-2 sm:p-4 bg-forest-950/65 backdrop-blur-md overflow-y-auto animate-in fade-in duration-200 cursor-pointer"
     >
       <div 
         onClick={(e) => e.stopPropagation()}
-        className="glass-modal rounded-xl sm:rounded-2xl w-full max-w-md shadow-2xl overflow-hidden animate-in fade-in zoom-in-95 duration-200 flex flex-col my-auto max-h-[92vh] cursor-default"
+        className="glass-modal rounded-xl sm:rounded-2xl w-full max-w-[calc(100vw-1rem)] sm:max-w-md shadow-2xl overflow-hidden animate-in fade-in zoom-in-95 duration-200 flex flex-col my-auto max-h-[90dvh] cursor-default"
       >
         {/* Header */}
         <div className="p-4 sm:p-5 border-b border-wheat-200/60 flex items-center justify-between bg-wheat-50/70 backdrop-blur-sm shrink-0">

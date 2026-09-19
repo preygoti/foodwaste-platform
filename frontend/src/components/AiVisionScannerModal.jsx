@@ -250,33 +250,34 @@ export default function AiVisionScannerModal({ isOpen, onClose, onAutofill }) {
           onClose();
         }
       }}
-      className="fixed inset-0 z-50 flex items-center justify-center p-3 sm:p-4 bg-forest-950/65 backdrop-blur-md overflow-y-auto animate-in fade-in duration-200 cursor-pointer"
+      className="fixed inset-0 z-50 flex items-center justify-center p-2 sm:p-4 bg-forest-950/65 backdrop-blur-md overflow-y-auto animate-in fade-in duration-200 cursor-pointer"
     >
       <div 
         onClick={(e) => e.stopPropagation()}
-        className="glass-modal rounded-2xl w-full max-w-xl shadow-2xl overflow-hidden animate-in fade-in zoom-in-95 duration-200 flex flex-col max-h-[94vh] my-auto border border-white/80 cursor-default"
+        className="glass-modal rounded-2xl w-full max-w-[calc(100vw-1rem)] sm:max-w-xl shadow-2xl overflow-hidden animate-in fade-in zoom-in-95 duration-200 flex flex-col max-h-[90dvh] my-auto border border-white/80 cursor-default"
       >
         {/* Header */}
-        <div className="p-4 sm:p-5 border-b border-wheat-200/50 flex items-center justify-between bg-gradient-to-r from-forest-900/95 to-forest-800/95 backdrop-blur-md text-wheat-50 shrink-0">
-          <div className="flex items-center gap-2.5">
-            <div className="w-10 h-10 rounded-xl bg-gold-400 text-forest-900 flex items-center justify-center shadow-sm shrink-0">
-              <Sparkles className="w-5 h-5" />
+        <div className="p-3.5 sm:p-5 border-b border-wheat-200/50 flex items-center justify-between bg-gradient-to-r from-forest-900/95 to-forest-800/95 backdrop-blur-md text-wheat-50 shrink-0 gap-2">
+          <div className="flex items-center gap-2 sm:gap-2.5 min-w-0 flex-1">
+            <div className="w-9 h-9 sm:w-10 sm:h-10 rounded-xl bg-gold-400 text-forest-900 flex items-center justify-center shadow-sm shrink-0">
+              <Sparkles className="w-4 h-4 sm:w-5 sm:h-5" />
             </div>
-            <div>
-              <h3 className="font-display font-bold text-wheat-50 text-base sm:text-lg flex items-center gap-2">
-                <span>AI Vision Food Scanner</span>
-                <span className="text-[10px] uppercase font-mono px-2 py-0.5 rounded-full bg-gold-400/20 text-gold-300 border border-gold-400/30">
+            <div className="min-w-0 flex-1">
+              <h3 className="font-display font-bold text-wheat-50 text-sm sm:text-lg flex items-center gap-1.5 flex-wrap">
+                <span className="truncate">AI Vision Food Scanner</span>
+                <span className="text-[9px] sm:text-[10px] uppercase font-mono px-1.5 py-0.5 rounded-full bg-gold-400/20 text-gold-300 border border-gold-400/30 shrink-0">
                   Multimodal v2.0
                 </span>
               </h3>
-              <p className="text-[10px] sm:text-[11px] text-wheat-200/80 font-mono">
-                Computer Vision Food Classification, Freshness Grading &amp; Shelf-Life Predictor
+              <p className="text-[9px] sm:text-[11px] text-wheat-200/80 font-mono truncate">
+                Computer Vision Food Classification &amp; Freshness Grading
               </p>
             </div>
           </div>
           <button
             onClick={onClose}
-            className="text-wheat-300 hover:text-white p-1.5 rounded-lg transition-colors bg-white/10 hover:bg-white/20"
+            className="text-wheat-300 hover:text-white p-1.5 rounded-lg transition-colors bg-white/10 hover:bg-white/20 shrink-0 cursor-pointer"
+            aria-label="Close"
           >
             <X className="w-5 h-5" />
           </button>

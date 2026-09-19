@@ -167,21 +167,38 @@ html, body, *, .no-scrollbar {
 }
 
 /* QR / Barcode Scanner Styles */
+#harvest-qr-reader, #handshake-qr-reader,
+#harvest-qr-reader *, #handshake-qr-reader * {
+  max-width: 100% !important;
+  box-sizing: border-box !important;
+}
+
 #harvest-qr-reader, #handshake-qr-reader {
   border: none !important;
   border-radius: 0.75rem;
-  overflow: hidden;
+  overflow: hidden !important;
+  width: 100% !important;
+  max-width: 100% !important;
 }
 
 #harvest-qr-reader video, #handshake-qr-reader video {
   border-radius: 0.75rem;
   object-fit: cover !important;
   width: 100% !important;
-  max-height: 280px;
+  max-width: 100% !important;
+  max-height: 240px !important;
+}
+
+#harvest-qr-reader canvas, #handshake-qr-reader canvas {
+  max-width: 100% !important;
+  height: auto !important;
 }
 
 #harvest-qr-reader__scan_region, #handshake-qr-reader__scan_region {
   border-radius: 0.75rem;
+  width: 100% !important;
+  max-width: 100% !important;
+  overflow: hidden !important;
 }
 
 #harvest-qr-reader__dashboard, #handshake-qr-reader__dashboard {
@@ -322,6 +339,8 @@ html, body, *, .no-scrollbar {
     backdrop-filter: blur(24px) saturate(190%);
     border: 1px solid rgba(255, 255, 255, 0.85);
     box-shadow: 0 25px 60px -10px rgba(15, 30, 20, 0.20), inset 0 1px 2px rgba(255, 255, 255, 1);
+    max-width: calc(100vw - 1rem);
+    box-sizing: border-box;
   }
 
   /* Frosted Glass Badges & Floating Pills */

@@ -401,28 +401,28 @@ export default function BarcodeScannerModal({ isOpen, open, onClose, onSuccess, 
           handleModalClose();
         }
       }}
-      className="fixed inset-0 z-50 flex items-center justify-center p-3 sm:p-4 bg-forest-950/65 backdrop-blur-md overflow-y-auto cursor-pointer"
+      className="fixed inset-0 z-50 flex items-center justify-center p-2 sm:p-4 bg-forest-950/65 backdrop-blur-md overflow-y-auto cursor-pointer"
     >
       <div 
         onClick={(e) => e.stopPropagation()}
-        className="relative w-full max-w-xl glass-modal rounded-xl sm:rounded-2xl shadow-2xl overflow-hidden my-auto max-h-[92vh] flex flex-col animate-in fade-in zoom-in-95 duration-150 cursor-default"
+        className="relative w-full max-w-[calc(100vw-1rem)] sm:max-w-lg glass-modal rounded-xl sm:rounded-2xl shadow-2xl overflow-hidden my-auto max-h-[90dvh] flex flex-col animate-in fade-in zoom-in-95 duration-150 cursor-default"
       >
         {/* Header */}
-        <div className="flex items-center justify-between px-4 sm:px-6 py-4 sm:py-5 border-b border-wheat-200/60 bg-wheat-50/70 backdrop-blur-sm shrink-0">
-          <div>
+        <div className="flex items-center justify-between px-3.5 sm:px-6 py-3 sm:py-4 border-b border-wheat-200/60 bg-wheat-50/70 backdrop-blur-sm shrink-0 gap-2">
+          <div className="min-w-0 flex-1">
             <div className="flex items-center gap-2">
-              <span className="p-1.5 rounded-md bg-forest-800 text-wheat-50">
+              <span className="p-1.5 rounded-md bg-forest-800 text-wheat-50 shrink-0">
                 <Scan className="w-4 h-4" />
               </span>
-              <h2 className="font-display text-lg sm:text-xl text-forest-800 font-semibold">Scan Barcode / QR</h2>
+              <h2 className="font-display text-base sm:text-xl text-forest-800 font-semibold truncate">Scan Barcode / QR</h2>
             </div>
-            <p className="text-[11px] sm:text-xs text-forest-800/60 mt-1">
+            <p className="text-[10px] sm:text-xs text-forest-800/60 mt-0.5 truncate sm:whitespace-normal">
               Quickly scan packaged items or QR codes to add to your inventory ledger.
             </p>
           </div>
           <button
             onClick={handleModalClose}
-            className="p-1.5 text-forest-800/50 hover:text-forest-800 rounded-lg hover:bg-wheat-200/50 transition-colors"
+            className="p-1.5 text-forest-800/50 hover:text-forest-800 rounded-lg hover:bg-wheat-200/50 transition-colors shrink-0 cursor-pointer"
             aria-label="Close"
           >
             <X className="w-5 h-5" />
@@ -430,7 +430,7 @@ export default function BarcodeScannerModal({ isOpen, open, onClose, onSuccess, 
         </div>
 
         {/* Modal Body */}
-        <div className="p-4 sm:p-6 space-y-5 overflow-y-auto flex-1">
+        <div className="p-3 sm:p-5 space-y-4 overflow-y-auto flex-1">
           {/* Mode Switcher Tabs (when code not yet confirmed) */}
           {!scannedCode && (
             <div className="grid grid-cols-2 gap-2 p-1 bg-wheat-100/70 rounded-lg border border-wheat-200">
@@ -469,9 +469,9 @@ export default function BarcodeScannerModal({ isOpen, open, onClose, onSuccess, 
 
           {/* 1. Camera Viewfinder View */}
           {!scannedCode && activeTab === "camera" && (
-            <div className="space-y-4">
-              <div className="relative w-full max-w-sm mx-auto rounded-2xl overflow-hidden bg-forest-950 border border-forest-800 shadow-md">
-                <div id={readerElementId} className="w-full relative overflow-hidden" />
+            <div className="space-y-3 sm:space-y-4">
+              <div className="relative w-full max-w-[280px] sm:max-w-sm mx-auto rounded-xl sm:rounded-2xl overflow-hidden bg-forest-950 border border-forest-800 shadow-md">
+                <div id={readerElementId} className="w-full max-w-full overflow-hidden relative" />
 
                 {!scannerStarted && !cameraError && (
                   <div className="p-8 flex flex-col items-center justify-center text-wheat-100 space-y-3 min-h-[220px]">
@@ -624,7 +624,7 @@ export default function BarcodeScannerModal({ isOpen, open, onClose, onSuccess, 
 
                 <div>
                   <label className="block text-xs uppercase tracking-wide text-forest-800/70 font-semibold mb-1">
-                    Quantity & Unit *
+                    Quantity &amp; Unit *
                   </label>
                   <div className="flex gap-2">
                     <input
@@ -634,15 +634,15 @@ export default function BarcodeScannerModal({ isOpen, open, onClose, onSuccess, 
                       required
                       value={itemForm.quantity}
                       onChange={handleFormChange("quantity")}
-                      className="w-24 border border-wheat-200 rounded-lg px-3 py-2 text-sm font-mono focus:outline-none focus:ring-2 focus:ring-forest-400"
+                      className="w-20 sm:w-24 border border-wheat-200 rounded-lg px-2.5 sm:px-3 py-2 text-sm font-mono focus:outline-none focus:ring-2 focus:ring-forest-400"
                     />
                     <input
                       type="text"
                       required
-                      placeholder="e.g. kg, liter, packs"
+                      placeholder="e.g. kg, packs"
                       value={itemForm.unit}
                       onChange={handleFormChange("unit")}
-                      className="flex-1 border border-wheat-200 rounded-lg px-3 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-forest-400"
+                      className="flex-1 min-w-0 border border-wheat-200 rounded-lg px-2.5 sm:px-3 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-forest-400"
                     />
                   </div>
                 </div>
