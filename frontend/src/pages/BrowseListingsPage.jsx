@@ -213,6 +213,33 @@ export default function BrowseListingsPage() {
     return () => window.removeEventListener("keydown", handleKeyDown);
   }, [selectedListing]);
 
+  // Filter out any expired listings in real-time, plus search/category filtering
+  const activeUnexpiredListings = useMemo(() => {
+    return listings.filter((l) => {
+      // 0. Exclude listings already requested by this NGO (they are in My Pickups!)
+      if (myPickupListingIds.has(l.id)) return false;
+
+      // 1. Food safety: Exclude expired items
+      const cd = computeLiveExpiryCountdown(l.expiry_date, now);
+      if (cd.isExpired) return false;
+
+      // 2. Category filter
+      if (categoryFilter !== "all" && l.category !== categoryFilter) return false;
+
+      // 3. Search query filter
+      if (searchQuery.trim()) {
+        const q = searchQuery.toLowerCase();
+        const matchesTitle = l.title?.toLowerCase().includes(q);
+        const matchesBiz = l.business_name?.toLowerCase().includes(q);
+        const matchesLoc = l.pickup_location?.toLowerCase().includes(q);
+        const matchesCat = l.category?.toLowerCase().includes(q);
+        if (!matchesTitle && !matchesBiz && !matchesLoc && !matchesCat) return false;
+      }
+
+      return true;
+    });
+  }, [listings, myPickupListingIds, now, categoryFilter, searchQuery]);
+
   if (user?.role && user.role !== "ngo") {
     return (
       <Layout>
@@ -284,33 +311,6 @@ export default function BrowseListingsPage() {
       setClaiming(false);
     }
   };
-
-  // Filter out any expired listings in real-time, plus search/category filtering
-  const activeUnexpiredListings = useMemo(() => {
-    return listings.filter((l) => {
-      // 0. Exclude listings already requested by this NGO (they are in My Pickups!)
-      if (myPickupListingIds.has(l.id)) return false;
-
-      // 1. Food safety: Exclude expired items
-      const cd = computeLiveExpiryCountdown(l.expiry_date, now);
-      if (cd.isExpired) return false;
-
-      // 2. Category filter
-      if (categoryFilter !== "all" && l.category !== categoryFilter) return false;
-
-      // 3. Search query filter
-      if (searchQuery.trim()) {
-        const q = searchQuery.toLowerCase();
-        const matchesTitle = l.title?.toLowerCase().includes(q);
-        const matchesBiz = l.business_name?.toLowerCase().includes(q);
-        const matchesLoc = l.pickup_location?.toLowerCase().includes(q);
-        const matchesCat = l.category?.toLowerCase().includes(q);
-        if (!matchesTitle && !matchesBiz && !matchesLoc && !matchesCat) return false;
-      }
-
-      return true;
-    });
-  }, [listings, myPickupListingIds, now, categoryFilter, searchQuery]);
 
   return (
     <Layout>
