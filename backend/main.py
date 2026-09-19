@@ -67,11 +67,16 @@ async def security_and_rate_limit_middleware(request: Request, call_next):
             content={"detail": "Payload too large. Maximum allowed request size is 25MB."}
         )
 
-    # 2. Rate Limiting (Safe Client IP extraction supporting reverse proxies like Render)
+    # 2. Rate Limiting (Safe Client IP extraction preventing spoofing)
+    # Trust X-Forwarded-For ONLY when running behind a verified reverse proxy (e.g. Render)
+    is_behind_proxy = bool(os.environ.get("RENDER") or os.environ.get("TRUSTED_PROXY"))
     forwarded = request.headers.get("x-forwarded-for")
-    if forwarded:
-        client_ip = forwarded.split(",")[0].strip()
+    if is_behind_proxy and forwarded:
+        # Behind Render's edge proxy: Render appends the real connecting IP to the end of X-Forwarded-For
+        ips = [ip.strip() for ip in forwarded.split(",") if ip.strip()]
+        client_ip = ips[-1] if ips else (request.client.host if request.client else "unknown")
     else:
+        # In direct/local connections, never trust user-supplied X-Forwarded-For headers
         client_ip = request.client.host if request.client else "unknown"
 
     now = time.time()
@@ -191,8 +196,15 @@ def send_registration_otp(payload: schemas.SendRegistrationOtpRequest, db: Sessi
     if not success:
         logger.warning(f"[Registration-Auth] Email dispatch to {norm_email} had warning: {err_msg}")
 
-    is_production = bool(os.environ.get("RENDER") or os.environ.get("ENVIRONMENT", "").lower() == "production")
-    debug_otp = None if (is_production or (success and has_live_email_api)) else otp_code
+    # In production or staging, never expose the OTP in API responses under any circumstance
+    is_prod_or_staging = bool(
+        os.environ.get("RENDER") or 
+        os.environ.get("ENVIRONMENT", "").lower() in ("production", "staging", "prod")
+    )
+    if is_prod_or_staging:
+        debug_otp = None
+    else:
+        debug_otp = None if (success and has_live_email_api) else otp_code
 
     message = (
         "Verification code sent to your email address (Valid for 10 minutes)"
@@ -346,10 +358,15 @@ def forgot_password(payload: schemas.ForgotPasswordRequest, db: Session = Depend
     if not success:
         logger.warning(f"[Auth] Email dispatch to {norm_email} had warning: {err_msg}")
 
-    # In production, never return the OTP in the API response to prevent intercept attacks.
-    # In local development without live email APIs, provide debug_otp so local testing functions smoothly.
-    is_production = bool(os.environ.get("RENDER") or os.environ.get("ENVIRONMENT", "").lower() == "production")
-    debug_otp = None if (is_production or (success and has_live_email_api)) else otp_code
+    # In production or staging, never expose the OTP in API responses under any circumstance
+    is_prod_or_staging = bool(
+        os.environ.get("RENDER") or 
+        os.environ.get("ENVIRONMENT", "").lower() in ("production", "staging", "prod")
+    )
+    if is_prod_or_staging:
+        debug_otp = None
+    else:
+        debug_otp = None if (success and has_live_email_api) else otp_code
 
     message = (
         "Verification code sent to your email address (Valid for 10 minutes)"

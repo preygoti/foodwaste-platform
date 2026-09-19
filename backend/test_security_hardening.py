@@ -61,7 +61,7 @@ class TestSecurityHardening(unittest.TestCase):
         self.assertEqual(res.status_code, 400)
         self.assertIn('at least 6 characters', res.json()['detail'])
 
-    def test_production_otp_redaction(self):
+    def test_production_and_staging_otp_redaction(self):
         # In simulated production environment, debug_otp must be None
         os.environ['ENVIRONMENT'] = 'production'
         try:
@@ -70,6 +70,17 @@ class TestSecurityHardening(unittest.TestCase):
             })
             self.assertEqual(res.status_code, 200)
             self.assertIsNone(res.json().get('debug_otp'))
+        finally:
+            del os.environ['ENVIRONMENT']
+
+        # In simulated staging environment, debug_otp must also be None
+        os.environ['ENVIRONMENT'] = 'staging'
+        try:
+            res_staging = client.post('/auth/send-registration-otp', json={
+                'email': f'stage_otp_{uuid.uuid4().hex[:6]}@test.org'
+            })
+            self.assertEqual(res_staging.status_code, 200)
+            self.assertIsNone(res_staging.json().get('debug_otp'))
         finally:
             del os.environ['ENVIRONMENT']
 
@@ -84,6 +95,19 @@ class TestSecurityHardening(unittest.TestCase):
             content=b'x' * 100
         )
         self.assertEqual(res.status_code, 413)
+
+    def test_x_forwarded_for_anti_spoofing(self):
+        # In non-proxy mode, client-sent X-Forwarded-For must NOT be trusted
+        res = client.get('/', headers={'X-Forwarded-For': '198.51.100.24'})
+        self.assertEqual(res.status_code, 200)
+
+        # In proxy mode (Render), verified edge-appended IP must be resolved safely
+        os.environ['RENDER'] = 'true'
+        try:
+            res_proxy = client.get('/', headers={'X-Forwarded-For': '198.51.100.24, 203.0.113.50'})
+            self.assertEqual(res_proxy.status_code, 200)
+        finally:
+            del os.environ['RENDER']
 
 if __name__ == '__main__':
     unittest.main()
