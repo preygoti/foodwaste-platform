@@ -11,7 +11,29 @@ from sqlalchemy.orm import Session
 from database import get_db
 import models
 
-SECRET_KEY = os.environ.get("JWT_SECRET", "dev-secret-change-in-production")
+import secrets
+import logging
+
+logger = logging.getLogger("uvicorn.error")
+
+_raw_secret = os.environ.get("JWT_SECRET", "").strip()
+is_prod_or_staging = bool(
+    os.environ.get("RENDER") or 
+    os.environ.get("ENVIRONMENT", "").lower() in ("production", "staging", "prod")
+)
+
+if is_prod_or_staging:
+    if not _raw_secret:
+        raise RuntimeError(
+            "CRITICAL SECURITY CONFIGURATION ERROR: The 'JWT_SECRET' environment variable is missing or empty. "
+            "In production and staging environments, a stable, persistent JWT_SECRET must be configured in environment "
+            "variables (e.g. in the Render Dashboard) to ensure cryptographic security and prevent session/token invalidation across server restarts."
+        )
+    SECRET_KEY = _raw_secret
+else:
+    # Development-only fallback configuration for local workflows and testing
+    SECRET_KEY = _raw_secret or "dev-secret-change-in-production"
+
 ALGORITHM = "HS256"
 ACCESS_TOKEN_EXPIRE_MINUTES = 60 * 24 * 7  # 7 days
 

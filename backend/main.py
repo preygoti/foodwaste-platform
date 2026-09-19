@@ -1,6 +1,8 @@
 import os
 import secrets
 import hashlib
+import hmac
+import logging
 from datetime import date, datetime, timedelta
 from typing import List, Optional
 
@@ -30,6 +32,8 @@ from prediction_engine import (
     get_product_performance, get_financial_overview, get_demand_forecast,
     get_waste_predictions, get_inventory_health,
 )
+
+logger = logging.getLogger("uvicorn.error")
 
 Base.metadata.create_all(bind=engine)
 
@@ -63,8 +67,18 @@ async def security_and_rate_limit_middleware(request: Request, call_next):
             content={"detail": "Payload too large. Maximum allowed request size is 25MB."}
         )
 
-    # 2. Rate Limiting (Free In-Memory Sliding Window)
-    client_ip = request.client.host if request.client else "unknown"
+    # 2. Rate Limiting (Safe Client IP extraction preventing spoofing)
+    # Trust X-Forwarded-For ONLY when running behind a verified reverse proxy (e.g. Render)
+    is_behind_proxy = bool(os.environ.get("RENDER") or os.environ.get("TRUSTED_PROXY"))
+    forwarded = request.headers.get("x-forwarded-for")
+    if is_behind_proxy and forwarded:
+        # Behind Render's edge proxy: Render appends the real connecting IP to the end of X-Forwarded-For
+        ips = [ip.strip() for ip in forwarded.split(",") if ip.strip()]
+        client_ip = ips[-1] if ips else (request.client.host if request.client else "unknown")
+    else:
+        # In direct/local connections, never trust user-supplied X-Forwarded-For headers
+        client_ip = request.client.host if request.client else "unknown"
+
     now = time.time()
     one_min_ago = now - 60.0
 
@@ -103,12 +117,31 @@ async def security_and_rate_limit_middleware(request: Request, call_next):
 
     return response
 
+# Allowed Origins for CORS - Strictly restricted to approved production origins and local dev
+allowed_origins_env = os.environ.get("ALLOWED_ORIGINS", "")
+custom_origins = [o.strip() for o in allowed_origins_env.split(",") if o.strip()]
+
+trusted_origins = [
+    "https://foodwaste-platform.vercel.app",
+    "https://foodwaste-platform.onrender.com",
+    "http://localhost:5173",
+    "http://localhost:3000",
+    "http://localhost:4173",
+    "http://127.0.0.1:5173",
+    "http://127.0.0.1:3000",
+    "http://127.0.0.1:4173",
+]
+cors_origins = list(dict.fromkeys(trusted_origins + custom_origins))
+
+# Allow localhost / 127.0.0.1 on local development ports; no broad public domain wildcard regex
+local_dev_regex = r"^http://(localhost|127\.0\.0\.1)(:\d+)?$"
+
 app.add_middleware(
     CORSMiddleware,
-    allow_origins=["*"],
-    allow_origin_regex=r".*",
+    allow_origins=cors_origins,
+    allow_origin_regex=local_dev_regex,
     allow_credentials=True,
-    allow_methods=["*"],
+    allow_methods=["GET", "POST", "PUT", "PATCH", "DELETE", "OPTIONS"],
     allow_headers=["*"],
 )
 
@@ -163,7 +196,15 @@ def send_registration_otp(payload: schemas.SendRegistrationOtpRequest, db: Sessi
     if not success:
         logger.warning(f"[Registration-Auth] Email dispatch to {norm_email} had warning: {err_msg}")
 
-    debug_otp = None if (success and has_live_email_api) else otp_code
+    # In production or staging, never expose the OTP in API responses under any circumstance
+    is_prod_or_staging = bool(
+        os.environ.get("RENDER") or 
+        os.environ.get("ENVIRONMENT", "").lower() in ("production", "staging", "prod")
+    )
+    if is_prod_or_staging:
+        debug_otp = None
+    else:
+        debug_otp = None if (success and has_live_email_api) else otp_code
 
     message = (
         "Verification code sent to your email address (Valid for 10 minutes)"
@@ -202,7 +243,7 @@ def verify_registration_otp(payload: schemas.VerifyRegistrationOtpRequest, db: S
         raise HTTPException(400, "Verification code has expired. Please request a new code.")
 
     expected_hash = hashlib.sha256((norm_email + otp_code + SECRET_KEY).encode()).hexdigest()
-    if record.hashed_otp != expected_hash:
+    if not hmac.compare_digest(record.hashed_otp, expected_hash):
         record.attempts += 1
         db.commit()
         raise HTTPException(400, "Invalid 6-digit verification code. Please check and try again.")
@@ -214,6 +255,11 @@ def verify_registration_otp(payload: schemas.VerifyRegistrationOtpRequest, db: S
 def register(payload: schemas.UserCreate, db: Session = Depends(get_db)):
     if payload.role not in ("business", "ngo"):
         raise HTTPException(400, "role must be 'business' or 'ngo'")
+
+    if not payload.password or len(payload.password) < 6:
+        raise HTTPException(400, "Password must be at least 6 characters long")
+    if len(payload.password) > 128:
+        raise HTTPException(400, "Password must be at most 128 characters long")
     
     norm_email = str(payload.email).strip().lower()
     existing = db.query(models.User).filter(func.lower(models.User.email) == norm_email).first()
@@ -232,7 +278,7 @@ def register(payload: schemas.UserCreate, db: Session = Depends(get_db)):
             raise HTTPException(400, "Invalid or expired email verification code. Please verify your email.")
 
         expected_hash = hashlib.sha256((norm_email + otp_code + SECRET_KEY).encode()).hexdigest()
-        if record.hashed_otp != expected_hash:
+        if not hmac.compare_digest(record.hashed_otp, expected_hash):
             record.attempts += 1
             db.commit()
             raise HTTPException(400, "Invalid verification code.")
@@ -312,9 +358,15 @@ def forgot_password(payload: schemas.ForgotPasswordRequest, db: Session = Depend
     if not success:
         logger.warning(f"[Auth] Email dispatch to {norm_email} had warning: {err_msg}")
 
-    # If live HTTPS email API successfully delivered the mail, no on-screen code is needed;
-    # otherwise, provide the code on-screen so users on Render/local are never locked out.
-    debug_otp = None if (success and has_live_email_api) else otp_code
+    # In production or staging, never expose the OTP in API responses under any circumstance
+    is_prod_or_staging = bool(
+        os.environ.get("RENDER") or 
+        os.environ.get("ENVIRONMENT", "").lower() in ("production", "staging", "prod")
+    )
+    if is_prod_or_staging:
+        debug_otp = None
+    else:
+        debug_otp = None if (success and has_live_email_api) else otp_code
 
     message = (
         "Verification code sent to your email address (Valid for 10 minutes)"
@@ -353,7 +405,7 @@ def verify_otp(payload: schemas.VerifyOtpRequest, db: Session = Depends(get_db))
         raise HTTPException(400, "Verification code has expired. Please request a new code.")
 
     expected_hash = hashlib.sha256((norm_email + otp_code + SECRET_KEY).encode()).hexdigest()
-    if record.hashed_otp != expected_hash:
+    if not hmac.compare_digest(record.hashed_otp, expected_hash):
         record.attempts += 1
         db.commit()
         raise HTTPException(400, "Invalid verification code. Please check and try again.")
@@ -368,6 +420,8 @@ def reset_password(payload: schemas.ResetPasswordRequest, db: Session = Depends(
 
     if len(payload.new_password) < 6:
         raise HTTPException(400, "Password must be at least 6 characters long")
+    if len(payload.new_password) > 128:
+        raise HTTPException(400, "Password must be at most 128 characters long")
 
     record = db.query(models.PasswordResetOTP).filter(
         func.lower(models.PasswordResetOTP.email) == norm_email,
@@ -378,7 +432,7 @@ def reset_password(payload: schemas.ResetPasswordRequest, db: Session = Depends(
         raise HTTPException(400, "Invalid or expired verification code.")
 
     expected_hash = hashlib.sha256((norm_email + otp_code + SECRET_KEY).encode()).hexdigest()
-    if record.hashed_otp != expected_hash:
+    if not hmac.compare_digest(record.hashed_otp, expected_hash):
         record.attempts += 1
         db.commit()
         raise HTTPException(400, "Invalid verification code.")
@@ -871,7 +925,7 @@ def verify_pickup_by_code(
         if candidate:
             c_listing = db.query(models.Listing).filter(models.Listing.id == candidate.listing_id).first()
             if c_listing and c_listing.business_id == user.id:
-                if c_listing.verification_code and digits and digits != c_listing.verification_code:
+                if c_listing.verification_code and digits and not hmac.compare_digest(digits, c_listing.verification_code):
                     raise HTTPException(
                         status_code=400,
                         detail="Invalid 6-digit verification code. The entered code does not match this surplus item.",
@@ -1000,7 +1054,8 @@ def inspect_food_freshness(
     or advanced multi-spectral computer vision to detect food type, predict shelf-life,
     and grade commercial food quality.
     """
-    result = run_food_vision_classifier(payload.image_base64, payload.item_hint)
+    clean_hint = str(payload.item_hint or "").strip()[:100]
+    result = run_food_vision_classifier(payload.image_base64, clean_hint)
     return schemas.FreshnessInspectionResponse(**result)
 
 
