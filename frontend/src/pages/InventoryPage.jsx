@@ -243,6 +243,21 @@ export default function InventoryPage() {
     return () => window.removeEventListener("keydown", handleKeyDown);
   }, [showAddModal, listingModalItem]);
 
+  // Segregate Active vs Expired items based on real-time countdown
+  const { activeItems, expiredItems } = useMemo(() => {
+    const active = [];
+    const expired = [];
+    for (const item of items) {
+      const cd = computeLiveExpiryCountdown(item.expiry_date, now);
+      if (cd.isExpired) {
+        expired.push(item);
+      } else {
+        active.push(item);
+      }
+    }
+    return { activeItems: active, expiredItems: expired };
+  }, [items, now]);
+
   if (user && user.role !== "business") {
     return (
       <Layout>
@@ -357,21 +372,6 @@ export default function InventoryPage() {
       setListingSubmitting(false);
     }
   };
-
-  // Segregate Active vs Expired items based on real-time countdown
-  const { activeItems, expiredItems } = useMemo(() => {
-    const active = [];
-    const expired = [];
-    for (const item of items) {
-      const cd = computeLiveExpiryCountdown(item.expiry_date, now);
-      if (cd.isExpired) {
-        expired.push(item);
-      } else {
-        active.push(item);
-      }
-    }
-    return { activeItems: active, expiredItems: expired };
-  }, [items, now]);
 
   // Current tab items list
   const currentTabPool = activeTab === "active" ? activeItems : expiredItems;
