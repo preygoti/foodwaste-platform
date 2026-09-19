@@ -269,7 +269,7 @@ export default function AiVisionScannerModal({ isOpen, onClose, onAutofill }) {
               <h3 className="font-display font-bold text-white text-sm sm:text-lg flex items-center gap-1.5 flex-wrap">
                 <span className="truncate">AI Vision Food Scanner</span>
                 <span className="text-[9px] sm:text-[10px] uppercase font-mono px-1.5 py-0.5 rounded-full gemini-pill text-cyan-200 border border-cyan-400/40 shrink-0">
-                  ✨ Gemini Multimodal
+                  Multimodal v2.0
                 </span>
               </h3>
               <p className="text-[9px] sm:text-[11px] text-wheat-200/90 font-mono truncate">

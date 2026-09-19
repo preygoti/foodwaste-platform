@@ -187,7 +187,7 @@ Yield: ${recipe.yieldPerKg}`;
                   Rescue Chef
                 </h2>
                 <span className="px-2 py-0.5 rounded-full text-[9px] sm:text-[10px] font-mono gemini-pill text-cyan-200 border border-cyan-400/40">
-                  ✨ Gemini AI Engine
+                  Zero-Waste Recipes
                 </span>
               </div>
               <p className="text-[11px] sm:text-xs text-wheat-200/90 truncate">

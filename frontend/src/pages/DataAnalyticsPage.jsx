@@ -477,7 +477,7 @@ const DataAnalyticsPage = () => {
               </h2>
               <span className="px-2.5 py-0.5 rounded-full text-xs font-mono gemini-pill text-blue-900 border border-blue-400/40 flex items-center gap-1 font-semibold">
                 <Sparkles className="w-3.5 h-3.5 text-blue-600 animate-pulse" />
-                Gemini ML Engine
+                ML Forecast Engine
               </span>
             </div>
             <p className="text-gray-500 font-body text-sm mt-1">Machine learning predictive intelligence based on historical patterns</p>

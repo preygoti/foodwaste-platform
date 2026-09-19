@@ -421,8 +421,8 @@ export default function Landing() {
         {/* Left Hero Content */}
         <div className="md:col-span-7 space-y-6 animate-in fade-in slide-in-from-bottom-3 duration-500">
           <div className="inline-flex items-center gap-2 px-3.5 py-1.5 rounded-full gemini-pill font-mono text-xs shadow-xs">
-            <Sparkles className="w-3.5 h-3.5 text-blue-600 animate-pulse shrink-0" />
-            <span className="gemini-gradient-text font-bold">✨ GOOGLE GEMINI AI &bull; SMART FOOD RESCUE</span>
+            <span className="w-2 h-2 rounded-full bg-emerald-500 animate-pulse" />
+            <span className="gemini-gradient-text font-bold">HARVEST LEDGER &bull; SMART FOOD RESCUE PLATFORM</span>
           </div>
 
           <h1 className="font-display text-4xl sm:text-5xl lg:text-6xl leading-[1.08] text-forest-800 font-bold tracking-tight">
