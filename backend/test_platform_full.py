@@ -8,7 +8,7 @@ from fastapi.testclient import TestClient
 # Add backend directory to sys.path
 sys.path.insert(0, os.path.dirname(__file__))
 
-from main import app
+from main import app, _auth_request_timestamps, _ip_request_timestamps
 from database import Base, engine, SessionLocal
 import models
 from auth import create_access_token
@@ -20,10 +20,27 @@ class TestFoodWastePlatform(unittest.TestCase):
     def setUpClass(cls):
         Base.metadata.create_all(bind=engine)
 
+    def setUp(self):
+        _auth_request_timestamps.clear()
+        _ip_request_timestamps.clear()
+
     def test_01_health_check(self):
         res = client.get("/")
         self.assertEqual(res.status_code, 200)
         self.assertEqual(res.json()["status"], "ok")
+
+    @staticmethod
+    def register_user(email, password, org_name, role, address=""):
+        res_otp = client.post("/auth/send-registration-otp", json={"email": email})
+        otp_code = res_otp.json().get("debug_otp")
+        return client.post("/auth/register", json={
+            "email": email,
+            "password": password,
+            "org_name": org_name,
+            "role": role,
+            "address": address,
+            "otp": otp_code,
+        })
 
     def test_02_register_and_login_with_jwt_binding(self):
         uid = str(uuid.uuid4())[:8]
@@ -31,13 +48,7 @@ class TestFoodWastePlatform(unittest.TestCase):
         ngo_email = f"ngo_{uid}@test.org"
 
         # Register Business
-        res_b = client.post("/auth/register", json={
-            "email": biz_email,
-            "password": "password123",
-            "org_name": "Fresh Market & Bakery",
-            "role": "business",
-            "address": "100 Green St"
-        })
+        res_b = self.register_user(biz_email, "password123", "Fresh Market & Bakery", "business", "100 Green St")
         self.assertEqual(res_b.status_code, 200, res_b.text)
         biz_data = res_b.json()
         self.assertIn("access_token", biz_data)
@@ -45,13 +56,7 @@ class TestFoodWastePlatform(unittest.TestCase):
         biz_token = biz_data["access_token"]
 
         # Register NGO
-        res_n = client.post("/auth/register", json={
-            "email": ngo_email,
-            "password": "password123",
-            "org_name": "City Food Rescue",
-            "role": "ngo",
-            "address": "200 Community Ave"
-        })
+        res_n = self.register_user(ngo_email, "password123", "City Food Rescue", "ngo", "200 Community Ave")
         self.assertEqual(res_n.status_code, 200, res_n.text)
         ngo_data = res_n.json()
         self.assertEqual(ngo_data["user"]["role"], "ngo")
@@ -98,13 +103,7 @@ class TestFoodWastePlatform(unittest.TestCase):
         # Create a SECOND business
         uid2 = str(uuid.uuid4())[:8]
         biz2_email = f"biz2_{uid2}@test.org"
-        res_b2 = client.post("/auth/register", json={
-            "email": biz2_email,
-            "password": "password123",
-            "org_name": "Second Bakery",
-            "role": "business",
-            "address": "500 Bread St"
-        })
+        res_b2 = self.register_user(biz2_email, "password123", "Second Bakery", "business", "500 Bread St")
         biz2_token = res_b2.json()["access_token"]
         headers_b2 = {"Authorization": f"Bearer {biz2_token}"}
 
@@ -325,24 +324,12 @@ class TestFoodWastePlatform(unittest.TestCase):
 
         # 1. Register NGO 1 and NGO 2
         uid_ngo1 = uuid.uuid4().hex[:8]
-        res_ngo1 = client.post("/auth/register", json={
-            "email": f"ngo1_{uid_ngo1}@test.org",
-            "password": "password123",
-            "org_name": "Hope Food Bank 1",
-            "role": "ngo",
-            "address": "101 Charity Ave"
-        })
+        res_ngo1 = self.register_user(f"ngo1_{uid_ngo1}@test.org", "password123", "Hope Food Bank 1", "ngo", "101 Charity Ave")
         ngo1_token = res_ngo1.json()["access_token"]
         ngo1_headers = {"Authorization": f"Bearer {ngo1_token}"}
 
         uid_ngo2 = uuid.uuid4().hex[:8]
-        res_ngo2 = client.post("/auth/register", json={
-            "email": f"ngo2_{uid_ngo2}@test.org",
-            "password": "password123",
-            "org_name": "Meals For All 2",
-            "role": "ngo",
-            "address": "202 Shelter Rd"
-        })
+        res_ngo2 = self.register_user(f"ngo2_{uid_ngo2}@test.org", "password123", "Meals For All 2", "ngo", "202 Shelter Rd")
         ngo2_token = res_ngo2.json()["access_token"]
         ngo2_headers = {"Authorization": f"Bearer {ngo2_token}"}
 
@@ -510,13 +497,7 @@ class TestFoodWastePlatform(unittest.TestCase):
     def test_13_ai_vision_freshness_inspector(self):
         # 1. Register & login
         uid = str(uuid.uuid4())[:8]
-        res_reg = client.post("/auth/register", json={
-            "email": f"vision_{uid}@test.org",
-            "password": "password123",
-            "org_name": "AI Vision Testing Kitchen",
-            "role": "business",
-            "address": "456 Silicon Ave"
-        })
+        res_reg = self.register_user(f"vision_{uid}@test.org", "password123", "AI Vision Testing Kitchen", "business", "456 Silicon Ave")
         token = res_reg.json()["access_token"]
         auth_headers = {"Authorization": f"Bearer {token}"}
 
@@ -555,7 +536,45 @@ class TestFoodWastePlatform(unittest.TestCase):
         res_unauth = client.post("/ai/inspect-freshness", json={"item_hint": "apple"})
         self.assertEqual(res_unauth.status_code, 401)
 
+    def test_14_registration_otp_bypass_prevention(self):
+        uid = str(uuid.uuid4())[:8]
+        test_email = f"bypass_{uid}@test.org"
+
+        # 1. Calling /auth/register without OTP must be rejected with 400
+        res_no_otp = client.post("/auth/register", json={
+            "email": test_email,
+            "password": "password123",
+            "org_name": "Bypass Test Org",
+            "role": "business"
+        })
+        self.assertEqual(res_no_otp.status_code, 400)
+        self.assertIn("Email verification required", res_no_otp.json()["detail"])
+
+        # 2. Calling /auth/register with empty/whitespace OTP must be rejected with 400
+        res_empty_otp = client.post("/auth/register", json={
+            "email": test_email,
+            "password": "password123",
+            "org_name": "Bypass Test Org",
+            "role": "business",
+            "otp": "   "
+        })
+        self.assertEqual(res_empty_otp.status_code, 400)
+        self.assertIn("Email verification required", res_empty_otp.json()["detail"])
+
+        # 3. Calling /auth/register with invalid OTP must be rejected with 400
+        client.post("/auth/send-registration-otp", json={"email": test_email})
+        res_bad_otp = client.post("/auth/register", json={
+            "email": test_email,
+            "password": "password123",
+            "org_name": "Bypass Test Org",
+            "role": "business",
+            "otp": "000000"
+        })
+        self.assertEqual(res_bad_otp.status_code, 400)
+        self.assertIn("Invalid verification code", res_bad_otp.json()["detail"])
+
 
 if __name__ == "__main__":
     unittest.main()
+
 

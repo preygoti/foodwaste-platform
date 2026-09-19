@@ -90,6 +90,18 @@ class TestSecurityHardening(unittest.TestCase):
         self.assertEqual(res.status_code, 400)
         self.assertIn('at least 6 characters', res.json()['detail'])
 
+    def test_registration_otp_bypass_prevention(self):
+        uid = uuid.uuid4().hex[:6]
+        test_email = f"bypass_sec_{uid}@test.org"
+        res_no_otp = client.post('/auth/register', json={
+            'email': test_email,
+            'password': 'password123',
+            'org_name': 'Bypass Test Org',
+            'role': 'business'
+        })
+        self.assertEqual(res_no_otp.status_code, 400)
+        self.assertIn('Email verification required', res_no_otp.json()['detail'])
+
     def test_production_and_staging_otp_redaction(self):
         # In simulated production environment, debug_otp must be None
         os.environ['ENVIRONMENT'] = 'production'
@@ -158,37 +170,34 @@ class TestSecurityHardening(unittest.TestCase):
         self.assertNotEqual(proc.returncode, 0)
         self.assertIn('CRITICAL SECURITY CONFIGURATION ERROR', proc.stderr)
 
+    @staticmethod
+    def register_user(email, password, org_name, role):
+        res_otp = client.post('/auth/send-registration-otp', json={'email': email})
+        otp_code = res_otp.json().get('debug_otp')
+        return client.post('/auth/register', json={
+            'email': email,
+            'password': password,
+            'org_name': org_name,
+            'role': role,
+            'otp': otp_code
+        })
+
     def test_09_authorization_role_bypass_and_idor(self):
         # Create Business A and Business B
         uid_a = uuid.uuid4().hex[:6]
         uid_b = uuid.uuid4().hex[:6]
         uid_ngo = uuid.uuid4().hex[:6]
 
-        res_ba = client.post('/auth/register', json={
-            'email': f'biz_a_{uid_a}@test.org',
-            'password': 'password123',
-            'org_name': 'Business A',
-            'role': 'business'
-        })
+        res_ba = self.register_user(f'biz_a_{uid_a}@test.org', 'password123', 'Business A', 'business')
         token_ba = res_ba.json()['access_token']
         headers_ba = {'Authorization': f'Bearer {token_ba}'}
 
-        res_bb = client.post('/auth/register', json={
-            'email': f'biz_b_{uid_b}@test.org',
-            'password': 'password123',
-            'org_name': 'Business B',
-            'role': 'business'
-        })
+        res_bb = self.register_user(f'biz_b_{uid_b}@test.org', 'password123', 'Business B', 'business')
         token_bb = res_bb.json()['access_token']
         headers_bb = {'Authorization': f'Bearer {token_bb}'}
 
         # Create NGO
-        res_ngo = client.post('/auth/register', json={
-            'email': f'ngo_{uid_ngo}@test.org',
-            'password': 'password123',
-            'org_name': 'Charity Food Bank',
-            'role': 'ngo'
-        })
+        res_ngo = self.register_user(f'ngo_{uid_ngo}@test.org', 'password123', 'Charity Food Bank', 'ngo')
         token_ngo = res_ngo.json()['access_token']
         headers_ngo = {'Authorization': f'Bearer {token_ngo}'}
 

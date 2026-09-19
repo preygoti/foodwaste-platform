@@ -48,14 +48,78 @@ except Exception:
 app = FastAPI(title="AI-Powered Food Waste Management Platform API")
 
 # ------------------------------------------------------------
-# In-Memory Anti-Brute-Force & Rate Limiting Storage
+# Hybrid Scalable Rate Limiting & Anti-Brute-Force
 # ------------------------------------------------------------
-_ip_request_timestamps = defaultdict(list)
-_auth_request_timestamps = defaultdict(list)
-
 MAX_GLOBAL_PER_MINUTE = 300
 MAX_AUTH_PER_MINUTE = 30
 MAX_REQUEST_BODY_BYTES = 25 * 1024 * 1024  # 25MB max body size
+
+
+class HybridRateLimiter:
+    """
+    Hybrid Rate Limiter:
+    - If REDIS_URL is configured and redis-py is installed, uses distributed Redis rate limiting.
+    - Otherwise, falls back to a thread-safe, memory-pruned in-memory sliding window limiter.
+    """
+    def __init__(self):
+        self.redis_client = None
+        redis_url = os.environ.get("REDIS_URL", "").strip()
+        if redis_url:
+            try:
+                import redis
+                self.redis_client = redis.from_url(redis_url, decode_responses=True, socket_timeout=1.0)
+                self.redis_client.ping()
+                logger.info("[RateLimiter] Connected to distributed Redis rate limiter.")
+            except Exception as e:
+                logger.warning(f"[RateLimiter] Redis connection unavailable ({e}). Using in-memory rate limiter.")
+                self.redis_client = None
+
+        self._ip_timestamps = defaultdict(list)
+        self._auth_timestamps = defaultdict(list)
+        self._last_cleanup = time.time()
+
+    def is_rate_limited(self, client_ip: str, key_prefix: str, limit: int, window_seconds: int = 60) -> bool:
+        # 1. Distributed Redis mode
+        if self.redis_client:
+            try:
+                redis_key = f"rate_limit:{key_prefix}:{client_ip}"
+                current_count = self.redis_client.incr(redis_key)
+                if current_count == 1:
+                    self.redis_client.expire(redis_key, window_seconds)
+                return current_count > limit
+            except Exception as e:
+                logger.warning(f"[RateLimiter] Redis error: {e}. Falling back to in-memory check.")
+
+        # 2. In-Memory Sliding Window with automatic memory pruning
+        now = time.time()
+        cutoff = now - float(window_seconds)
+        store = self._auth_timestamps if key_prefix == "auth" else self._ip_timestamps
+
+        # Prune expired IP keys every 5 minutes to prevent memory growth
+        if now - self._last_cleanup > 300.0:
+            self._last_cleanup = now
+            for ip in list(self._ip_timestamps.keys()):
+                self._ip_timestamps[ip] = [t for t in self._ip_timestamps[ip] if t > cutoff]
+                if not self._ip_timestamps[ip]:
+                    del self._ip_timestamps[ip]
+            for ip in list(self._auth_timestamps.keys()):
+                self._auth_timestamps[ip] = [t for t in self._auth_timestamps[ip] if t > cutoff]
+                if not self._auth_timestamps[ip]:
+                    del self._auth_timestamps[ip]
+
+        times = store[client_ip]
+        store[client_ip] = [t for t in times if t > cutoff]
+        if len(store[client_ip]) >= limit:
+            return True
+        store[client_ip].append(now)
+        return False
+
+
+rate_limiter = HybridRateLimiter()
+# Backward-compatible references for test suites and monitoring
+_auth_request_timestamps = rate_limiter._auth_timestamps
+_ip_request_timestamps = rate_limiter._ip_timestamps
+
 
 @app.middleware("http")
 async def security_and_rate_limit_middleware(request: Request, call_next):
@@ -79,30 +143,21 @@ async def security_and_rate_limit_middleware(request: Request, call_next):
         # In direct/local connections, never trust user-supplied X-Forwarded-For headers
         client_ip = request.client.host if request.client else "unknown"
 
-    now = time.time()
-    one_min_ago = now - 60.0
-
     path = request.url.path
     if path.startswith("/auth/"):
-        auth_times = _auth_request_timestamps[client_ip]
-        _auth_request_timestamps[client_ip] = [t for t in auth_times if t > one_min_ago]
-        if len(_auth_request_timestamps[client_ip]) >= MAX_AUTH_PER_MINUTE:
+        if rate_limiter.is_rate_limited(client_ip, "auth", MAX_AUTH_PER_MINUTE, 60):
             return JSONResponse(
                 status_code=status.HTTP_429_TOO_MANY_REQUESTS,
                 content={"detail": "Too many authentication requests. Please wait a minute before retrying."},
                 headers={"Retry-After": "60"}
             )
-        _auth_request_timestamps[client_ip].append(now)
 
-    global_times = _ip_request_timestamps[client_ip]
-    _ip_request_timestamps[client_ip] = [t for t in global_times if t > one_min_ago]
-    if len(_ip_request_timestamps[client_ip]) >= MAX_GLOBAL_PER_MINUTE:
+    if rate_limiter.is_rate_limited(client_ip, "global", MAX_GLOBAL_PER_MINUTE, 60):
         return JSONResponse(
             status_code=status.HTTP_429_TOO_MANY_REQUESTS,
             content={"detail": "Rate limit exceeded. Please slow down your requests."},
             headers={"Retry-After": "60"}
         )
-    _ip_request_timestamps[client_ip].append(now)
 
     # 3. Process the actual request
     response = await call_next(request)
@@ -266,24 +321,39 @@ def register(payload: schemas.UserCreate, db: Session = Depends(get_db)):
     if existing:
         raise HTTPException(400, "Email already registered")
 
-    # If OTP is provided, verify it
-    if payload.otp:
-        otp_code = payload.otp.strip()
-        record = db.query(models.RegistrationOTP).filter(
-            func.lower(models.RegistrationOTP.email) == norm_email,
-            models.RegistrationOTP.is_used == False
-        ).order_by(models.RegistrationOTP.created_at.desc()).first()
+    # Require email verification OTP for every new registration
+    if not payload.otp or not str(payload.otp).strip():
+        raise HTTPException(
+            400,
+            "Email verification required. Please verify your email with a valid 6-digit verification code."
+        )
 
-        if not record or datetime.utcnow() > record.expires_at:
-            raise HTTPException(400, "Invalid or expired email verification code. Please verify your email.")
+    otp_code = str(payload.otp).strip()
+    record = db.query(models.RegistrationOTP).filter(
+        func.lower(models.RegistrationOTP.email) == norm_email,
+        models.RegistrationOTP.is_used == False
+    ).order_by(models.RegistrationOTP.created_at.desc()).first()
 
-        expected_hash = hashlib.sha256((norm_email + otp_code + SECRET_KEY).encode()).hexdigest()
-        if not hmac.compare_digest(record.hashed_otp, expected_hash):
-            record.attempts += 1
-            db.commit()
-            raise HTTPException(400, "Invalid verification code.")
-        
+    if not record:
+        raise HTTPException(400, "No active verification code found for this email. Please request a verification code.")
+
+    if record.attempts >= 5:
         record.is_used = True
+        db.commit()
+        raise HTTPException(400, "Too many incorrect attempts. Please request a new verification code.")
+
+    if datetime.utcnow() > record.expires_at:
+        record.is_used = True
+        db.commit()
+        raise HTTPException(400, "Invalid or expired email verification code. Please verify your email.")
+
+    expected_hash = hashlib.sha256((norm_email + otp_code + SECRET_KEY).encode()).hexdigest()
+    if not hmac.compare_digest(record.hashed_otp, expected_hash):
+        record.attempts += 1
+        db.commit()
+        raise HTTPException(400, "Invalid verification code.")
+    
+    record.is_used = True
 
     user = models.User(
         email=norm_email,
