@@ -17,19 +17,22 @@ import logging
 logger = logging.getLogger("uvicorn.error")
 
 _raw_secret = os.environ.get("JWT_SECRET", "").strip()
-is_production = os.environ.get("RENDER") is not None or os.environ.get("ENVIRONMENT", "").lower() == "production"
+is_prod_or_staging = bool(
+    os.environ.get("RENDER") or 
+    os.environ.get("ENVIRONMENT", "").lower() in ("production", "staging", "prod")
+)
 
-if _raw_secret:
+if is_prod_or_staging:
+    if not _raw_secret:
+        raise RuntimeError(
+            "CRITICAL SECURITY CONFIGURATION ERROR: The 'JWT_SECRET' environment variable is missing or empty. "
+            "In production and staging environments, a stable, persistent JWT_SECRET must be configured in environment "
+            "variables (e.g. in the Render Dashboard) to ensure cryptographic security and prevent session/token invalidation across server restarts."
+        )
     SECRET_KEY = _raw_secret
-elif is_production:
-    # High-security fallback: generate a random secret in production to prevent token forgery
-    SECRET_KEY = secrets.token_urlsafe(64)
-    logger.critical(
-        "SECURITY ALERT: JWT_SECRET is not configured in production environment! "
-        "Generated an ephemeral cryptographic secret for this runtime instance."
-    )
 else:
-    SECRET_KEY = "dev-secret-change-in-production"
+    # Development-only fallback configuration for local workflows and testing
+    SECRET_KEY = _raw_secret or "dev-secret-change-in-production"
 
 ALGORITHM = "HS256"
 ACCESS_TOKEN_EXPIRE_MINUTES = 60 * 24 * 7  # 7 days
