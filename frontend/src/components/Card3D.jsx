@@ -1,12 +1,11 @@
 import { useRef, useEffect, useCallback } from "react";
 
 /**
- * High-performance 3D interactive card.
- * - Dynamic 3D tilt tracking (X & Y axes + light reflection glare) on ALL devices:
- *   - Desktop / Laptop: Smooth 3D tilt following mouse cursor + hover reflection
- *   - Mobile / Tablet: Dynamic 3D tilt following touch position / tap location + glare flare
- * - GUARANTEED return to root position (0deg, scale 1) when touch/click releases
- * - Zero React re-renders (direct GPU transforms via refs) -> 100% hang-free on multi-clicks
+ * High-performance 3D interactive card with native RAF Lerp Physics.
+ * - Silky smooth, jitter-free 3D tilt tracking across all devices (Desktop, Laptop, Mobile, Tablet).
+ * - Damped linear interpolation (Lerp) runs at native 60Hz/120Hz refresh rates.
+ * - Guaranteed automatic return to flat resting root position (0deg, scale 1).
+ * - Zero React re-renders, zero CSS transition conflicts -> 100% immune to multi-click hangs.
  */
 export default function Card3D({
   children,
@@ -17,24 +16,106 @@ export default function Card3D({
 }) {
   const cardRef = useRef(null);
   const glareRef = useRef(null);
-  const resetTimerRef = useRef(null);
+
+  // Physics state (Target vs Current for silky damped interpolation)
+  const target = useRef({
+    rotateX: 0,
+    rotateY: 0,
+    scale: 1,
+    glareX: 50,
+    glareY: 50,
+    glareOpacity: 0,
+  });
+
+  const current = useRef({
+    rotateX: 0,
+    rotateY: 0,
+    scale: 1,
+    glareX: 50,
+    glareY: 50,
+    glareOpacity: 0,
+  });
+
+  const isRunningRef = useRef(false);
+  const rafIdRef = useRef(null);
+  const releaseTimerRef = useRef(null);
   const touchStartPosRef = useRef({ x: 0, y: 0 });
   const isScrollingRef = useRef(false);
 
-  // Check if device supports true hover (mouse / trackpad)
-  const isHoverDevice = () => {
-    return (
-      typeof window !== "undefined" &&
-      window.matchMedia("(hover: hover) and (pointer: fine)").matches
-    );
-  };
+  // Animation Loop with Damped Spring Physics (Lerp)
+  const updateLoop = useCallback(() => {
+    const c = current.current;
+    const t = target.current;
 
-  // Calculate dynamic 3D tilt angles and glare coordinates from client coordinates
-  const calculateTilt = useCallback(
-    (clientX, clientY) => {
-      if (!cardRef.current) return null;
+    // Damping factor for silky smoothness (0.13 gives luxurious fluid motion)
+    const factor = 0.13;
+
+    c.rotateX += (t.rotateX - c.rotateX) * factor;
+    c.rotateY += (t.rotateY - c.rotateY) * factor;
+    c.scale += (t.scale - c.scale) * factor;
+    c.glareOpacity += (t.glareOpacity - c.glareOpacity) * factor;
+    c.glareX += (t.glareX - c.glareX) * factor;
+    c.glareY += (t.glareY - c.glareY) * factor;
+
+    // Apply transform directly to GPU compositor
+    if (cardRef.current) {
+      cardRef.current.style.transform = `perspective(1000px) rotateX(${c.rotateX.toFixed(2)}deg) rotateY(${c.rotateY.toFixed(2)}deg) scale(${c.scale.toFixed(3)})`;
+    }
+
+    if (glareRef.current) {
+      glareRef.current.style.opacity = c.glareOpacity.toFixed(3);
+      glareRef.current.style.background = `radial-gradient(circle at ${c.glareX.toFixed(1)}% ${c.glareY.toFixed(1)}%, rgba(255,255,255,0.45) 0%, rgba(255,255,255,0) 65%)`;
+    }
+
+    // Check if settled close enough to target
+    const isSettled =
+      Math.abs(t.rotateX - c.rotateX) < 0.01 &&
+      Math.abs(t.rotateY - c.rotateY) < 0.01 &&
+      Math.abs(t.scale - c.scale) < 0.001 &&
+      Math.abs(t.glareOpacity - c.glareOpacity) < 0.005;
+
+    if (isSettled) {
+      // Snap to exact resting position when near zero
+      if (t.rotateX === 0 && t.rotateY === 0 && t.scale === 1 && t.glareOpacity === 0) {
+        c.rotateX = 0;
+        c.rotateY = 0;
+        c.scale = 1;
+        c.glareOpacity = 0;
+        if (cardRef.current) {
+          cardRef.current.style.transform = "perspective(1000px) rotateX(0deg) rotateY(0deg) scale(1)";
+        }
+        if (glareRef.current) {
+          glareRef.current.style.opacity = "0";
+        }
+      }
+      isRunningRef.current = false;
+      rafIdRef.current = null;
+    } else {
+      rafIdRef.current = requestAnimationFrame(updateLoop);
+    }
+  }, []);
+
+  const startLoop = useCallback(() => {
+    if (!isRunningRef.current) {
+      isRunningRef.current = true;
+      rafIdRef.current = requestAnimationFrame(updateLoop);
+    }
+  }, [updateLoop]);
+
+  // Clean up on unmount
+  useEffect(() => {
+    return () => {
+      if (rafIdRef.current) cancelAnimationFrame(rafIdRef.current);
+      if (releaseTimerRef.current) clearTimeout(releaseTimerRef.current);
+    };
+  }, []);
+
+  // Helper to calculate target tilt & glare from client coordinates
+  const setTargetFromCoords = useCallback(
+    (clientX, clientY, targetScale = 1.02, glareOpacity = 0.28) => {
+      if (!cardRef.current) return;
       const rect = cardRef.current.getBoundingClientRect();
-      if (!rect.width || !rect.height) return null;
+      if (!rect.width || !rect.height) return;
 
       const x = Math.max(0, Math.min(rect.width, clientX - rect.left));
       const y = Math.max(0, Math.min(rect.height, clientY - rect.top));
@@ -42,72 +123,52 @@ export default function Card3D({
       const centerX = rect.width / 2;
       const centerY = rect.height / 2;
 
-      const rotateX = Number((((y - centerY) / centerY) * -maxTilt).toFixed(2));
-      const rotateY = Number((((x - centerX) / centerX) * maxTilt).toFixed(2));
-      const glareX = Number(((x / rect.width) * 100).toFixed(1));
-      const glareY = Number(((y / rect.height) * 100).toFixed(1));
+      target.current.rotateX = Number((((y - centerY) / centerY) * -maxTilt).toFixed(2));
+      target.current.rotateY = Number((((x - centerX) / centerX) * maxTilt).toFixed(2));
+      target.current.glareX = Number(((x / rect.width) * 100).toFixed(1));
+      target.current.glareY = Number(((y / rect.height) * 100).toFixed(1));
+      target.current.scale = targetScale;
+      target.current.glareOpacity = glareOpacity;
 
-      return { rotateX, rotateY, glareX, glareY };
+      startLoop();
     },
-    [maxTilt]
+    [maxTilt, startLoop]
   );
 
-  // Apply GPU transform directly to DOM
-  const applyTilt = useCallback(
-    (rotateX, rotateY, glareX, glareY, targetScale, transitionDuration, glareOpacity) => {
-      if (!cardRef.current) return;
-      cardRef.current.style.transition = `transform ${transitionDuration} cubic-bezier(0.22, 1, 0.36, 1)`;
-      cardRef.current.style.transform = `perspective(1000px) rotateX(${rotateX}deg) rotateY(${rotateY}deg) scale(${targetScale})`;
+  // Return smoothly to root position
+  const resetToRoot = useCallback(
+    (delay = 0) => {
+      if (releaseTimerRef.current) clearTimeout(releaseTimerRef.current);
 
-      if (glareRef.current) {
-        glareRef.current.style.transition = `opacity ${transitionDuration} ease-out`;
-        glareRef.current.style.background = `radial-gradient(circle at ${glareX}% ${glareY}%, rgba(255,255,255,0.45) 0%, rgba(255,255,255,0) 65%)`;
-        glareRef.current.style.opacity = String(glareOpacity);
+      const doReset = () => {
+        target.current.rotateX = 0;
+        target.current.rotateY = 0;
+        target.current.scale = 1;
+        target.current.glareOpacity = 0;
+        startLoop();
+      };
+
+      if (delay <= 0) {
+        doReset();
+      } else {
+        releaseTimerRef.current = setTimeout(doReset, delay);
       }
     },
-    []
+    [startLoop]
   );
 
-  // Smoothly return card to default resting root position
-  const resetToRoot = useCallback((delay = 0) => {
-    if (resetTimerRef.current) {
-      clearTimeout(resetTimerRef.current);
-      resetTimerRef.current = null;
-    }
-
-    const doReset = () => {
-      if (!cardRef.current) return;
-      cardRef.current.style.transition = "transform 0.35s cubic-bezier(0.22, 1, 0.36, 1)";
-      cardRef.current.style.transform = "perspective(1000px) rotateX(0deg) rotateY(0deg) scale(1)";
-
-      if (glareRef.current) {
-        glareRef.current.style.transition = "opacity 0.35s ease-out";
-        glareRef.current.style.opacity = "0";
-      }
-    };
-
-    if (delay <= 0) {
-      doReset();
-    } else {
-      resetTimerRef.current = setTimeout(doReset, delay);
-    }
-  }, []);
-
-  // Clean up timer on unmount
-  useEffect(() => {
-    return () => {
-      if (resetTimerRef.current) clearTimeout(resetTimerRef.current);
-    };
-  }, []);
+  const isHoverDevice = () => {
+    return (
+      typeof window !== "undefined" &&
+      window.matchMedia("(hover: hover) and (pointer: fine)").matches
+    );
+  };
 
   // Desktop Mouse Handlers
   const handlePointerMove = (e) => {
     if (!isHoverDevice() || e.pointerType === "touch") return;
-    if (resetTimerRef.current) clearTimeout(resetTimerRef.current);
-
-    const tilt = calculateTilt(e.clientX, e.clientY);
-    if (!tilt) return;
-    applyTilt(tilt.rotateX, tilt.rotateY, tilt.glareX, tilt.glareY, scale, "0.1s", 0.25);
+    if (releaseTimerRef.current) clearTimeout(releaseTimerRef.current);
+    setTargetFromCoords(e.clientX, e.clientY, scale, 0.25);
   };
 
   const handlePointerLeave = (e) => {
@@ -115,20 +176,16 @@ export default function Card3D({
     resetToRoot(0);
   };
 
-  // Mobile / Touch Handlers (Dynamic touch tilt on all devices)
+  // Mobile Touch Handlers
   const handleTouchStart = (e) => {
     isScrollingRef.current = false;
-    if (resetTimerRef.current) clearTimeout(resetTimerRef.current);
+    if (releaseTimerRef.current) clearTimeout(releaseTimerRef.current);
 
     if (e.touches && e.touches[0]) {
       const touch = e.touches[0];
       touchStartPosRef.current = { x: touch.clientX, y: touch.clientY };
-
-      const tilt = calculateTilt(touch.clientX, touch.clientY);
-      if (tilt) {
-        // Dynamic tilt towards touch coordinate + tactile press
-        applyTilt(tilt.rotateX, tilt.rotateY, tilt.glareX, tilt.glareY, 0.97, "0.12s", 0.35);
-      }
+      // Tactile touch down tilt
+      setTargetFromCoords(touch.clientX, touch.clientY, 0.97, 0.35);
     }
   };
 
@@ -138,22 +195,19 @@ export default function Card3D({
     const dx = Math.abs(touch.clientX - touchStartPosRef.current.x);
     const dy = Math.abs(touch.clientY - touchStartPosRef.current.y);
 
-    // If user is scrolling vertically, release card tilt smoothly so page scroll is 100% fluid
+    // If scrolling vertically, let native scroll take over smoothly
     if (dy > 12 && dy > dx * 1.2) {
       isScrollingRef.current = true;
       resetToRoot(0);
       return;
     }
 
-    // Dynamic 3D tilt follows finger across screen
-    const tilt = calculateTilt(touch.clientX, touch.clientY);
-    if (tilt) {
-      applyTilt(tilt.rotateX, tilt.rotateY, tilt.glareX, tilt.glareY, scale, "0.08s", 0.3);
-    }
+    // Dynamic silky smooth 3D tilt tracking during touch drag
+    setTargetFromCoords(touch.clientX, touch.clientY, scale, 0.3);
   };
 
   const handleTouchEnd = () => {
-    // UNCONDITIONALLY return to root resting position when touch lifts
+    // Unconditionally return smoothly to root resting position
     resetToRoot(200);
   };
 
@@ -161,9 +215,9 @@ export default function Card3D({
     resetToRoot(0);
   };
 
-  // Click / Tap Handler (Works universally on all devices with dynamic coordinate calculation)
+  // Click / Tap Handler (Works universally on all devices with dynamic smoothing)
   const handleClick = (e) => {
-    if (resetTimerRef.current) clearTimeout(resetTimerRef.current);
+    if (releaseTimerRef.current) clearTimeout(releaseTimerRef.current);
 
     let clientX = e?.clientX;
     let clientY = e?.clientY;
@@ -173,32 +227,28 @@ export default function Card3D({
       clientY = e.touches[0].clientY;
     }
 
-    let tilt = null;
-    if (typeof clientX === "number" && typeof clientY === "number" && (clientX !== 0 || clientY !== 0)) {
-      tilt = calculateTilt(clientX, clientY);
-    }
-
-    // Dynamic tilt based on click location, or natural subtle center tilt
-    const rotX = tilt ? tilt.rotateX : -2.5;
-    const rotY = tilt ? tilt.rotateY : 2;
-    const glX = tilt ? tilt.glareX : 50;
-    const glY = tilt ? tilt.glareY : 40;
-
     const isTouch = !isHoverDevice() || e?.pointerType === "touch";
 
-    // Immediate tactile dynamic press down
-    applyTilt(rotX, rotY, glX, glY, isTouch ? 0.96 : Math.max(0.97, scale * 0.96), "0.1s", 0.38);
-
-    // Smooth return
-    if (isTouch) {
-      // ON MOBILE / TOUCH DEVICES: GUARANTEED SMOOTH RETURN TO ROOT POSITION
-      resetToRoot(180);
+    if (typeof clientX === "number" && typeof clientY === "number" && (clientX !== 0 || clientY !== 0)) {
+      setTargetFromCoords(clientX, clientY, isTouch ? 0.96 : Math.max(0.97, scale * 0.96), 0.38);
     } else {
-      // On desktop with mouse: spring back to hover state
+      target.current.rotateX = -2.5;
+      target.current.rotateY = 2;
+      target.current.scale = isTouch ? 0.96 : Math.max(0.97, scale * 0.96);
+      target.current.glareOpacity = 0.35;
+      target.current.glareX = 50;
+      target.current.glareY = 40;
+      startLoop();
+    }
+
+    // Smooth return to resting root position for touch/click
+    if (isTouch) {
+      resetToRoot(220);
+    } else {
       setTimeout(() => {
-        if (!cardRef.current) return;
-        applyTilt(rotX, rotY, glX, glY, scale, "0.25s", 0.22);
-      }, 120);
+        target.current.scale = scale;
+        startLoop();
+      }, 150);
     }
 
     if (onClick) {
@@ -230,7 +280,7 @@ export default function Card3D({
         {/* Dynamic Light Glare Reflection */}
         <div
           ref={glareRef}
-          className="pointer-events-none absolute inset-0 rounded-2xl transition-opacity duration-300 z-10"
+          className="pointer-events-none absolute inset-0 rounded-2xl pointer-events-none z-10"
           style={{
             background:
               "radial-gradient(circle at 50% 50%, rgba(255,255,255,0.45) 0%, rgba(255,255,255,0) 65%)",
