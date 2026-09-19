@@ -359,7 +359,7 @@ def send_otp_email(to_email: str, otp_code: str, purpose: str = "password_reset"
 
     # 5. Local Dev & Testing Fallback
     database_url = os.environ.get("DATABASE_URL", "")
-    is_production = database_url.startswith("postgres") or os.environ.get("RENDER")
+    is_production = bool(database_url.startswith("postgres") or os.environ.get("RENDER") or os.environ.get("ENVIRONMENT", "").lower() == "production")
 
     if is_production:
         err = "Email service not configured. Cloud hosting (Render) requires HTTPS email API (RESEND_API_KEY or BREVO_API_KEY) in environment variables."

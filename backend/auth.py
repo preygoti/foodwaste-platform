@@ -11,7 +11,26 @@ from sqlalchemy.orm import Session
 from database import get_db
 import models
 
-SECRET_KEY = os.environ.get("JWT_SECRET", "dev-secret-change-in-production")
+import secrets
+import logging
+
+logger = logging.getLogger("uvicorn.error")
+
+_raw_secret = os.environ.get("JWT_SECRET", "").strip()
+is_production = os.environ.get("RENDER") is not None or os.environ.get("ENVIRONMENT", "").lower() == "production"
+
+if _raw_secret:
+    SECRET_KEY = _raw_secret
+elif is_production:
+    # High-security fallback: generate a random secret in production to prevent token forgery
+    SECRET_KEY = secrets.token_urlsafe(64)
+    logger.critical(
+        "SECURITY ALERT: JWT_SECRET is not configured in production environment! "
+        "Generated an ephemeral cryptographic secret for this runtime instance."
+    )
+else:
+    SECRET_KEY = "dev-secret-change-in-production"
+
 ALGORITHM = "HS256"
 ACCESS_TOKEN_EXPIRE_MINUTES = 60 * 24 * 7  # 7 days
 
