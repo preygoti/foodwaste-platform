@@ -1,5 +1,6 @@
 import { useState, useMemo, useEffect } from "react";
 import { Sparkles, Utensils, X, Clock, Flame, BookOpen, ShieldCheck, Copy, Check } from "lucide-react";
+import GeminiAuroraBackground from "./GeminiAuroraBackground";
 
 /** Built-in Zero-Waste Culinary Intelligence Matrix */
 const CULINARY_RECIPES = {
@@ -165,48 +166,57 @@ Yield: ${recipe.yieldPerKg}`;
           onClose();
         }
       }}
-      className="fixed inset-0 z-50 flex items-center justify-center p-3 sm:p-4 bg-forest-950/65 backdrop-blur-md overflow-y-auto cursor-pointer"
+      className="fixed inset-0 z-50 flex items-center justify-center p-2 sm:p-4 bg-forest-950/65 backdrop-blur-md overflow-y-auto cursor-pointer"
     >
       <div 
         onClick={(e) => e.stopPropagation()}
-        className="relative w-full max-w-2xl glass-modal rounded-xl sm:rounded-2xl shadow-2xl overflow-hidden my-auto max-h-[92vh] flex flex-col animate-in fade-in zoom-in-95 duration-150 cursor-default"
+        className="relative w-full max-w-[calc(100vw-1rem)] sm:max-w-2xl glass-modal rounded-xl sm:rounded-2xl shadow-2xl overflow-hidden my-auto max-h-[90dvh] flex flex-col animate-in fade-in zoom-in-95 duration-150 cursor-default"
       >
-        {/* Modal Header */}
-        <div className="flex items-center justify-between px-4 sm:px-6 py-3.5 sm:py-4 border-b border-wheat-200/50 bg-gradient-to-r from-forest-900/95 to-forest-800/95 backdrop-blur-md text-wheat-50 shrink-0">
-          <div className="flex items-center gap-2.5 sm:gap-3">
-            <div className="p-1.5 sm:p-2 rounded-xl bg-tomato-500 text-white shadow-sm shrink-0">
+        {/* Modal Header with Dynamic Google Gemini Background */}
+        <div className="relative flex items-center justify-between px-4 sm:px-6 py-4 sm:py-5 border-b border-white/15 bg-forest-950 text-wheat-50 shrink-0 overflow-hidden">
+          {/* Google Gemini Dynamic Prismatic Aurora Background */}
+          <GeminiAuroraBackground variant="header" />
+
+          <div className="relative z-10 flex items-center gap-2.5 sm:gap-3 min-w-0 flex-1">
+            <div className="p-2 rounded-xl bg-gradient-to-br from-blue-500 via-purple-500 to-pink-500 text-white shadow-lg shrink-0 animate-pulse">
               <Sparkles className="w-4 sm:w-5 h-4 sm:h-5" />
             </div>
-            <div>
-              <h2 className="font-display text-base sm:text-xl font-bold tracking-tight text-wheat-50 flex items-center gap-2">
-                Rescue Chef &bull; Zero-Waste Recipes
-              </h2>
-              <p className="text-[11px] sm:text-xs text-wheat-100/70">
-                AI Culinary Intelligence for <span className="font-semibold text-wheat-50">{item.name}</span> ({item.quantity} {item.unit})
+            <div className="min-w-0 flex-1">
+              <div className="flex items-center gap-2 flex-wrap">
+                <h2 className="font-display text-base sm:text-xl font-bold tracking-tight text-white truncate">
+                  Rescue Chef
+                </h2>
+                <span className="px-2 py-0.5 rounded-full text-[9px] sm:text-[10px] font-mono gemini-pill text-cyan-200 border border-cyan-400/40">
+                  ✨ Gemini AI Engine
+                </span>
+              </div>
+              <p className="text-[11px] sm:text-xs text-wheat-200/90 truncate">
+                AI Culinary Intelligence for <span className="font-semibold text-white">{item.name}</span> ({item.quantity} {item.unit})
               </p>
             </div>
           </div>
           <button
             onClick={onClose}
-            className="p-1.5 text-wheat-100/70 hover:text-white rounded-lg hover:bg-white/10 transition-colors"
+            className="relative z-10 p-1.5 text-wheat-200 hover:text-white rounded-lg hover:bg-white/10 transition-colors shrink-0 cursor-pointer"
+            aria-label="Close"
           >
             <X className="w-5 h-5" />
           </button>
         </div>
 
         {/* Modal Content */}
-        <div className="p-4 sm:p-6 overflow-y-auto space-y-4 sm:space-y-6 flex-1">
-          {/* Quick Ingredient Card */}
-          <div className="bg-wheat-50/70 border border-wheat-200 rounded-xl p-3.5 sm:p-4 flex flex-wrap items-center justify-between gap-3 text-xs">
-            <div className="flex items-center gap-2">
-              <span className="font-mono uppercase text-[10px] tracking-wider font-semibold px-2 py-0.5 rounded bg-forest-800 text-wheat-50">
+        <div className="p-3.5 sm:p-6 overflow-y-auto space-y-4 sm:space-y-6 flex-1">
+          {/* Quick Ingredient Card with Gemini Iridescent Border */}
+          <div className="relative gemini-border-glow rounded-xl p-3.5 sm:p-4 bg-white/90 backdrop-blur-md flex flex-wrap items-center justify-between gap-2.5 sm:gap-3 text-xs shadow-xs">
+            <div className="flex items-center gap-2 min-w-0">
+              <span className="font-mono uppercase text-[10px] tracking-wider font-semibold px-2 py-0.5 rounded bg-forest-800 text-wheat-50 shrink-0">
                 {item.category}
               </span>
-              <span className="font-semibold text-forest-800 text-sm">{item.name}</span>
+              <span className="font-semibold text-forest-900 text-sm truncate">{item.name}</span>
             </div>
-            <div className="flex items-center gap-4 text-forest-800/70 font-mono">
-              <span>Stock: <strong className="text-forest-800">{item.quantity} {item.unit}</strong></span>
-              <span>Expires: <strong className="text-tomato-600">{item.expiry_date}</strong></span>
+            <div className="flex items-center gap-3 sm:gap-4 text-forest-800/80 font-mono text-[11px] sm:text-xs">
+              <span>Stock: <strong className="text-forest-900 font-bold">{item.quantity} {item.unit}</strong></span>
+              <span>Expires: <strong className="text-tomato-600 font-bold">{item.expiry_date}</strong></span>
             </div>
           </div>
 

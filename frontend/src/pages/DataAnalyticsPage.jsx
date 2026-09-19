@@ -5,12 +5,13 @@ import {
 } from 'recharts';
 import { 
   TrendingUp, TrendingDown, DollarSign, AlertTriangle, 
-  ShoppingCart, Package, Activity, Loader2, ArrowRight
+  ShoppingCart, Package, Activity, Loader2, ArrowRight, Sparkles
 } from 'lucide-react';
 import { useAuth } from '../AuthContext';
 import { api } from '../api';
 import Card3D from '../components/Card3D';
 import Layout from '../components/Layout';
+import GeminiAuroraBackground from '../components/GeminiAuroraBackground';
 
 // Colors for charts based on theme
 const COLORS = {
@@ -464,14 +465,22 @@ const DataAnalyticsPage = () => {
         </div>
       </section>
 
-      {/* SECTION 5: AI Demand Forecast */}
-      <section className="glass-card p-6">
-        <div className="flex flex-col sm:flex-row justify-between items-start sm:items-center mb-6 border-b border-wheat-200 pb-4 gap-4">
+      {/* SECTION 5: AI Demand Forecast with Google Gemini Dynamic Aura */}
+      <section className="relative glass-card p-6 overflow-hidden">
+        <GeminiAuroraBackground variant="subtle" />
+
+        <div className="relative z-10 flex flex-col sm:flex-row justify-between items-start sm:items-center mb-6 border-b border-wheat-200 pb-4 gap-4">
           <div>
-            <h2 className="font-display text-2xl text-forest-900 flex items-center gap-2">
-              <Activity className="text-gold-500" /> AI Demand Forecast
-            </h2>
-            <p className="text-gray-500 font-body text-sm mt-1">Machine learning predictions based on historical patterns</p>
+            <div className="flex items-center gap-2 flex-wrap">
+              <h2 className="font-display text-2xl text-forest-900 flex items-center gap-2">
+                <Activity className="text-blue-600" /> AI Demand Forecast
+              </h2>
+              <span className="px-2.5 py-0.5 rounded-full text-xs font-mono gemini-pill text-blue-900 border border-blue-400/40 flex items-center gap-1 font-semibold">
+                <Sparkles className="w-3.5 h-3.5 text-blue-600 animate-pulse" />
+                Gemini ML Engine
+              </span>
+            </div>
+            <p className="text-gray-500 font-body text-sm mt-1">Machine learning predictive intelligence based on historical patterns</p>
           </div>
           <div className="flex items-center gap-3 w-full sm:w-auto">
             <select 
@@ -483,12 +492,12 @@ const DataAnalyticsPage = () => {
                 <option key={f.product_name} value={f.product_name}>{f.product_name}</option>
               ))}
             </select>
-            <div className="flex bg-white/50 p-1 rounded-lg border border-wheat-200 shrink-0">
+            <div className="flex bg-white/70 backdrop-blur-sm p-1 rounded-lg border border-wheat-200 shrink-0">
               {[7, 14, 30].map(days => (
                 <button 
                   key={days}
                   onClick={() => setForecastDays(days)}
-                  className={`px-3 py-1 rounded-md text-sm font-medium transition-all ${forecastDays === days ? 'bg-gold-500 text-white shadow' : 'text-gray-600 hover:bg-white'}`}
+                  className={`px-3 py-1 rounded-md text-sm font-medium transition-all ${forecastDays === days ? 'bg-forest-800 text-white shadow' : 'text-gray-600 hover:bg-white'}`}
                 >
                   {days}d
                 </button>
@@ -498,7 +507,7 @@ const DataAnalyticsPage = () => {
         </div>
 
         {currentForecast ? (
-          <div>
+          <div className="relative z-10">
             <div className="flex flex-wrap gap-4 mb-6">
               <div className="bg-forest-50 px-4 py-2 rounded-lg border border-forest-100">
                  <p className="text-xs text-forest-800 uppercase font-mono">Avg Daily Demand</p>
