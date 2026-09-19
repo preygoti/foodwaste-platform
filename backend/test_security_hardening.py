@@ -23,8 +23,8 @@ class TestSecurityHardening(unittest.TestCase):
         _auth_request_timestamps.clear()
         _ip_request_timestamps.clear()
 
-    def test_cors_trusted_origin(self):
-        # Trusted origin should receive Access-Control-Allow-Origin
+    def test_cors_trusted_production_origin_accepted(self):
+        # Trusted exact production frontend origin receives Access-Control-Allow-Origin
         res = client.options(
             '/',
             headers={
@@ -36,8 +36,19 @@ class TestSecurityHardening(unittest.TestCase):
         self.assertEqual(res.headers.get('access-control-allow-origin'), 'https://foodwaste-platform.vercel.app')
         self.assertEqual(res.headers.get('access-control-allow-credentials'), 'true')
 
+    def test_cors_arbitrary_vercel_subdomain_rejected(self):
+        # Arbitrary / attacker vercel.app subdomain MUST be rejected
+        res = client.options(
+            '/',
+            headers={
+                'Origin': 'https://malicious-attacker.vercel.app',
+                'Access-Control-Request-Method': 'GET',
+            }
+        )
+        self.assertNotIn('access-control-allow-origin', res.headers)
+
     def test_cors_untrusted_origin_rejected(self):
-        # Untrusted origin should NOT receive Access-Control-Allow-Origin
+        # Untrusted third-party domain MUST be rejected
         res = client.options(
             '/',
             headers={
@@ -46,6 +57,18 @@ class TestSecurityHardening(unittest.TestCase):
             }
         )
         self.assertNotIn('access-control-allow-origin', res.headers)
+
+    def test_cors_local_dev_accepted(self):
+        # Localhost development origins MUST be accepted
+        res = client.options(
+            '/',
+            headers={
+                'Origin': 'http://localhost:5173',
+                'Access-Control-Request-Method': 'GET',
+            }
+        )
+        self.assertEqual(res.status_code, 200)
+        self.assertEqual(res.headers.get('access-control-allow-origin'), 'http://localhost:5173')
 
     def test_security_headers_present(self):
         res = client.get('/')

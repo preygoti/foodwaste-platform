@@ -117,7 +117,7 @@ async def security_and_rate_limit_middleware(request: Request, call_next):
 
     return response
 
-# Allowed Origins for CORS - Explicitly allow trusted deployment & local dev environments
+# Allowed Origins for CORS - Strictly restricted to approved production origins and local dev
 allowed_origins_env = os.environ.get("ALLOWED_ORIGINS", "")
 custom_origins = [o.strip() for o in allowed_origins_env.split(",") if o.strip()]
 
@@ -133,13 +133,13 @@ trusted_origins = [
 ]
 cors_origins = list(dict.fromkeys(trusted_origins + custom_origins))
 
-# Allow Vercel preview environments and local dev ports
-cors_origin_regex = r"^https://([a-zA-Z0-9_-]+\.)?vercel\.app$|^http://(localhost|127\.0\.0\.1)(:\d+)?$"
+# Allow localhost / 127.0.0.1 on local development ports; no broad public domain wildcard regex
+local_dev_regex = r"^http://(localhost|127\.0\.0\.1)(:\d+)?$"
 
 app.add_middleware(
     CORSMiddleware,
     allow_origins=cors_origins,
-    allow_origin_regex=cors_origin_regex,
+    allow_origin_regex=local_dev_regex,
     allow_credentials=True,
     allow_methods=["GET", "POST", "PUT", "PATCH", "DELETE", "OPTIONS"],
     allow_headers=["*"],
