@@ -31,7 +31,6 @@ import {
   Utensils,
 } from "lucide-react";
 import Card3D from "../components/Card3D";
-import GeminiAuroraBackground from "../components/GeminiAuroraBackground";
 import { api } from "../api";
 
 /**
@@ -418,133 +417,128 @@ export default function Landing() {
       {/* ------------------------------------------------------------- */}
       {/* 2. HERO SECTION & 3. HERO VISUAL                              */}
       {/* ------------------------------------------------------------- */}
-      <section id="hero" className="relative w-full overflow-hidden scroll-mt-24 border-b border-wheat-200/50">
-        {/* Dynamic Google Gemini Prismatic Aurora Mesh Background - Edge-to-Edge Full Bleed */}
-        <GeminiAuroraBackground variant="subtle" className="opacity-90" />
-
-        <div className="relative max-w-7xl w-full mx-auto px-4 sm:px-6 lg:px-8 pt-10 sm:pt-16 pb-16 sm:pb-24 grid md:grid-cols-12 gap-8 lg:gap-12 items-center z-10">
-          {/* Left Hero Content */}
-          <div className="md:col-span-7 space-y-6 animate-in fade-in slide-in-from-bottom-3 duration-500">
-            <div className="inline-flex items-center gap-2 px-3.5 py-1.5 rounded-full gemini-pill font-mono text-xs shadow-xs">
-              <Sparkles className="w-3.5 h-3.5 text-blue-600 animate-pulse shrink-0" />
-              <span className="gemini-gradient-text font-bold">✨ GOOGLE GEMINI AI &bull; SMART FOOD RESCUE</span>
-            </div>
-
-            <h1 className="font-display text-4xl sm:text-5xl lg:text-6xl leading-[1.08] text-forest-800 font-bold tracking-tight">
-              Turn Surplus Food Into Real Impact.
-            </h1>
-
-            <p className="text-forest-800/75 text-base sm:text-lg leading-relaxed max-w-xl">
-              Harvest Ledger is an AI-powered food waste management platform that helps restaurants, bakeries, and grocery stores track surplus food, predict waste risks, and connect with NGOs before food becomes waste.
-            </p>
-
-            <div className="flex flex-col sm:flex-row items-stretch sm:items-center gap-3 pt-2">
-              <Link
-                to="/register"
-                className="inline-flex items-center justify-center gap-2 px-6 py-3.5 bg-forest-800 text-wheat-50 border border-forest-800 rounded-xl font-semibold text-sm sm:text-base hover:bg-forest-700 shadow-md hover:shadow-lg transition-all active:scale-[0.99]"
-              >
-                <span>Start Rescuing Food</span>
-                <ArrowRight className="w-4 h-4" />
-              </Link>
-              <a
-                href="#how-it-works"
-                onClick={(e) => scrollToSection(e, "how-it-works")}
-                className="inline-flex items-center justify-center gap-2 px-6 py-3.5 glass-card glass-card-hover text-forest-800 rounded-xl font-semibold text-sm sm:text-base transition-all active:scale-[0.99] cursor-pointer"
-              >
-                <span>See How It Works</span>
-              </a>
-            </div>
-
-            <p className="text-xs font-mono uppercase tracking-widest text-forest-800/50 pt-2">
-              Track &bull; Rescue &bull; Redistribute
-            </p>
+      <section id="hero" className="relative max-w-6xl w-full mx-auto px-4 sm:px-6 lg:px-8 pt-10 sm:pt-16 pb-16 sm:pb-24 grid md:grid-cols-12 gap-8 lg:gap-12 items-center scroll-mt-24">
+        {/* Left Hero Content */}
+        <div className="md:col-span-7 space-y-6 animate-in fade-in slide-in-from-bottom-3 duration-500">
+          <div className="inline-flex items-center gap-2 px-3.5 py-1.5 rounded-full gemini-pill font-mono text-xs shadow-xs">
+            <Sparkles className="w-3.5 h-3.5 text-blue-600 animate-pulse shrink-0" />
+            <span className="gemini-gradient-text font-bold">✨ GOOGLE GEMINI AI &bull; SMART FOOD RESCUE</span>
           </div>
 
-          {/* 3. HERO VISUAL: Modern Interactive Dashboard Preview */}
-          <div className="md:col-span-5 relative animate-in fade-in zoom-in-95 duration-700">
-            <Card3D maxTilt={7} scale={1.02}>
-              <div className="relative gemini-border-glow rounded-2xl">
-                {/* Subtle Floating Badge 1 (Top Left) */}
-                <div className="absolute -top-3 left-2 sm:-left-3 z-20 flex items-center gap-1 sm:gap-1.5 px-2.5 py-1 sm:px-3 sm:py-1.5 glass-forest text-wheat-50 rounded-full shadow-lg text-[10px] sm:text-xs font-mono font-semibold animate-float-slow">
-                  <Leaf className="w-3 h-3 sm:w-3.5 sm:h-3.5 text-forest-400" />
-                  <span>Food Saved 🌱</span>
+          <h1 className="font-display text-4xl sm:text-5xl lg:text-6xl leading-[1.08] text-forest-800 font-bold tracking-tight">
+            Turn Surplus Food Into Real Impact.
+          </h1>
+
+          <p className="text-forest-800/75 text-base sm:text-lg leading-relaxed max-w-xl">
+            Harvest Ledger is an AI-powered food waste management platform that helps restaurants, bakeries, and grocery stores track surplus food, predict waste risks, and connect with NGOs before food becomes waste.
+          </p>
+
+          <div className="flex flex-col sm:flex-row items-stretch sm:items-center gap-3 pt-2">
+            <Link
+              to="/register"
+              className="inline-flex items-center justify-center gap-2 px-6 py-3.5 bg-forest-800 text-wheat-50 border border-forest-800 rounded-xl font-semibold text-sm sm:text-base hover:bg-forest-700 shadow-md hover:shadow-lg transition-all active:scale-[0.99]"
+            >
+              <span>Start Rescuing Food</span>
+              <ArrowRight className="w-4 h-4" />
+            </Link>
+            <a
+              href="#how-it-works"
+              onClick={(e) => scrollToSection(e, "how-it-works")}
+              className="inline-flex items-center justify-center gap-2 px-6 py-3.5 glass-card glass-card-hover text-forest-800 rounded-xl font-semibold text-sm sm:text-base transition-all active:scale-[0.99] cursor-pointer"
+            >
+              <span>See How It Works</span>
+            </a>
+          </div>
+
+          <p className="text-xs font-mono uppercase tracking-widest text-forest-800/50 pt-2">
+            Track &bull; Rescue &bull; Redistribute
+          </p>
+        </div>
+
+        {/* 3. HERO VISUAL: Modern Interactive Dashboard Preview */}
+        <div className="md:col-span-5 relative animate-in fade-in zoom-in-95 duration-700">
+          <Card3D maxTilt={7} scale={1.02}>
+            <div className="relative gemini-border-glow rounded-2xl">
+              {/* Subtle Floating Badge 1 (Top Left) */}
+              <div className="absolute -top-3 left-2 sm:-left-3 z-20 flex items-center gap-1 sm:gap-1.5 px-2.5 py-1 sm:px-3 sm:py-1.5 glass-forest text-wheat-50 rounded-full shadow-lg text-[10px] sm:text-xs font-mono font-semibold animate-float-slow">
+                <Leaf className="w-3 h-3 sm:w-3.5 sm:h-3.5 text-forest-400" />
+                <span>Food Saved 🌱</span>
+              </div>
+
+              {/* Subtle Floating Badge 2 (Bottom Right) */}
+              <div className="absolute -bottom-3 right-2 sm:-right-2 z-20 flex items-center gap-1 sm:gap-1.5 px-2.5 py-1 sm:px-3 sm:py-1.5 bg-forest-700/90 backdrop-blur-md text-white rounded-full shadow-lg text-[10px] sm:text-xs font-mono font-semibold animate-float-delayed border border-white/20">
+                <CheckCircle2 className="w-3 h-3 sm:w-3.5 sm:h-3.5 text-white" />
+                <span>Pickup Scheduled ✓</span>
+              </div>
+
+              {/* Subtle Floating Badge 3 (Repositioned to bottom-left on mobile to never overlap badge 1) */}
+              <div className="absolute -bottom-3 left-2 sm:bottom-auto sm:-top-3 sm:left-auto sm:right-2 z-20 flex items-center gap-1 sm:gap-1.5 px-2 py-0.5 sm:px-2.5 sm:py-1 glass-pill text-rose-800 rounded-full shadow-md text-[10px] sm:text-[11px] font-mono font-semibold border-rose-200/80">
+                <Flame className="w-3 h-3 text-rose-600" />
+                <span>Risk Detected</span>
+              </div>
+
+              <div className="glass-card rounded-2xl shadow-xl p-3.5 sm:p-6 space-y-3.5 sm:space-y-4">
+                <div className="flex items-center justify-between border-b border-wheat-200/60 pb-3">
+                  <div className="space-y-0.5 min-w-0">
+                    <span className="text-[10px] font-mono uppercase tracking-wider text-forest-800/50 block font-semibold truncate">
+                      UI Visualizer &bull; Live Telemetry
+                    </span>
+                    <h3 className="font-display font-bold text-sm sm:text-base text-forest-800 truncate">
+                      FOOD RESCUE STATUS
+                    </h3>
+                  </div>
+                  <span className="px-2.5 py-1 rounded-full text-[10px] font-mono font-bold bg-forest-50/80 backdrop-blur-sm text-forest-800 border border-forest-200 flex items-center gap-1 shrink-0">
+                    <span className="w-1.5 h-1.5 rounded-full bg-forest-600 animate-pulse" />
+                    Active
+                  </span>
                 </div>
 
-                {/* Subtle Floating Badge 2 (Bottom Right) */}
-                <div className="absolute -bottom-3 right-2 sm:-right-2 z-20 flex items-center gap-1 sm:gap-1.5 px-2.5 py-1 sm:px-3 sm:py-1.5 bg-forest-700/90 backdrop-blur-md text-white rounded-full shadow-lg text-[10px] sm:text-xs font-mono font-semibold animate-float-delayed border border-white/20">
-                  <CheckCircle2 className="w-3 h-3 sm:w-3.5 sm:h-3.5 text-white" />
-                  <span>Pickup Scheduled ✓</span>
+                {/* 3 Metric Indicator Cards - Scaled for 320px+ */}
+                <div className="grid grid-cols-3 gap-1 sm:gap-2 text-center font-mono">
+                  <div className="p-1.5 sm:p-2.5 rounded-xl bg-rose-50/80 backdrop-blur-sm border border-rose-200/60 min-w-0">
+                    <span className="text-[8px] sm:text-[10px] text-rose-800/70 uppercase block font-semibold leading-tight truncate">At Risk</span>
+                    <strong className="text-[11px] xs:text-xs sm:text-lg font-bold text-rose-800 block pt-0.5 truncate">12 Items</strong>
+                  </div>
+                  <div className="p-1.5 sm:p-2.5 rounded-xl bg-amber-50/80 backdrop-blur-sm border border-amber-200/60 min-w-0">
+                    <span className="text-[8px] sm:text-[10px] text-amber-800/70 uppercase block font-semibold leading-tight truncate">Rescue Ready</span>
+                    <strong className="text-[11px] xs:text-xs sm:text-lg font-bold text-amber-900 block pt-0.5 truncate">8 Items</strong>
+                  </div>
+                  <div className="p-1.5 sm:p-2.5 rounded-xl bg-forest-50/80 backdrop-blur-sm border border-forest-200/60 min-w-0">
+                    <span className="text-[8px] sm:text-[10px] text-forest-800/70 uppercase block font-semibold leading-tight truncate">Rescued</span>
+                    <strong className="text-[11px] xs:text-xs sm:text-lg font-bold text-forest-800 block pt-0.5 truncate">124 kg</strong>
+                  </div>
                 </div>
 
-                {/* Subtle Floating Badge 3 (Repositioned to bottom-left on mobile to never overlap badge 1) */}
-                <div className="absolute -bottom-3 left-2 sm:bottom-auto sm:-top-3 sm:left-auto sm:right-2 z-20 flex items-center gap-1 sm:gap-1.5 px-2 py-0.5 sm:px-2.5 sm:py-1 glass-pill text-rose-800 rounded-full shadow-md text-[10px] sm:text-[11px] font-mono font-semibold border-rose-200/80">
-                  <Flame className="w-3 h-3 text-rose-600" />
-                  <span>Risk Detected</span>
-                </div>
-
-                <div className="glass-card rounded-2xl shadow-xl p-3.5 sm:p-6 space-y-3.5 sm:space-y-4">
-                  <div className="flex items-center justify-between border-b border-wheat-200/60 pb-3">
-                    <div className="space-y-0.5 min-w-0">
-                      <span className="text-[10px] font-mono uppercase tracking-wider text-forest-800/50 block font-semibold truncate">
-                        UI Visualizer &bull; Live Telemetry
-                      </span>
-                      <h3 className="font-display font-bold text-sm sm:text-base text-forest-800 truncate">
-                        FOOD RESCUE STATUS
-                      </h3>
+                {/* Sample Batch Ledger Row */}
+                <div className="space-y-2 pt-1">
+                  <div className="p-2 sm:p-2.5 rounded-xl bg-wheat-100/60 backdrop-blur-sm border border-wheat-200/80 flex items-center justify-between text-xs font-mono">
+                    <div>
+                      <span className="font-bold text-forest-800 block text-xs">Fresh Milk (30L)</span>
+                      <span className="text-[10px] text-forest-800/60">Cold Storage A &bull; Expiry in 18h</span>
                     </div>
-                    <span className="px-2.5 py-1 rounded-full text-[10px] font-mono font-bold bg-forest-50/80 backdrop-blur-sm text-forest-800 border border-forest-200 flex items-center gap-1 shrink-0">
-                      <span className="w-1.5 h-1.5 rounded-full bg-forest-600 animate-pulse" />
-                      Active
+                    <span className="px-2 py-0.5 rounded bg-rose-100 text-rose-800 text-[10px] font-bold">
+                      CRITICAL
                     </span>
                   </div>
 
-                  {/* 3 Metric Indicator Cards - Scaled for 320px+ */}
-                  <div className="grid grid-cols-3 gap-1 sm:gap-2 text-center font-mono">
-                    <div className="p-1.5 sm:p-2.5 rounded-xl bg-rose-50/80 backdrop-blur-sm border border-rose-200/60 min-w-0">
-                      <span className="text-[8px] sm:text-[10px] text-rose-800/70 uppercase block font-semibold leading-tight truncate">At Risk</span>
-                      <strong className="text-[11px] xs:text-xs sm:text-lg font-bold text-rose-800 block pt-0.5 truncate">12 Items</strong>
+                  <div className="p-2 sm:p-2.5 rounded-xl bg-wheat-100/60 backdrop-blur-sm border border-wheat-200/80 flex items-center justify-between text-xs font-mono">
+                    <div>
+                      <span className="font-bold text-forest-800 block text-xs">Bakery Sourdough (15x)</span>
+                      <span className="text-[10px] text-forest-800/60">Bakery Rack &bull; Expiry in 2d</span>
                     </div>
-                    <div className="p-1.5 sm:p-2.5 rounded-xl bg-amber-50/80 backdrop-blur-sm border border-amber-200/60 min-w-0">
-                      <span className="text-[8px] sm:text-[10px] text-amber-800/70 uppercase block font-semibold leading-tight truncate">Rescue Ready</span>
-                      <strong className="text-[11px] xs:text-xs sm:text-lg font-bold text-amber-900 block pt-0.5 truncate">8 Items</strong>
-                    </div>
-                    <div className="p-1.5 sm:p-2.5 rounded-xl bg-forest-50/80 backdrop-blur-sm border border-forest-200/60 min-w-0">
-                      <span className="text-[8px] sm:text-[10px] text-forest-800/70 uppercase block font-semibold leading-tight truncate">Rescued</span>
-                      <strong className="text-[11px] xs:text-xs sm:text-lg font-bold text-forest-800 block pt-0.5 truncate">124 kg</strong>
-                    </div>
-                  </div>
-
-                  {/* Sample Batch Ledger Row */}
-                  <div className="space-y-2 pt-1">
-                    <div className="p-2 sm:p-2.5 rounded-xl bg-wheat-100/60 backdrop-blur-sm border border-wheat-200/80 flex items-center justify-between text-xs font-mono">
-                      <div>
-                        <span className="font-bold text-forest-800 block text-xs">Fresh Milk (30L)</span>
-                        <span className="text-[10px] text-forest-800/60">Cold Storage A &bull; Expiry in 18h</span>
-                      </div>
-                      <span className="px-2 py-0.5 rounded bg-rose-100 text-rose-800 text-[10px] font-bold">
-                        CRITICAL
-                      </span>
-                    </div>
-
-                    <div className="p-2 sm:p-2.5 rounded-xl bg-wheat-100/60 backdrop-blur-sm border border-wheat-200/80 flex items-center justify-between text-xs font-mono">
-                      <div>
-                        <span className="font-bold text-forest-800 block text-xs">Bakery Sourdough (15x)</span>
-                        <span className="text-[10px] text-forest-800/60">Bakery Rack &bull; Expiry in 2d</span>
-                      </div>
-                      <span className="px-2 py-0.5 rounded bg-amber-100 text-amber-800 text-[10px] font-bold">
-                        MEDIUM
-                      </span>
-                    </div>
-                  </div>
-
-                  <div className="pt-2 flex items-center justify-between text-[11px] text-forest-800/60 border-t border-wheat-200/60 font-mono">
-                    <span>Rescue Stream</span>
-                    <span className="font-semibold text-forest-800">Zero-Waste Connected</span>
+                    <span className="px-2 py-0.5 rounded bg-amber-100 text-amber-800 text-[10px] font-bold">
+                      MEDIUM
+                    </span>
                   </div>
                 </div>
+
+                <div className="pt-2 flex items-center justify-between text-[11px] text-forest-800/60 border-t border-wheat-200/60 font-mono">
+                  <span>Rescue Stream</span>
+                  <span className="font-semibold text-forest-800">Zero-Waste Connected</span>
+                </div>
               </div>
-            </Card3D>
-          </div>
+            </div>
+          </Card3D>
         </div>
       </section>
 
