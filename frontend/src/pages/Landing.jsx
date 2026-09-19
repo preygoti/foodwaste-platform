@@ -215,16 +215,11 @@ export default function Landing() {
   };
 
   return (
-    <div className="min-h-screen bg-wheat-50 text-forest-800 flex flex-col overflow-x-clip selection:bg-forest-800 selection:text-wheat-50 font-sans antialiased relative">
-      {/* Ambient background light orbs for frosted glass refractions */}
-      <div aria-hidden="true" className="pointer-events-none absolute -top-24 left-1/4 w-96 h-96 bg-emerald-400/15 rounded-full blur-3xl animate-mesh-pulse" />
-      <div aria-hidden="true" className="pointer-events-none absolute top-48 right-10 w-80 h-80 bg-gold-400/20 rounded-full blur-3xl animate-mesh-pulse-delayed" />
-      <div aria-hidden="true" className="pointer-events-none absolute top-[700px] -left-20 w-80 h-80 bg-emerald-300/15 rounded-full blur-3xl" />
-
+    <div className="min-h-screen bg-white text-forest-800 flex flex-col overflow-x-clip selection:bg-forest-800 selection:text-wheat-50 font-sans antialiased relative">
       {/* ------------------------------------------------------------- */}
       {/* NAVIGATION / HEADER                                           */}
       {/* ------------------------------------------------------------- */}
-      <header className="sticky top-0 z-40 bg-[#FFFFFF] border-b border-gray-200/80 shadow-xs transition-all">
+      <header className="sticky top-0 z-40 bg-white transition-all">
         <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 h-18 sm:h-20 flex items-center justify-between">
           {/* LEFT SIDE: HL Logo + HARVEST LEDGER */}
           <Link
@@ -545,8 +540,7 @@ export default function Landing() {
       {/* ------------------------------------------------------------- */}
       {/* 4. PROBLEM SECTION                                            */}
       {/* ------------------------------------------------------------- */}
-      <section ref={problemRef} className="py-16 sm:py-24 bg-white/60 backdrop-blur-md border-y border-wheat-200/80 scroll-mt-14 relative">
-        <div aria-hidden="true" className="pointer-events-none absolute top-10 right-1/4 w-72 h-72 bg-rose-400/10 rounded-full blur-3xl" />
+      <section ref={problemRef} className="py-16 sm:py-24 bg-white scroll-mt-14 relative">
         <div className="max-w-6xl mx-auto px-4 sm:px-6 lg:px-8 space-y-12 relative z-10">
           {/* Heading */}
           <div className={`text-center max-w-2xl mx-auto space-y-3 transition-all duration-700 ${
