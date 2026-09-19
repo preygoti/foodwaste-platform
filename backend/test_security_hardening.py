@@ -258,5 +258,24 @@ class TestSecurityHardening(unittest.TestCase):
         self.assertEqual(res_locked.status_code, 400)
         self.assertIn('Too many incorrect attempts', res_locked.json()['detail'])
 
+    def test_hybrid_rate_limiter_resilience_when_redis_unavailable(self):
+        from main import HybridRateLimiter
+        # Simulate an unreachable Redis endpoint
+        os.environ['REDIS_URL'] = 'redis://127.0.0.1:59999/0'
+        try:
+            limiter = HybridRateLimiter()
+            # Must fall back gracefully to in-memory mode without crashing
+            self.assertIsNone(limiter.redis_client)
+            # Verify in-memory rate limiting operates reliably
+            test_ip = f"test_resilience_{uuid.uuid4().hex[:4]}"
+            self.assertFalse(limiter.is_rate_limited(test_ip, "global", limit=2, window_seconds=60))
+            self.assertFalse(limiter.is_rate_limited(test_ip, "global", limit=2, window_seconds=60))
+            # 3rd request should hit limit=2
+            self.assertTrue(limiter.is_rate_limited(test_ip, "global", limit=2, window_seconds=60))
+        finally:
+            del os.environ['REDIS_URL']
+
+
 if __name__ == '__main__':
     unittest.main()
+
