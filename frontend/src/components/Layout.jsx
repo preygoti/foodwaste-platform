@@ -106,15 +106,21 @@ export default function Layout({ children }) {
     return () => window.removeEventListener("keydown", handleKeyDown);
   }, [mobileMenuOpen]);
 
-  // Lock body scroll when mobile menu is open
+  // Lock background scroll completely when mobile drawer is open
   useEffect(() => {
     if (mobileMenuOpen) {
+      document.documentElement.style.overflow = "hidden";
       document.body.style.overflow = "hidden";
+      document.body.style.touchAction = "none";
     } else {
+      document.documentElement.style.overflow = "";
       document.body.style.overflow = "";
+      document.body.style.touchAction = "";
     }
     return () => {
+      document.documentElement.style.overflow = "";
       document.body.style.overflow = "";
+      document.body.style.touchAction = "";
     };
   }, [mobileMenuOpen]);
 
@@ -199,21 +205,28 @@ export default function Layout({ children }) {
       {/* ------------------------------------------------------------- */}
       {mobileMenuOpen && (
         <div
-          className="lg:hidden fixed inset-0 bg-forest-950/60 backdrop-blur-md z-40 transition-opacity animate-in fade-in duration-200"
+          className="lg:hidden fixed inset-0 bg-forest-950/60 backdrop-blur-md z-40 transition-opacity animate-in fade-in duration-200 touch-none overscroll-none"
           onClick={handleCloseMenu}
           onTouchEnd={handleCloseMenu}
+          onTouchMove={(e) => {
+            e.preventDefault();
+            e.stopPropagation();
+          }}
           aria-hidden="true"
         />
       )}
 
       <aside
-        className={`lg:hidden fixed inset-y-0 left-0 z-50 w-72 max-w-[85vw] glass-forest text-wheat-100 flex flex-col shadow-2xl transition-all duration-300 ease-in-out pb-safe border-r border-white/15 ${
+        className={`lg:hidden fixed inset-y-0 left-0 z-50 w-72 max-w-[85vw] glass-forest text-wheat-100 flex flex-col shadow-2xl transition-all duration-300 ease-in-out pb-safe border-r border-white/15 overscroll-contain touch-pan-y ${
           mobileMenuOpen
             ? "translate-x-0 opacity-100 pointer-events-auto visible"
             : "-translate-x-full opacity-0 pointer-events-none invisible"
         }`}
         aria-label="Mobile Navigation"
         aria-hidden={!mobileMenuOpen}
+        onTouchMove={(e) => {
+          e.stopPropagation();
+        }}
       >
         {/* Drawer Header */}
         <div className="px-5 py-4 border-b border-forest-600/60 flex items-center justify-between">
@@ -255,7 +268,7 @@ export default function Layout({ children }) {
 
         {/* Drawer Navigation Links */}
         <nav
-          className="flex-1 px-3 py-4 space-y-1.5 overflow-y-auto"
+          className="flex-1 px-3 py-4 space-y-1.5 overflow-y-auto overscroll-contain touch-pan-y"
           onTouchStart={handleTouchStart}
         >
           {links.map((l) => {

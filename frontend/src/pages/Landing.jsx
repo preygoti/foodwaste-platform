@@ -136,14 +136,21 @@ export default function Landing() {
         setMobileMenuOpen(false);
       }
     };
+    // Lock background scroll completely when mobile menu is open
     if (mobileMenuOpen) {
+      document.documentElement.style.overflow = "hidden";
       document.body.style.overflow = "hidden";
+      document.body.style.touchAction = "none";
       window.addEventListener("keydown", handleKeyDown);
     } else {
+      document.documentElement.style.overflow = "";
       document.body.style.overflow = "";
+      document.body.style.touchAction = "";
     }
     return () => {
+      document.documentElement.style.overflow = "";
       document.body.style.overflow = "";
+      document.body.style.touchAction = "";
       window.removeEventListener("keydown", handleKeyDown);
     };
   }, [mobileMenuOpen]);
@@ -312,17 +319,22 @@ export default function Landing() {
       >
         <div
           onClick={handleCloseMenu}
-          className="absolute inset-0 bg-black/40 backdrop-blur-xs"
+          onTouchMove={(e) => {
+            e.preventDefault();
+            e.stopPropagation();
+          }}
+          className="absolute inset-0 bg-black/40 backdrop-blur-xs touch-none overscroll-none"
           aria-hidden="true"
         />
 
         <aside
-          className={`absolute inset-y-0 left-0 w-72 sm:w-80 max-w-[85vw] bg-[#FAF7F2] flex flex-col justify-between shadow-2xl transition-transform duration-300 ease-out z-10 border-r border-[#0F291E]/10 ${
+          className={`absolute inset-y-0 left-0 w-72 sm:w-80 max-w-[85vw] bg-[#FAF7F2] flex flex-col justify-between shadow-2xl transition-transform duration-300 ease-out z-10 border-r border-[#0F291E]/10 overscroll-contain touch-pan-y ${
             mobileMenuOpen ? "translate-x-0" : "-translate-x-full"
           }`}
           role="dialog"
           aria-modal="true"
           aria-label="Mobile Navigation"
+          onTouchMove={(e) => e.stopPropagation()}
         >
           <div className="p-5 sm:p-6 border-b border-[#0F291E]/10 flex items-center justify-between">
             <Link
@@ -353,7 +365,7 @@ export default function Landing() {
             </button>
           </div>
 
-          <nav className="p-5 sm:p-6 space-y-2 flex-1 overflow-y-auto">
+          <nav className="p-5 sm:p-6 space-y-2 flex-1 overflow-y-auto overscroll-contain touch-pan-y">
             {[
               { id: "hero", label: "Home" },
               { id: "how-it-works", label: "How It Works" },
