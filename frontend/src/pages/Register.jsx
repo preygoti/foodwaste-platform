@@ -117,8 +117,27 @@ export default function Register() {
     e.preventDefault();
     setError("");
 
+    if (!form.org_name.trim()) {
+      setError("Please enter your organization or store name.");
+      return;
+    }
+
+    if (!form.email.trim()) {
+      setError("Please enter your work email address.");
+      return;
+    }
+
     if (!isEmailVerified) {
-      setError("Please verify your email address with the 6-digit verification code before registering.");
+      if (!otpSent) {
+        setError("Please verify your email first: click 'Verify Email' above to receive your 6-digit confirmation code.");
+      } else {
+        setError("Please enter the 6-digit confirmation code sent to your email and click 'Confirm'.");
+      }
+      return;
+    }
+
+    if (!form.password || form.password.length < 6) {
+      setError("Password must be at least 6 characters long.");
       return;
     }
 
@@ -137,26 +156,25 @@ export default function Register() {
   };
 
   return (
-    <div className="min-h-screen min-h-[100dvh] w-full bg-wheat-50 flex flex-col justify-start sm:justify-center items-center px-4 sm:px-6 py-8 sm:py-12 text-forest-800 pt-safe pb-safe relative overflow-x-clip">
-      {/* Ambient background light orbs for frosted glass refractions - fixed across full viewport */}
+    <div className="min-h-screen min-h-[100dvh] w-full bg-[#FAF7F2] flex flex-col justify-start sm:justify-center items-center px-4 sm:px-6 py-8 sm:py-12 text-[#0F291E] pt-safe pb-safe relative overflow-x-clip">
+      {/* Subtle warm ambient glow that seamlessly blends with the #FAF7F2 background */}
       <div aria-hidden="true" className="pointer-events-none fixed inset-0 overflow-hidden z-0">
-        <div className="absolute -top-10 -left-10 w-96 h-96 bg-emerald-400/20 rounded-full blur-3xl animate-mesh-pulse" />
-        <div className="absolute -bottom-10 -right-10 w-96 h-96 bg-gold-400/25 rounded-full blur-3xl animate-mesh-pulse-delayed" />
-        <div className="absolute top-1/2 left-1/2 -translate-x-1/2 -translate-y-1/2 w-80 h-80 bg-tomato-400/10 rounded-full blur-3xl" />
+        <div className="absolute -top-32 -left-32 w-96 sm:w-[32rem] h-96 sm:h-[32rem] bg-[#166534]/5 rounded-full blur-3xl" />
+        <div className="absolute -bottom-32 -right-32 w-96 sm:w-[32rem] h-96 sm:h-[32rem] bg-[#166534]/5 rounded-full blur-3xl" />
       </div>
 
       <div className="w-full max-w-md my-auto space-y-6 relative z-10">
         <div className="text-center">
-          <Link to="/" className="font-display italic text-3xl sm:text-4xl text-forest-800 font-bold block mb-1">
+          <Link to="/" className="font-display italic text-3xl sm:text-4xl text-[#0F291E] font-bold block mb-1">
             Harvest&nbsp;Ledger
           </Link>
-          <p className="text-xs font-mono uppercase tracking-widest text-forest-800/50">
+          <p className="text-xs font-mono uppercase tracking-widest text-[#0F291E]/60">
             Create an account for your business or non-profit
           </p>
         </div>
 
-        <div className="glass-modal rounded-2xl p-6 sm:p-8 space-y-6">
-          <h1 className="font-display text-xl sm:text-2xl text-forest-800 font-semibold">
+        <div className="bg-white/95 rounded-2xl p-6 sm:p-8 space-y-6 shadow-xl border border-[#0F291E]/10">
+          <h1 className="font-display text-xl sm:text-2xl text-[#0F291E] font-semibold">
             Register Organization
           </h1>
 
@@ -299,7 +317,7 @@ export default function Register() {
                     type="button"
                     onClick={handleSendOtp}
                     disabled={otpSending || cooldown > 0 || !form.email}
-                    className="inline-flex items-center justify-center gap-1.5 px-4 py-2.5 bg-forest-800 hover:bg-forest-700 text-wheat-50 text-xs font-semibold rounded-xl disabled:opacity-50 transition-all shadow-2xs shrink-0 whitespace-nowrap"
+                    className="inline-flex items-center justify-center gap-1.5 px-4 py-2.5 bg-[#0F291E] hover:bg-[#166534] text-white text-xs font-semibold rounded-xl disabled:opacity-50 transition-all shadow-2xs shrink-0 whitespace-nowrap cursor-pointer"
                   >
                     {otpSending ? (
                       <>
@@ -310,7 +328,7 @@ export default function Register() {
                       <span>Resend ({cooldown}s)</span>
                     ) : (
                       <>
-                        <Mail className="w-3.5 h-3.5" />
+                        <Mail className="w-3.5 h-3.5 text-emerald-400" />
                         <span>{otpSent ? "Resend OTP" : "Verify Email"}</span>
                       </>
                     )}
@@ -397,35 +415,26 @@ export default function Register() {
 
             <button
               type="submit"
-              disabled={busy || !isEmailVerified}
-              className={`w-full inline-flex items-center justify-center gap-2 rounded-xl py-3 text-sm font-semibold transition-all shadow-sm active:scale-[0.99] mt-2 ${
-                isEmailVerified
-                  ? "bg-forest-800 text-wheat-50 hover:bg-forest-700 shadow-md"
-                  : "bg-wheat-200 text-forest-800/40 cursor-not-allowed"
-              }`}
+              disabled={busy}
+              className="w-full inline-flex items-center justify-center gap-2 rounded-xl py-3 text-sm font-semibold transition-all shadow-md active:scale-[0.99] mt-2 bg-[#0F291E] hover:bg-[#166534] text-white disabled:opacity-50 cursor-pointer"
             >
               {busy ? (
                 <>
                   <Loader2 className="w-4 h-4 animate-spin" />
-                  <span>Creating Account...</span>
-                </>
-              ) : isEmailVerified ? (
-                <>
-                  <UserPlus className="w-4 h-4 text-gold-400" />
-                  <span>Complete Registration</span>
+                  <span>Registering...</span>
                 </>
               ) : (
                 <>
-                  <Mail className="w-4 h-4" />
-                  <span>Verify Email to Register</span>
+                  <UserPlus className="w-4 h-4 text-emerald-400" />
+                  <span>Register</span>
                 </>
               )}
             </button>
           </form>
 
-          <p className="text-xs sm:text-sm text-forest-800/60 text-center pt-2 border-t border-wheat-100">
+          <p className="text-xs sm:text-sm text-[#0F291E]/60 text-center pt-2 border-t border-[#0F291E]/10">
             Already have an account?{" "}
-            <Link to="/login" className="text-tomato-500 font-semibold hover:text-tomato-600">
+            <Link to="/login" className="text-emerald-700 font-semibold hover:text-emerald-800">
               Sign In
             </Link>
           </p>

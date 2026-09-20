@@ -112,25 +112,24 @@ export default function ForgotPassword() {
   };
 
   return (
-    <div className="min-h-screen min-h-[100dvh] w-full bg-wheat-50 flex flex-col justify-start sm:justify-center items-center px-4 sm:px-6 py-8 sm:py-12 text-forest-800 pt-safe pb-safe relative overflow-x-clip">
-      {/* Ambient background light orbs for frosted glass refractions - fixed across full viewport */}
+    <div className="min-h-screen min-h-[100dvh] w-full bg-[#FAF7F2] flex flex-col justify-start sm:justify-center items-center px-4 sm:px-6 py-8 sm:py-12 text-[#0F291E] pt-safe pb-safe relative overflow-x-clip">
+      {/* Subtle warm ambient glow that seamlessly blends with the #FAF7F2 background */}
       <div aria-hidden="true" className="pointer-events-none fixed inset-0 overflow-hidden z-0">
-        <div className="absolute -top-10 -left-10 w-96 h-96 bg-emerald-400/20 rounded-full blur-3xl animate-mesh-pulse" />
-        <div className="absolute -bottom-10 -right-10 w-96 h-96 bg-gold-400/25 rounded-full blur-3xl animate-mesh-pulse-delayed" />
-        <div className="absolute top-1/2 left-1/2 -translate-x-1/2 -translate-y-1/2 w-80 h-80 bg-tomato-400/10 rounded-full blur-3xl" />
+        <div className="absolute -top-32 -left-32 w-96 sm:w-[32rem] h-96 sm:h-[32rem] bg-[#166534]/5 rounded-full blur-3xl" />
+        <div className="absolute -bottom-32 -right-32 w-96 sm:w-[32rem] h-96 sm:h-[32rem] bg-[#166534]/5 rounded-full blur-3xl" />
       </div>
 
       <div className="w-full max-w-md my-auto space-y-6 relative z-10">
         <div className="text-center">
-          <Link to="/" className="font-display italic text-3xl sm:text-4xl text-forest-800 font-bold block mb-1">
+          <Link to="/" className="font-display italic text-3xl sm:text-4xl text-[#0F291E] font-bold block mb-1">
             Harvest&nbsp;Ledger
           </Link>
-          <p className="text-xs font-mono uppercase tracking-widest text-forest-800/50">
+          <p className="text-xs font-mono uppercase tracking-widest text-[#0F291E]/60">
             Account Recovery &bull; Security Verification
           </p>
         </div>
 
-        <div className="glass-modal rounded-2xl p-5 sm:p-8 space-y-6">
+        <div className="bg-white/95 rounded-2xl p-5 sm:p-8 space-y-6 shadow-xl border border-[#0F291E]/10">
           {/* Progress Indicator */}
           <div className="flex items-center justify-between pb-4 border-b border-wheat-200/60 text-[11px] sm:text-xs font-mono gap-1">
             <span className={`font-semibold truncate ${step >= 1 ? "text-forest-800" : "text-forest-800/30"}`}>
@@ -378,17 +377,17 @@ export default function ForgotPassword() {
               <button
                 type="button"
                 onClick={() => navigate("/login")}
-                className="w-full inline-flex items-center justify-center gap-2 bg-forest-800 text-wheat-50 rounded-xl py-3 text-sm font-semibold hover:bg-forest-700 transition-all shadow-sm active:scale-[0.99] mt-2"
+                className="w-full inline-flex items-center justify-center gap-2 bg-[#0F291E] hover:bg-[#166534] text-white rounded-xl py-3 text-sm font-semibold transition-all shadow-md active:scale-[0.99] mt-2 cursor-pointer"
               >
                 Proceed to Sign In
               </button>
             </div>
           )}
 
-          <div className="pt-2 border-t border-wheat-100 text-center">
+          <div className="pt-2 border-t border-[#0F291E]/10 text-center">
             <Link
               to="/login"
-              className="text-xs text-forest-800/60 hover:text-forest-800 inline-flex items-center gap-1 font-medium"
+              className="text-xs text-emerald-700 hover:text-emerald-800 inline-flex items-center gap-1 font-semibold"
             >
               <ArrowLeft className="w-3.5 h-3.5" />
               <span>Return to Sign In</span>
