@@ -398,6 +398,20 @@ html, body, *, .no-scrollbar {
   animation: meshPulse 10s ease-in-out infinite 3s;
 }
 
+/* Rich full-screen colorful aurora mesh for Auth pages */
+.auth-page-mesh {
+  background-color: #FAF7F2;
+  background-image: 
+    radial-gradient(circle at 10% 15%, rgba(16, 185, 129, 0.28) 0%, transparent 45%),
+    radial-gradient(circle at 90% 15%, rgba(245, 158, 11, 0.28) 0%, transparent 45%),
+    radial-gradient(circle at 50% 50%, rgba(244, 63, 94, 0.16) 0%, transparent 40%),
+    radial-gradient(circle at 15% 85%, rgba(245, 158, 11, 0.25) 0%, transparent 45%),
+    radial-gradient(circle at 85% 85%, rgba(16, 185, 129, 0.28) 0%, transparent 45%);
+  background-attachment: fixed;
+  background-repeat: no-repeat;
+  background-size: cover;
+}
+
 /* Scanner Viewfinder Normalization for Html5Qrcode on all devices */
 #handshake-qr-reader,
 #harvest-qr-reader {

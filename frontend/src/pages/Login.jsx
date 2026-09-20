@@ -27,11 +27,14 @@ export default function Login() {
   };
 
   return (
-    <div className="min-h-screen min-h-[100dvh] w-full bg-[#FAF7F2] flex flex-col justify-start sm:justify-center items-center px-4 sm:px-6 py-8 sm:py-12 text-[#0F291E] pt-safe pb-safe relative overflow-x-clip">
-      {/* Subtle warm ambient glow that seamlessly blends with the #FAF7F2 background */}
+    <div className="min-h-screen min-h-[100dvh] w-full auth-page-mesh flex flex-col justify-start sm:justify-center items-center px-4 sm:px-6 py-8 sm:py-12 text-[#0F291E] pt-safe pb-safe relative overflow-x-clip">
+      {/* Ambient background light orbs for frosted glass refractions - full screen multi-color aurora that never cuts off */}
       <div aria-hidden="true" className="pointer-events-none fixed inset-0 overflow-hidden z-0">
-        <div className="absolute -top-32 -left-32 w-96 sm:w-[32rem] h-96 sm:h-[32rem] bg-[#166534]/5 rounded-full blur-3xl" />
-        <div className="absolute -bottom-32 -right-32 w-96 sm:w-[32rem] h-96 sm:h-[32rem] bg-[#166534]/5 rounded-full blur-3xl" />
+        <div className="absolute -top-20 -left-20 w-80 sm:w-96 h-80 sm:h-96 bg-emerald-400/25 rounded-full blur-3xl animate-mesh-pulse" />
+        <div className="absolute -top-20 -right-20 w-80 sm:w-96 h-80 sm:h-96 bg-gold-400/30 rounded-full blur-3xl animate-mesh-pulse-delayed" />
+        <div className="absolute top-1/2 left-1/2 -translate-x-1/2 -translate-y-1/2 w-72 sm:w-80 h-72 sm:h-80 bg-tomato-400/20 rounded-full blur-3xl" />
+        <div className="absolute -bottom-20 -left-20 w-80 sm:w-96 h-80 sm:h-96 bg-gold-400/25 rounded-full blur-3xl animate-mesh-pulse-delayed" />
+        <div className="absolute -bottom-20 -right-20 w-80 sm:w-96 h-80 sm:h-96 bg-emerald-400/30 rounded-full blur-3xl animate-mesh-pulse" />
       </div>
 
       <div className="w-full max-w-md my-auto space-y-6 relative z-10">
@@ -44,7 +47,7 @@ export default function Login() {
           </p>
         </div>
 
-        <div className="bg-white/95 rounded-2xl p-6 sm:p-8 space-y-6 shadow-xl border border-[#0F291E]/10">
+        <div className="glass-modal rounded-2xl p-6 sm:p-8 space-y-6 shadow-xl border border-white/80">
           <h1 className="font-display text-xl sm:text-2xl text-[#0F291E] font-semibold">
             Welcome Back
           </h1>
