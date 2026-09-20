@@ -27,7 +27,7 @@ export default function Login() {
   };
 
   return (
-    <div className="min-h-screen min-h-[100dvh] w-full auth-page-mesh flex flex-col justify-center items-center px-3.5 sm:px-6 py-2 sm:py-8 text-[#0F291E] pt-safe pb-safe relative overflow-x-clip">
+    <div className="min-h-screen min-h-[100dvh] w-full auth-page-mesh flex flex-col justify-center items-center px-3.5 sm:px-6 py-2 sm:py-8 text-[#0F291E] pt-safe pb-safe relative overflow-x-clip overscroll-none touch-pan-y">
       {/* Ambient background light orbs for frosted glass refractions - full screen multi-color aurora (ultra-light & gentle) */}
       <div aria-hidden="true" className="pointer-events-none fixed inset-0 overflow-hidden z-0">
         <div className="absolute -top-20 -left-20 w-80 sm:w-96 h-80 sm:h-96 bg-emerald-400/[0.07] rounded-full blur-3xl animate-mesh-pulse" />
@@ -38,7 +38,10 @@ export default function Login() {
       </div>
 
       <div className="w-full max-w-md my-auto space-y-2 sm:space-y-6 relative z-10">
-        <div className="text-center">
+        <div
+          className="text-center relative z-20"
+          style={{ transform: "translate3d(0, 0, 0)", WebkitTransform: "translate3d(0, 0, 0)", isolation: "isolate" }}
+        >
           <Link to="/" className="font-display italic text-2xl sm:text-4xl text-[#0F291E] font-bold block mb-0.5 leading-tight">
             Harvest&nbsp;Ledger
           </Link>

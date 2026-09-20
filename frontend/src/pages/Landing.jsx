@@ -219,7 +219,10 @@ export default function Landing() {
       {/* ------------------------------------------------------------- */}
       {/* NAVIGATION / HEADER                                           */}
       {/* ------------------------------------------------------------- */}
-      <header className="sticky top-0 z-40 bg-[#FAF7F2]/90 backdrop-blur-md border-b border-[#0F291E]/10 transition-all">
+      <header
+        className="sticky top-0 z-40 bg-[#FAF7F2] sm:bg-[#FAF7F2]/95 sm:backdrop-blur-md border-b border-[#0F291E]/10 transition-colors"
+        style={{ transform: "translate3d(0, 0, 0)", WebkitTransform: "translate3d(0, 0, 0)", isolation: "isolate" }}
+      >
         <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 h-18 sm:h-20 flex items-center justify-between">
           {/* LEFT SIDE: HL Logo + HARVEST LEDGER */}
           <Link

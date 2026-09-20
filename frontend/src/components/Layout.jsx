@@ -139,14 +139,17 @@ export default function Layout({ children }) {
   };
 
   return (
-    <div className="min-h-screen flex flex-col lg:flex-row bg-wheat-50 text-forest-800 overflow-x-clip">
+    <div className="min-h-screen flex flex-col lg:flex-row bg-wheat-50 text-forest-800 overflow-x-clip overscroll-none">
       {/* ------------------------------------------------------------- */}
       {/* MOBILE STICKY TOPBAR (< 1024px)                               */}
       {/* ------------------------------------------------------------- */}
       {/* Mobile Top Overscroll Guard: keeps header green when over-scrolling on mobile */}
       <div className="lg:hidden fixed top-0 left-0 right-0 h-48 -translate-y-full bg-forest-800 pointer-events-none z-40" />
 
-      <header className="lg:hidden sticky top-0 z-40 bg-forest-800 text-wheat-100 px-4 sm:px-6 h-16 min-h-[64px] max-h-[64px] flex items-center justify-between border-b border-forest-600/50 shadow-md box-border shrink-0 overflow-hidden">
+      <header
+        className="lg:hidden sticky top-0 z-40 bg-forest-800 text-wheat-100 px-4 sm:px-6 h-16 min-h-[64px] max-h-[64px] flex items-center justify-between border-b border-forest-600/50 shadow-md box-border shrink-0 overflow-hidden"
+        style={{ transform: "translate3d(0, 0, 0)", WebkitTransform: "translate3d(0, 0, 0)", isolation: "isolate" }}
+      >
         {/* Left: Menu Hamburger + Brand Badge + Title */}
         <div className="flex items-center gap-2.5 sm:gap-3 min-w-0">
           <button
