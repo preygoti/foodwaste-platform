@@ -28,13 +28,13 @@ export default function Login() {
 
   return (
     <div className="min-h-screen min-h-[100dvh] w-full auth-page-mesh flex flex-col justify-center items-center px-3.5 sm:px-6 py-2 sm:py-8 text-[#0F291E] pt-safe pb-safe relative overflow-x-clip">
-      {/* Ambient background light orbs for frosted glass refractions - full screen multi-color aurora (slightly light & gentle) */}
+      {/* Ambient background light orbs for frosted glass refractions - full screen multi-color aurora (ultra-light & gentle) */}
       <div aria-hidden="true" className="pointer-events-none fixed inset-0 overflow-hidden z-0">
-        <div className="absolute -top-20 -left-20 w-80 sm:w-96 h-80 sm:h-96 bg-emerald-400/15 rounded-full blur-3xl animate-mesh-pulse" />
-        <div className="absolute -top-20 -right-20 w-80 sm:w-96 h-80 sm:h-96 bg-gold-400/18 rounded-full blur-3xl animate-mesh-pulse-delayed" />
-        <div className="absolute top-1/2 left-1/2 -translate-x-1/2 -translate-y-1/2 w-72 sm:w-80 h-72 sm:h-80 bg-tomato-400/12 rounded-full blur-3xl" />
-        <div className="absolute -bottom-20 -left-20 w-80 sm:w-96 h-80 sm:h-96 bg-gold-400/15 rounded-full blur-3xl animate-mesh-pulse-delayed" />
-        <div className="absolute -bottom-20 -right-20 w-80 sm:w-96 h-80 sm:h-96 bg-emerald-400/18 rounded-full blur-3xl animate-mesh-pulse" />
+        <div className="absolute -top-20 -left-20 w-80 sm:w-96 h-80 sm:h-96 bg-emerald-400/[0.07] rounded-full blur-3xl animate-mesh-pulse" />
+        <div className="absolute -top-20 -right-20 w-80 sm:w-96 h-80 sm:h-96 bg-gold-400/[0.08] rounded-full blur-3xl animate-mesh-pulse-delayed" />
+        <div className="absolute top-1/2 left-1/2 -translate-x-1/2 -translate-y-1/2 w-72 sm:w-80 h-72 sm:h-80 bg-tomato-400/[0.05] rounded-full blur-3xl" />
+        <div className="absolute -bottom-20 -left-20 w-80 sm:w-96 h-80 sm:h-96 bg-gold-400/[0.07] rounded-full blur-3xl animate-mesh-pulse-delayed" />
+        <div className="absolute -bottom-20 -right-20 w-80 sm:w-96 h-80 sm:h-96 bg-emerald-400/[0.08] rounded-full blur-3xl animate-mesh-pulse" />
       </div>
 
       <div className="w-full max-w-md my-auto space-y-2 sm:space-y-6 relative z-10">
