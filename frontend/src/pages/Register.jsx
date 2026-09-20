@@ -9,10 +9,9 @@ import {
   Mail,
   CheckCircle2,
   KeyRound,
-  RotateCw,
-  Sparkles,
   Eye,
   EyeOff,
+  MapPin,
 } from "lucide-react";
 import { useAuth } from "../AuthContext";
 import { api } from "../api";
@@ -49,8 +48,19 @@ export default function Register() {
     return () => clearTimeout(timer);
   }, [cooldown]);
 
+  // Guard against browser autofill mistakenly injecting an email address into the physical street address field
+  useEffect(() => {
+    if (form.address && form.address.includes("@")) {
+      setForm((prev) => ({ ...prev, address: "" }));
+    }
+  }, [form.address]);
+
   const update = (k) => (e) => {
     const val = e.target.value;
+    // Guard: A physical street address should never contain an email symbol (@)
+    if (k === "address" && val.includes("@")) {
+      return;
+    }
     setForm((prev) => ({ ...prev, [k]: val }));
     if (k === "email" && isEmailVerified && val.trim().toLowerCase() !== verifiedEmail) {
       setIsEmailVerified(false);
@@ -162,7 +172,7 @@ export default function Register() {
             </div>
           )}
 
-          <form onSubmit={onSubmit} className="space-y-4">
+          <form onSubmit={onSubmit} className="space-y-4" autoComplete="on">
             {/* Role Switcher */}
             <div>
               <label className="block text-xs uppercase tracking-wide text-forest-800/70 font-semibold mb-1.5">
@@ -194,12 +204,17 @@ export default function Register() {
               </div>
             </div>
 
+            {/* Organization / Store Name */}
             <div>
-              <label className="block text-xs uppercase tracking-wide text-forest-800/70 font-semibold mb-1.5">
+              <label htmlFor="reg_org_name" className="block text-xs uppercase tracking-wide text-forest-800/70 font-semibold mb-1.5">
                 Organization / Store Name *
               </label>
               <input
+                id="reg_org_name"
+                name="organization"
+                type="text"
                 required
+                autoComplete="organization"
                 placeholder="e.g. Green Valley Grocers or City Food Rescue"
                 value={form.org_name}
                 onChange={update("org_name")}
@@ -207,10 +222,33 @@ export default function Register() {
               />
             </div>
 
+            {/* Physical Street Address (Positioned under Organization details, with explicit street-address autocomplete & anti-autofill guards) */}
+            <div>
+              <label htmlFor="reg_address" className="block text-xs uppercase tracking-wide text-forest-800/70 font-semibold mb-1.5">
+                Physical Street Address (for pickups &amp; dispatch)
+              </label>
+              <div className="relative">
+                <input
+                  id="reg_address"
+                  name="street-address"
+                  type="text"
+                  autoComplete="street-address"
+                  data-lpignore="true"
+                  data-1p-ignore="true"
+                  data-form-type="address"
+                  placeholder="e.g. 450 Market St, Suite 100, City, State"
+                  value={form.address}
+                  onChange={update("address")}
+                  className="w-full border border-wheat-200 rounded-xl pl-9 pr-3.5 py-2.5 text-sm focus:outline-none focus:ring-2 focus:ring-forest-400 bg-white"
+                />
+                <MapPin className="w-4 h-4 text-forest-800/40 absolute left-3 top-1/2 -translate-y-1/2 pointer-events-none" />
+              </div>
+            </div>
+
             {/* Email Address & Verification Section */}
             <div>
               <div className="flex items-center justify-between mb-1.5">
-                <label className="block text-xs uppercase tracking-wide text-forest-800/70 font-semibold">
+                <label htmlFor="reg_email" className="block text-xs uppercase tracking-wide text-forest-800/70 font-semibold">
                   Work Email Address *
                 </label>
                 {isEmailVerified && (
@@ -224,8 +262,11 @@ export default function Register() {
               <div className="flex flex-col sm:flex-row gap-2">
                 <div className="relative flex-1">
                   <input
+                    id="reg_email"
+                    name="email"
                     type="email"
                     required
+                    autoComplete="email"
                     disabled={isEmailVerified}
                     placeholder="coordinator@organization.org"
                     value={form.email}
@@ -323,15 +364,19 @@ export default function Register() {
               </div>
             )}
 
+            {/* Password (Positioned at bottom before submit button with new-password autocomplete) */}
             <div>
-              <label className="block text-xs uppercase tracking-wide text-forest-800/70 font-semibold mb-1.5">
+              <label htmlFor="reg_password" className="block text-xs uppercase tracking-wide text-forest-800/70 font-semibold mb-1.5">
                 Password * (min 6 chars)
               </label>
               <div className="relative">
                 <input
+                  id="reg_password"
+                  name="new-password"
                   type={showPassword ? "text" : "password"}
                   required
                   minLength={6}
+                  autoComplete="new-password"
                   placeholder="••••••••"
                   value={form.password}
                   onChange={update("password")}
@@ -346,18 +391,6 @@ export default function Register() {
                   {showPassword ? <EyeOff className="w-4 h-4" /> : <Eye className="w-4 h-4 text-forest-700" />}
                 </button>
               </div>
-            </div>
-
-            <div>
-              <label className="block text-xs uppercase tracking-wide text-forest-800/70 font-semibold mb-1.5">
-                Physical Address (for pickups &amp; dispatch)
-              </label>
-              <input
-                placeholder="e.g. 450 Market St, Suite 100, City, State"
-                value={form.address}
-                onChange={update("address")}
-                className="w-full border border-wheat-200 rounded-xl px-3.5 py-2.5 text-sm focus:outline-none focus:ring-2 focus:ring-forest-400 bg-white"
-              />
             </div>
 
             <button

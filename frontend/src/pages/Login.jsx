@@ -61,8 +61,11 @@ export default function Login() {
                 Work Email Address
               </label>
               <input
+                id="login_email"
+                name="email"
                 type="email"
                 required
+                autoComplete="username email"
                 placeholder="you@organization.org"
                 value={email}
                 onChange={(e) => setEmail(e.target.value)}
@@ -72,7 +75,7 @@ export default function Login() {
 
             <div>
               <div className="flex items-center justify-between mb-1.5">
-                <label className="block text-xs uppercase tracking-wide text-forest-800/70 font-semibold">
+                <label htmlFor="login_password" className="block text-xs uppercase tracking-wide text-forest-800/70 font-semibold">
                   Password
                 </label>
                 <Link
@@ -84,8 +87,11 @@ export default function Login() {
               </div>
               <div className="relative">
                 <input
+                  id="login_password"
+                  name="password"
                   type={showPassword ? "text" : "password"}
                   required
+                  autoComplete="current-password"
                   placeholder="••••••••"
                   value={password}
                   onChange={(e) => setPassword(e.target.value)}
