@@ -50,6 +50,10 @@ class Token(BaseModel):
     user: UserOut
 
 
+class DeleteAccountRequest(BaseModel):
+    password: str
+
+
 # ---------- Password Reset & OTP ----------
 class ForgotPasswordRequest(BaseModel):
     email: EmailStr

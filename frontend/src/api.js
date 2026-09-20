@@ -205,6 +205,20 @@ export const api = {
     return handle(res);
   },
 
+  async deleteAccount(password) {
+    const res = await safeFetch(`${API_URL}/auth/account`, {
+      method: "DELETE",
+      headers: {
+        ...authHeaders(),
+        "Content-Type": "application/json",
+      },
+      body: JSON.stringify({ password }),
+    });
+    const data = await handle(res);
+    clearApiCache();
+    return data;
+  },
+
   // Inventory (Business Only)
   async listInventory(forceFresh = false) {
     if (forceFresh) {

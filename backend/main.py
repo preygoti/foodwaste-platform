@@ -387,6 +387,31 @@ def me(current_user: models.User = Depends(get_current_user)):
     return schemas.UserOut.model_validate(_user_out(current_user))
 
 
+@app.delete("/auth/account")
+def delete_account(
+    payload: schemas.DeleteAccountRequest,
+    current_user: models.User = Depends(get_current_user),
+    db: Session = Depends(get_db),
+):
+    if not payload.password or not payload.password.strip():
+        raise HTTPException(400, "Password is required to confirm account deletion.")
+
+    if not verify_password(payload.password, current_user.hashed_password):
+        raise HTTPException(400, "Incorrect password. Account deletion aborted.")
+
+    user_email = current_user.email.strip().lower()
+
+    # Clean up associated OTP records
+    db.query(models.PasswordResetOTP).filter(func.lower(models.PasswordResetOTP.email) == user_email).delete()
+    db.query(models.RegistrationOTP).filter(func.lower(models.RegistrationOTP.email) == user_email).delete()
+
+    # Delete the user account (SQLAlchemy cascades delete-orphan on inventory_items, listings, and pickups)
+    db.delete(current_user)
+    db.commit()
+
+    return {"status": "success", "message": "Your account and all associated data have been permanently deleted."}
+
+
 @app.post("/auth/forgot-password", response_model=schemas.ForgotPasswordResponse)
 def forgot_password(payload: schemas.ForgotPasswordRequest, db: Session = Depends(get_db)):
     norm_email = str(payload.email).strip().lower()
