@@ -157,13 +157,13 @@ export default function Register() {
 
   return (
     <div className="min-h-screen min-h-[100dvh] w-full auth-page-mesh flex flex-col justify-center items-center px-3 sm:px-6 py-2 sm:py-8 text-[#0F291E] pt-safe pb-safe relative overflow-x-clip">
-      {/* Ambient background light orbs for frosted glass refractions - full screen multi-color aurora that never cuts off */}
+      {/* Ambient background light orbs for frosted glass refractions - full screen multi-color aurora (slightly light & gentle) */}
       <div aria-hidden="true" className="pointer-events-none fixed inset-0 overflow-hidden z-0">
-        <div className="absolute -top-20 -left-20 w-80 sm:w-96 h-80 sm:h-96 bg-emerald-400/25 rounded-full blur-3xl animate-mesh-pulse" />
-        <div className="absolute -top-20 -right-20 w-80 sm:w-96 h-80 sm:h-96 bg-gold-400/30 rounded-full blur-3xl animate-mesh-pulse-delayed" />
-        <div className="absolute top-1/2 left-1/2 -translate-x-1/2 -translate-y-1/2 w-72 sm:w-80 h-72 sm:h-80 bg-tomato-400/20 rounded-full blur-3xl" />
-        <div className="absolute -bottom-20 -left-20 w-80 sm:w-96 h-80 sm:h-96 bg-gold-400/25 rounded-full blur-3xl animate-mesh-pulse-delayed" />
-        <div className="absolute -bottom-20 -right-20 w-80 sm:w-96 h-80 sm:h-96 bg-emerald-400/30 rounded-full blur-3xl animate-mesh-pulse" />
+        <div className="absolute -top-20 -left-20 w-80 sm:w-96 h-80 sm:h-96 bg-emerald-400/15 rounded-full blur-3xl animate-mesh-pulse" />
+        <div className="absolute -top-20 -right-20 w-80 sm:w-96 h-80 sm:h-96 bg-gold-400/18 rounded-full blur-3xl animate-mesh-pulse-delayed" />
+        <div className="absolute top-1/2 left-1/2 -translate-x-1/2 -translate-y-1/2 w-72 sm:w-80 h-72 sm:h-80 bg-tomato-400/12 rounded-full blur-3xl" />
+        <div className="absolute -bottom-20 -left-20 w-80 sm:w-96 h-80 sm:h-96 bg-gold-400/15 rounded-full blur-3xl animate-mesh-pulse-delayed" />
+        <div className="absolute -bottom-20 -right-20 w-80 sm:w-96 h-80 sm:h-96 bg-emerald-400/18 rounded-full blur-3xl animate-mesh-pulse" />
       </div>
 
       <div className="w-full max-w-md my-auto space-y-1.5 sm:space-y-4 relative z-10">
@@ -177,13 +177,10 @@ export default function Register() {
         </div>
 
         <div className="glass-modal rounded-xl sm:rounded-2xl p-3.5 sm:p-7 space-y-2 sm:space-y-4 shadow-xl border border-white/80">
-          <div className="flex items-center justify-between pb-0.5">
+          <div className="pb-0.5">
             <h1 className="font-display text-base sm:text-xl text-[#0F291E] font-semibold">
               Register Organization
             </h1>
-            <Link to="/login" className="sm:hidden text-[11px] text-emerald-700 font-semibold hover:text-emerald-800">
-              Sign In &rarr;
-            </Link>
           </div>
 
           {error && (
@@ -243,10 +240,10 @@ export default function Register() {
                 type="text"
                 required
                 autoComplete="organization"
-                placeholder="e.g. Green Valley Grocers or City Food Rescue"
+                placeholder="e.g. Green Valley Grocers"
                 value={form.org_name}
                 onChange={update("org_name")}
-                className="w-full border border-wheat-200 rounded-lg sm:rounded-xl px-3 py-1.5 sm:py-2 text-xs sm:text-sm focus:outline-none focus:ring-2 focus:ring-forest-400 bg-white"
+                className="w-full border border-wheat-200 rounded-lg sm:rounded-xl px-3 py-1.5 sm:py-2 text-xs sm:text-sm placeholder:text-[11px] sm:placeholder:text-xs focus:outline-none focus:ring-2 focus:ring-forest-400 bg-white"
               />
             </div>
 
@@ -264,10 +261,10 @@ export default function Register() {
                   data-lpignore="true"
                   data-1p-ignore="true"
                   data-form-type="address"
-                  placeholder="e.g. 450 Market St, Suite 100, City, State"
+                  placeholder="e.g. 450 Market St, City"
                   value={form.address}
                   onChange={update("address")}
-                  className="w-full border border-wheat-200 rounded-lg sm:rounded-xl pl-8 sm:pl-9 pr-3 py-1.5 sm:py-2 text-xs sm:text-sm focus:outline-none focus:ring-2 focus:ring-forest-400 bg-white"
+                  className="w-full border border-wheat-200 rounded-lg sm:rounded-xl pl-8 sm:pl-9 pr-3 py-1.5 sm:py-2 text-xs sm:text-sm placeholder:text-[11px] sm:placeholder:text-xs focus:outline-none focus:ring-2 focus:ring-forest-400 bg-white"
                 />
                 <MapPin className="w-3.5 h-3.5 sm:w-4 sm:h-4 text-forest-800/40 absolute left-2.5 sm:left-3 top-1/2 -translate-y-1/2 pointer-events-none" />
               </div>
@@ -295,11 +292,10 @@ export default function Register() {
                     type="email"
                     required
                     autoComplete="email"
-                    disabled={isEmailVerified}
                     placeholder="coordinator@organization.org"
                     value={form.email}
                     onChange={update("email")}
-                    className={`w-full border rounded-lg sm:rounded-xl px-3 py-1.5 sm:py-2 text-xs sm:text-sm focus:outline-none focus:ring-2 focus:ring-forest-400 ${
+                    className={`w-full border rounded-lg sm:rounded-xl px-3 py-1.5 sm:py-2 text-xs sm:text-sm placeholder:text-[11px] sm:placeholder:text-xs focus:outline-none focus:ring-2 focus:ring-forest-400 ${
                       isEmailVerified
                         ? "bg-emerald-50/50 border-emerald-300 text-emerald-900 font-medium cursor-not-allowed"
                         : "bg-white border-wheat-200"
@@ -367,7 +363,7 @@ export default function Register() {
                     placeholder="000000"
                     value={otpCode}
                     onChange={(e) => setOtpCode(e.target.value.replace(/\D/g, "").slice(0, 6))}
-                    className="flex-1 bg-white border border-forest-300 rounded-lg px-2.5 py-1 text-center font-mono text-sm sm:text-base tracking-widest font-bold text-forest-900 focus:outline-none focus:ring-2 focus:ring-forest-500 shadow-2xs"
+                    className="flex-1 bg-white border border-forest-300 rounded-lg px-2.5 py-1 text-center font-mono text-sm sm:text-base tracking-widest font-bold text-forest-900 placeholder:text-[11px] sm:placeholder:text-xs focus:outline-none focus:ring-2 focus:ring-forest-500 shadow-2xs"
                   />
                   <button
                     type="button"
@@ -404,7 +400,7 @@ export default function Register() {
                   placeholder="••••••••"
                   value={form.password}
                   onChange={update("password")}
-                  className="w-full border border-wheat-200 rounded-lg sm:rounded-xl pl-3 pr-8 sm:pr-10 py-1.5 sm:py-2 text-xs sm:text-sm focus:outline-none focus:ring-2 focus:ring-forest-400 bg-white"
+                  className="w-full border border-wheat-200 rounded-lg sm:rounded-xl pl-3 pr-8 sm:pr-10 py-1.5 sm:py-2 text-xs sm:text-sm placeholder:text-[11px] sm:placeholder:text-xs focus:outline-none focus:ring-2 focus:ring-forest-400 bg-white"
                 />
                 <button
                   type="button"

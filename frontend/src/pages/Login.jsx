@@ -28,13 +28,13 @@ export default function Login() {
 
   return (
     <div className="min-h-screen min-h-[100dvh] w-full auth-page-mesh flex flex-col justify-center items-center px-3.5 sm:px-6 py-2 sm:py-8 text-[#0F291E] pt-safe pb-safe relative overflow-x-clip">
-      {/* Ambient background light orbs for frosted glass refractions - full screen multi-color aurora that never cuts off */}
+      {/* Ambient background light orbs for frosted glass refractions - full screen multi-color aurora (slightly light & gentle) */}
       <div aria-hidden="true" className="pointer-events-none fixed inset-0 overflow-hidden z-0">
-        <div className="absolute -top-20 -left-20 w-80 sm:w-96 h-80 sm:h-96 bg-emerald-400/25 rounded-full blur-3xl animate-mesh-pulse" />
-        <div className="absolute -top-20 -right-20 w-80 sm:w-96 h-80 sm:h-96 bg-gold-400/30 rounded-full blur-3xl animate-mesh-pulse-delayed" />
-        <div className="absolute top-1/2 left-1/2 -translate-x-1/2 -translate-y-1/2 w-72 sm:w-80 h-72 sm:h-80 bg-tomato-400/20 rounded-full blur-3xl" />
-        <div className="absolute -bottom-20 -left-20 w-80 sm:w-96 h-80 sm:h-96 bg-gold-400/25 rounded-full blur-3xl animate-mesh-pulse-delayed" />
-        <div className="absolute -bottom-20 -right-20 w-80 sm:w-96 h-80 sm:h-96 bg-emerald-400/30 rounded-full blur-3xl animate-mesh-pulse" />
+        <div className="absolute -top-20 -left-20 w-80 sm:w-96 h-80 sm:h-96 bg-emerald-400/15 rounded-full blur-3xl animate-mesh-pulse" />
+        <div className="absolute -top-20 -right-20 w-80 sm:w-96 h-80 sm:h-96 bg-gold-400/18 rounded-full blur-3xl animate-mesh-pulse-delayed" />
+        <div className="absolute top-1/2 left-1/2 -translate-x-1/2 -translate-y-1/2 w-72 sm:w-80 h-72 sm:h-80 bg-tomato-400/12 rounded-full blur-3xl" />
+        <div className="absolute -bottom-20 -left-20 w-80 sm:w-96 h-80 sm:h-96 bg-gold-400/15 rounded-full blur-3xl animate-mesh-pulse-delayed" />
+        <div className="absolute -bottom-20 -right-20 w-80 sm:w-96 h-80 sm:h-96 bg-emerald-400/18 rounded-full blur-3xl animate-mesh-pulse" />
       </div>
 
       <div className="w-full max-w-md my-auto space-y-2 sm:space-y-6 relative z-10">
@@ -48,13 +48,10 @@ export default function Login() {
         </div>
 
         <div className="glass-modal rounded-xl sm:rounded-2xl p-4 sm:p-8 space-y-3 sm:space-y-6 shadow-xl border border-white/80">
-          <div className="flex items-center justify-between pb-0.5">
+          <div className="pb-0.5">
             <h1 className="font-display text-base sm:text-2xl text-[#0F291E] font-semibold">
               Welcome Back
             </h1>
-            <Link to="/register" className="sm:hidden text-[11px] text-emerald-700 font-semibold hover:text-emerald-800">
-              Sign Up &rarr;
-            </Link>
           </div>
 
           {error && (
@@ -78,7 +75,7 @@ export default function Login() {
                 placeholder="you@organization.org"
                 value={email}
                 onChange={(e) => setEmail(e.target.value)}
-                className="w-full border border-wheat-200 rounded-lg sm:rounded-xl px-3 py-1.5 sm:py-2.5 text-xs sm:text-sm focus:outline-none focus:ring-2 focus:ring-forest-400 bg-white"
+                className="w-full border border-wheat-200 rounded-lg sm:rounded-xl px-3 py-1.5 sm:py-2.5 text-xs sm:text-sm placeholder:text-[11px] sm:placeholder:text-xs focus:outline-none focus:ring-2 focus:ring-forest-400 bg-white"
               />
             </div>
 
@@ -104,7 +101,7 @@ export default function Login() {
                   placeholder="••••••••"
                   value={password}
                   onChange={(e) => setPassword(e.target.value)}
-                  className="w-full border border-wheat-200 rounded-lg sm:rounded-xl pl-3 pr-8 sm:pr-11 py-1.5 sm:py-2.5 text-xs sm:text-sm focus:outline-none focus:ring-2 focus:ring-forest-400 bg-white"
+                  className="w-full border border-wheat-200 rounded-lg sm:rounded-xl pl-3 pr-8 sm:pr-11 py-1.5 sm:py-2.5 text-xs sm:text-sm placeholder:text-[11px] sm:placeholder:text-xs focus:outline-none focus:ring-2 focus:ring-forest-400 bg-white"
                 />
                 <button
                   type="button"

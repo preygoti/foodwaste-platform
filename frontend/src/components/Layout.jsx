@@ -282,7 +282,7 @@ export default function Layout({ children }) {
         <div className="px-5 py-4 border-t border-forest-600/60 bg-forest-900/30 space-y-2">
           <button
             onClick={handleSignOut}
-            className="w-full flex items-center justify-center gap-2 px-4 py-2.5 rounded-lg text-xs font-semibold uppercase tracking-wider text-tomato-400 bg-tomato-500/10 hover:bg-tomato-500/20 active:bg-tomato-500/30 transition-colors"
+            className="w-full flex items-center justify-center gap-2 px-4 py-2.5 rounded-lg text-xs font-semibold uppercase tracking-wider text-tomato-400 bg-tomato-500/10 hover:bg-tomato-500/20 active:bg-tomato-500/30 transition-colors cursor-pointer"
           >
             <LogOut className="w-3.5 h-3.5" />
             Sign Out
@@ -293,9 +293,9 @@ export default function Layout({ children }) {
               setMobileMenuOpen(false);
               setDeleteModalOpen(true);
             }}
-            className="w-full flex items-center justify-center gap-1.5 px-3 py-1.5 rounded-lg text-[11px] font-medium text-rose-300/70 hover:text-rose-200 hover:bg-rose-950/40 transition-colors"
+            className="w-full flex items-center justify-center gap-2 px-4 py-2.5 rounded-lg text-xs font-semibold uppercase tracking-wider text-tomato-400 bg-tomato-500/10 hover:bg-tomato-500/20 active:bg-tomato-500/30 transition-colors cursor-pointer"
           >
-            <Trash2 className="w-3 h-3 text-rose-400/80" />
+            <Trash2 className="w-3.5 h-3.5" />
             Delete Account
           </button>
         </div>
@@ -368,9 +368,9 @@ export default function Layout({ children }) {
           <button
             type="button"
             onClick={() => setDeleteModalOpen(true)}
-            className="w-full flex items-center justify-center gap-1.5 px-3 py-1.5 rounded-xl text-[11px] font-medium text-rose-300/70 hover:text-rose-200 hover:bg-rose-950/40 transition-colors cursor-pointer"
+            className="w-full flex items-center justify-center gap-2 px-3 py-2 rounded-xl text-xs uppercase tracking-wider font-semibold text-tomato-400 hover:text-tomato-300 hover:bg-forest-700/50 transition-colors cursor-pointer"
           >
-            <Trash2 className="w-3 h-3 text-rose-400/80" />
+            <Trash2 className="w-3.5 h-3.5" />
             Delete Account
           </button>
         </div>
