@@ -156,7 +156,7 @@ export default function Register() {
   };
 
   return (
-    <div className="min-h-screen min-h-[100dvh] w-full auth-page-mesh flex flex-col justify-start sm:justify-center items-center px-4 sm:px-6 py-8 sm:py-12 text-[#0F291E] pt-safe pb-safe relative overflow-x-clip">
+    <div className="min-h-screen min-h-[100dvh] w-full auth-page-mesh flex flex-col justify-center items-center px-3 sm:px-6 py-2 sm:py-8 text-[#0F291E] pt-safe pb-safe relative overflow-x-clip">
       {/* Ambient background light orbs for frosted glass refractions - full screen multi-color aurora that never cuts off */}
       <div aria-hidden="true" className="pointer-events-none fixed inset-0 overflow-hidden z-0">
         <div className="absolute -top-20 -left-20 w-80 sm:w-96 h-80 sm:h-96 bg-emerald-400/25 rounded-full blur-3xl animate-mesh-pulse" />
@@ -166,39 +166,44 @@ export default function Register() {
         <div className="absolute -bottom-20 -right-20 w-80 sm:w-96 h-80 sm:h-96 bg-emerald-400/30 rounded-full blur-3xl animate-mesh-pulse" />
       </div>
 
-      <div className="w-full max-w-md my-auto space-y-6 relative z-10">
+      <div className="w-full max-w-md my-auto space-y-1.5 sm:space-y-4 relative z-10">
         <div className="text-center">
-          <Link to="/" className="font-display italic text-3xl sm:text-4xl text-[#0F291E] font-bold block mb-1">
+          <Link to="/" className="font-display italic text-2xl sm:text-4xl text-[#0F291E] font-bold block mb-0.5 leading-tight">
             Harvest&nbsp;Ledger
           </Link>
-          <p className="text-xs font-mono uppercase tracking-widest text-[#0F291E]/60">
+          <p className="text-[10px] sm:text-xs font-mono uppercase tracking-widest text-[#0F291E]/60">
             Create an account for your business or non-profit
           </p>
         </div>
 
-        <div className="glass-modal rounded-2xl p-6 sm:p-8 space-y-6 shadow-xl border border-white/80">
-          <h1 className="font-display text-xl sm:text-2xl text-[#0F291E] font-semibold">
-            Register Organization
-          </h1>
+        <div className="glass-modal rounded-xl sm:rounded-2xl p-3.5 sm:p-7 space-y-2 sm:space-y-4 shadow-xl border border-white/80">
+          <div className="flex items-center justify-between pb-0.5">
+            <h1 className="font-display text-base sm:text-xl text-[#0F291E] font-semibold">
+              Register Organization
+            </h1>
+            <Link to="/login" className="sm:hidden text-[11px] text-emerald-700 font-semibold hover:text-emerald-800">
+              Sign In &rarr;
+            </Link>
+          </div>
 
           {error && (
-            <div className="flex items-center gap-2 p-3.5 rounded-xl bg-tomato-500/10 border border-tomato-500/30 text-tomato-600 text-xs sm:text-sm font-medium animate-in fade-in duration-200">
-              <AlertCircle className="w-4 h-4 shrink-0" />
+            <div className="flex items-center gap-1.5 p-2 sm:p-3 rounded-lg sm:rounded-xl bg-tomato-500/10 border border-tomato-500/30 text-tomato-600 text-[11px] sm:text-xs font-medium animate-in fade-in duration-200">
+              <AlertCircle className="w-3.5 h-3.5 shrink-0" />
               <span>{error}</span>
             </div>
           )}
 
           {otpSuccessMsg && (
-            <div className="flex items-center gap-2 p-3.5 rounded-xl bg-emerald-50 border border-emerald-300 text-emerald-800 text-xs sm:text-sm font-medium animate-in fade-in duration-200">
-              <CheckCircle2 className="w-4 h-4 text-emerald-600 shrink-0" />
+            <div className="flex items-center gap-1.5 p-2 sm:p-3 rounded-lg sm:rounded-xl bg-emerald-50 border border-emerald-300 text-emerald-800 text-[11px] sm:text-xs font-medium animate-in fade-in duration-200">
+              <CheckCircle2 className="w-3.5 h-3.5 text-emerald-600 shrink-0" />
               <span>{otpSuccessMsg}</span>
             </div>
           )}
 
-          <form onSubmit={onSubmit} className="space-y-4" autoComplete="on">
+          <form onSubmit={onSubmit} className="space-y-2 sm:space-y-3.5" autoComplete="on">
             {/* Role Switcher */}
             <div>
-              <label className="block text-xs uppercase tracking-wide text-forest-800/70 font-semibold mb-1.5">
+              <label className="block text-[10px] sm:text-xs uppercase tracking-wide text-forest-800/80 font-semibold mb-0.5 sm:mb-1">
                 Account Type *
               </label>
               <div className="grid grid-cols-2 gap-2">
@@ -213,13 +218,13 @@ export default function Register() {
                       type="button"
                       key={item.role}
                       onClick={() => setForm({ ...form, role: item.role })}
-                      className={`flex items-center justify-center gap-2 py-2.5 px-3 rounded-xl border text-xs sm:text-sm font-medium transition-all ${
+                      className={`flex items-center justify-center gap-1.5 py-1.5 sm:py-2.5 px-2.5 rounded-lg sm:rounded-xl border text-[11px] sm:text-xs font-medium transition-all cursor-pointer ${
                         selected
                           ? "border-forest-600 bg-forest-50 text-forest-800 font-semibold shadow-2xs"
                           : "border-wheat-200 bg-white text-forest-800/60 hover:bg-wheat-50"
                       }`}
                     >
-                      <Icon className={`w-4 h-4 ${selected ? "text-forest-600" : "text-forest-800/40"}`} />
+                      <Icon className={`w-3.5 h-3.5 sm:w-4 sm:h-4 ${selected ? "text-forest-600" : "text-forest-800/40"}`} />
                       <span>{item.label}</span>
                     </button>
                   );
@@ -229,7 +234,7 @@ export default function Register() {
 
             {/* Organization / Store Name */}
             <div>
-              <label htmlFor="reg_org_name" className="block text-xs uppercase tracking-wide text-forest-800/70 font-semibold mb-1.5">
+              <label htmlFor="reg_org_name" className="block text-[10px] sm:text-xs uppercase tracking-wide text-forest-800/80 font-semibold mb-0.5 sm:mb-1">
                 Organization / Store Name *
               </label>
               <input
@@ -241,13 +246,13 @@ export default function Register() {
                 placeholder="e.g. Green Valley Grocers or City Food Rescue"
                 value={form.org_name}
                 onChange={update("org_name")}
-                className="w-full border border-wheat-200 rounded-xl px-3.5 py-2.5 text-sm focus:outline-none focus:ring-2 focus:ring-forest-400 bg-white"
+                className="w-full border border-wheat-200 rounded-lg sm:rounded-xl px-3 py-1.5 sm:py-2 text-xs sm:text-sm focus:outline-none focus:ring-2 focus:ring-forest-400 bg-white"
               />
             </div>
 
-            {/* Physical Street Address (Positioned under Organization details, with explicit street-address autocomplete & anti-autofill guards) */}
+            {/* Physical Street Address */}
             <div>
-              <label htmlFor="reg_address" className="block text-xs uppercase tracking-wide text-forest-800/70 font-semibold mb-1.5">
+              <label htmlFor="reg_address" className="block text-[10px] sm:text-xs uppercase tracking-wide text-forest-800/80 font-semibold mb-0.5 sm:mb-1">
                 Physical Street Address (for pickups &amp; dispatch)
               </label>
               <div className="relative">
@@ -262,27 +267,27 @@ export default function Register() {
                   placeholder="e.g. 450 Market St, Suite 100, City, State"
                   value={form.address}
                   onChange={update("address")}
-                  className="w-full border border-wheat-200 rounded-xl pl-9 pr-3.5 py-2.5 text-sm focus:outline-none focus:ring-2 focus:ring-forest-400 bg-white"
+                  className="w-full border border-wheat-200 rounded-lg sm:rounded-xl pl-8 sm:pl-9 pr-3 py-1.5 sm:py-2 text-xs sm:text-sm focus:outline-none focus:ring-2 focus:ring-forest-400 bg-white"
                 />
-                <MapPin className="w-4 h-4 text-forest-800/40 absolute left-3 top-1/2 -translate-y-1/2 pointer-events-none" />
+                <MapPin className="w-3.5 h-3.5 sm:w-4 sm:h-4 text-forest-800/40 absolute left-2.5 sm:left-3 top-1/2 -translate-y-1/2 pointer-events-none" />
               </div>
             </div>
 
             {/* Email Address & Verification Section */}
             <div>
-              <div className="flex items-center justify-between mb-1.5">
-                <label htmlFor="reg_email" className="block text-xs uppercase tracking-wide text-forest-800/70 font-semibold">
+              <div className="flex items-center justify-between mb-0.5 sm:mb-1">
+                <label htmlFor="reg_email" className="block text-[10px] sm:text-xs uppercase tracking-wide text-forest-800/80 font-semibold">
                   Work Email Address *
                 </label>
                 {isEmailVerified && (
-                  <span className="inline-flex items-center gap-1 text-[11px] font-mono font-semibold text-emerald-700 bg-emerald-50 px-2 py-0.5 rounded-full border border-emerald-200">
+                  <span className="inline-flex items-center gap-1 text-[10px] sm:text-[11px] font-mono font-semibold text-emerald-700 bg-emerald-50 px-1.5 py-0.5 rounded-full border border-emerald-200">
                     <CheckCircle2 className="w-3 h-3 text-emerald-600" />
                     Verified
                   </span>
                 )}
               </div>
 
-              <div className="flex flex-col sm:flex-row gap-2">
+              <div className="flex gap-1.5 sm:gap-2">
                 <div className="relative flex-1">
                   <input
                     id="reg_email"
@@ -294,7 +299,7 @@ export default function Register() {
                     placeholder="coordinator@organization.org"
                     value={form.email}
                     onChange={update("email")}
-                    className={`w-full border rounded-xl px-3.5 py-2.5 text-sm focus:outline-none focus:ring-2 focus:ring-forest-400 ${
+                    className={`w-full border rounded-lg sm:rounded-xl px-3 py-1.5 sm:py-2 text-xs sm:text-sm focus:outline-none focus:ring-2 focus:ring-forest-400 ${
                       isEmailVerified
                         ? "bg-emerald-50/50 border-emerald-300 text-emerald-900 font-medium cursor-not-allowed"
                         : "bg-white border-wheat-200"
@@ -308,7 +313,7 @@ export default function Register() {
                         setOtpSent(false);
                         setOtpCode("");
                       }}
-                      className="absolute right-2.5 top-1/2 -translate-y-1/2 text-[11px] font-semibold text-forest-700 hover:text-forest-900 underline"
+                      className="absolute right-2 top-1/2 -translate-y-1/2 text-[10px] sm:text-[11px] font-semibold text-forest-700 hover:text-forest-900 underline cursor-pointer"
                     >
                       Change
                     </button>
@@ -320,18 +325,18 @@ export default function Register() {
                     type="button"
                     onClick={handleSendOtp}
                     disabled={otpSending || cooldown > 0 || !form.email}
-                    className="inline-flex items-center justify-center gap-1.5 px-4 py-2.5 bg-[#0F291E] hover:bg-[#166534] text-white text-xs font-semibold rounded-xl disabled:opacity-50 transition-all shadow-2xs shrink-0 whitespace-nowrap cursor-pointer"
+                    className="inline-flex items-center justify-center gap-1 px-2.5 sm:px-4 py-1.5 sm:py-2 bg-[#0F291E] hover:bg-[#166534] text-white text-[11px] sm:text-xs font-semibold rounded-lg sm:rounded-xl disabled:opacity-50 transition-all shadow-2xs shrink-0 whitespace-nowrap cursor-pointer"
                   >
                     {otpSending ? (
                       <>
-                        <Loader2 className="w-3.5 h-3.5 animate-spin" />
+                        <Loader2 className="w-3 h-3 animate-spin" />
                         <span>Sending...</span>
                       </>
                     ) : cooldown > 0 ? (
                       <span>Resend ({cooldown}s)</span>
                     ) : (
                       <>
-                        <Mail className="w-3.5 h-3.5 text-emerald-400" />
+                        <Mail className="w-3 h-3 text-emerald-400" />
                         <span>{otpSent ? "Resend OTP" : "Verify Email"}</span>
                       </>
                     )}
@@ -342,43 +347,39 @@ export default function Register() {
 
             {/* OTP Code Input Box (Rendered when OTP is sent and not yet verified) */}
             {otpSent && !isEmailVerified && (
-              <div className="p-4 rounded-xl bg-forest-50/80 border border-forest-200 space-y-3 animate-in fade-in zoom-in-95 duration-150">
-                <div className="flex items-center justify-between">
-                  <div className="flex items-center gap-1.5 text-xs font-semibold text-forest-900">
-                    <KeyRound className="w-4 h-4 text-forest-600" />
+              <div className="p-2.5 sm:p-3 rounded-lg sm:rounded-xl bg-forest-50/80 border border-forest-200 space-y-2 animate-in fade-in zoom-in-95 duration-150">
+                <div className="flex items-center justify-between text-[11px] sm:text-xs font-semibold text-forest-900">
+                  <div className="flex items-center gap-1">
+                    <KeyRound className="w-3.5 h-3.5 text-forest-600" />
                     <span>Enter 6-Digit Email Code</span>
                   </div>
                   {debugOtp && (
-                    <span className="text-[10px] font-mono font-bold bg-gold-400/20 text-forest-900 border border-gold-400/40 px-2 py-0.5 rounded-full">
+                    <span className="text-[10px] font-mono font-bold bg-gold-400/20 text-forest-900 border border-gold-400/40 px-1.5 py-0.5 rounded-full">
                       Code: {debugOtp}
                     </span>
                   )}
                 </div>
 
-                <p className="text-[11px] text-forest-800/70">
-                  We sent a 6-digit confirmation code to <strong>{form.email}</strong>.
-                </p>
-
-                <div className="flex flex-col sm:flex-row gap-2">
+                <div className="flex gap-2">
                   <input
                     type="text"
                     maxLength={6}
                     placeholder="000000"
                     value={otpCode}
                     onChange={(e) => setOtpCode(e.target.value.replace(/\D/g, "").slice(0, 6))}
-                    className="w-full bg-white border border-forest-300 rounded-lg px-3 py-2 text-center font-mono text-base sm:text-lg tracking-widest font-bold text-forest-900 focus:outline-none focus:ring-2 focus:ring-forest-500 shadow-2xs"
+                    className="flex-1 bg-white border border-forest-300 rounded-lg px-2.5 py-1 text-center font-mono text-sm sm:text-base tracking-widest font-bold text-forest-900 focus:outline-none focus:ring-2 focus:ring-forest-500 shadow-2xs"
                   />
                   <button
                     type="button"
                     onClick={handleVerifyOtp}
                     disabled={otpVerifying || otpCode.trim().length !== 6}
-                    className="inline-flex items-center justify-center gap-1.5 px-4 py-2.5 sm:py-2 bg-forest-700 hover:bg-forest-800 text-white rounded-lg text-xs font-semibold disabled:opacity-50 transition-all shadow-2xs shrink-0 w-full sm:w-auto"
+                    className="inline-flex items-center justify-center gap-1 px-3 py-1 bg-forest-700 hover:bg-forest-800 text-white rounded-lg text-xs font-semibold disabled:opacity-50 transition-all shadow-2xs shrink-0 cursor-pointer"
                   >
                     {otpVerifying ? (
-                      <Loader2 className="w-3.5 h-3.5 animate-spin" />
+                      <Loader2 className="w-3 h-3 animate-spin" />
                     ) : (
                       <>
-                        <CheckCircle2 className="w-3.5 h-3.5" />
+                        <CheckCircle2 className="w-3 h-3" />
                         <span>Confirm</span>
                       </>
                     )}
@@ -387,9 +388,9 @@ export default function Register() {
               </div>
             )}
 
-            {/* Password (Positioned at bottom before submit button with new-password autocomplete) */}
+            {/* Password */}
             <div>
-              <label htmlFor="reg_password" className="block text-xs uppercase tracking-wide text-forest-800/70 font-semibold mb-1.5">
+              <label htmlFor="reg_password" className="block text-[10px] sm:text-xs uppercase tracking-wide text-forest-800/80 font-semibold mb-0.5 sm:mb-1">
                 Password * (min 6 chars)
               </label>
               <div className="relative">
@@ -403,15 +404,15 @@ export default function Register() {
                   placeholder="••••••••"
                   value={form.password}
                   onChange={update("password")}
-                  className="w-full border border-wheat-200 rounded-xl pl-3.5 pr-11 py-2.5 text-sm focus:outline-none focus:ring-2 focus:ring-forest-400 bg-white"
+                  className="w-full border border-wheat-200 rounded-lg sm:rounded-xl pl-3 pr-8 sm:pr-10 py-1.5 sm:py-2 text-xs sm:text-sm focus:outline-none focus:ring-2 focus:ring-forest-400 bg-white"
                 />
                 <button
                   type="button"
                   onClick={() => setShowPassword((prev) => !prev)}
-                  className="absolute right-2.5 top-1/2 -translate-y-1/2 w-8 h-8 flex items-center justify-center text-forest-800/50 hover:text-forest-800 rounded-lg hover:bg-wheat-100 transition-colors cursor-pointer touch-manipulation"
+                  className="absolute right-2 top-1/2 -translate-y-1/2 w-6 h-6 sm:w-8 sm:h-8 flex items-center justify-center text-forest-800/50 hover:text-forest-800 rounded-md hover:bg-wheat-100 transition-colors cursor-pointer touch-manipulation"
                   aria-label={showPassword ? "Hide password" : "Show password"}
                 >
-                  {showPassword ? <EyeOff className="w-4 h-4" /> : <Eye className="w-4 h-4 text-forest-700" />}
+                  {showPassword ? <EyeOff className="w-3.5 h-3.5 sm:w-4 sm:h-4" /> : <Eye className="w-3.5 h-3.5 sm:w-4 sm:h-4 text-forest-700" />}
                 </button>
               </div>
             </div>
@@ -419,23 +420,23 @@ export default function Register() {
             <button
               type="submit"
               disabled={busy}
-              className="w-full inline-flex items-center justify-center gap-2 rounded-xl py-3 text-sm font-semibold transition-all shadow-md active:scale-[0.99] mt-2 bg-[#0F291E] hover:bg-[#166534] text-white disabled:opacity-50 cursor-pointer"
+              className="w-full inline-flex items-center justify-center gap-2 rounded-lg sm:rounded-xl py-2 sm:py-2.5 text-xs sm:text-sm font-semibold transition-all shadow-md active:scale-[0.99] mt-1 bg-[#0F291E] hover:bg-[#166534] text-white disabled:opacity-50 cursor-pointer"
             >
               {busy ? (
                 <>
-                  <Loader2 className="w-4 h-4 animate-spin" />
+                  <Loader2 className="w-3.5 h-3.5 animate-spin" />
                   <span>Registering...</span>
                 </>
               ) : (
                 <>
-                  <UserPlus className="w-4 h-4 text-emerald-400" />
+                  <UserPlus className="w-3.5 h-3.5 text-emerald-400" />
                   <span>Register</span>
                 </>
               )}
             </button>
           </form>
 
-          <p className="text-xs sm:text-sm text-[#0F291E]/60 text-center pt-2 border-t border-[#0F291E]/10">
+          <p className="text-[11px] sm:text-xs text-[#0F291E]/60 text-center pt-1 sm:pt-2 border-t border-[#0F291E]/10">
             Already have an account?{" "}
             <Link to="/login" className="text-emerald-700 font-semibold hover:text-emerald-800">
               Sign In
